@@ -1,5 +1,8 @@
 {
   "version": 2,
+  "buildCommand": "cd client && npm install && npm run build",
+  "outputDirectory": "client/dist",
+  "installCommand": "echo 'Skipping root install'",
   "builds": [
     {
       "src": "api/index.js",
@@ -21,7 +24,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "api/index.js"
+      "dest": "/$1"
     }
   ],
   "env": {
