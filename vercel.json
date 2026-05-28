@@ -1,8 +1,9 @@
 {
   "version": 2,
-  "buildCommand": "npm --prefix client install && npm --prefix client run build",
+  "framework": null,
+  "buildCommand": "cd client && npm install && npx vite build",
   "outputDirectory": "client/dist",
-  "installCommand": "echo 'Skipping root install'",
+  "installCommand": "",
   "functions": {
     "api/index.js": {
       "memory": 256,
