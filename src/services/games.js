@@ -13,9 +13,24 @@ class GamesService {
       redditService,
       epicGamesService
     ];
+    this._pendingUpdate = null;
   }
 
   async updateAll() {
+    // Si ya hay una actualizacion en curso, reusar la promesa
+    if (this._pendingUpdate) {
+      logger.info('Actualizacion ya en curso, esperando...');
+      return this._pendingUpdate;
+    }
+
+    this._pendingUpdate = this._doUpdate().finally(() => {
+      this._pendingUpdate = null;
+    });
+    
+    return this._pendingUpdate;
+  }
+
+  async _doUpdate() {
     const startTime = Date.now();
     statsManager.incrementScans();
     

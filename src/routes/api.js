@@ -7,19 +7,20 @@ const logger = require('../utils/logger');
 // GET /api/free-games
 router.get('/free-games', async (req, res) => {
   try {
-    let data = gamesService.getGames();
+    const data = gamesService.getGames();
     
-    // Si no hay juegos en cache (cold start en serverless), forzar actualizacion
+    // Si no hay juegos en cache (cold start en serverless), esperar actualizacion
+    // updateAll() usa promesa compartida, no se duplican llamadas
     if (data.games.length === 0) {
-      logger.info('Cache vacio, forzando actualizacion antes de responder...');
+      logger.info('Cache vacio, esperando carga inicial de juegos...');
       await gamesService.updateAll();
-      data = gamesService.getGames();
     }
     
+    const updatedData = gamesService.getGames();
     res.json({
       success: true,
-      ...data,
-      count: data.games.length
+      ...updatedData,
+      count: updatedData.games.length
     });
   } catch (err) {
     logger.error('Error en /api/free-games', err);
