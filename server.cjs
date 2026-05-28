@@ -4,12 +4,12 @@ const path = require('path');
 const cron = require('node-cron');
 require('dotenv').config();
 
-const config = require('./src/config');
-const logger = require('./src/utils/logger');
-const gamesService = require('./src/services/games');
-const apiRoutes = require('./src/routes/api');
-const errorHandler = require('./src/middleware/errorHandler');
-const rateLimiter = require('./src/middleware/rateLimiter');
+const config = require('./src-backend/config');
+const logger = require('./src-backend/utils/logger');
+const gamesService = require('./src-backend/services/games');
+const apiRoutes = require('./src-backend/routes/api');
+const errorHandler = require('./src-backend/middleware/errorHandler');
+const rateLimiter = require('./src-backend/middleware/rateLimiter');
 
 const app = express();
 

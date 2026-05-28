@@ -14,12 +14,12 @@ if (!process.env.VERCEL) {
   require('dotenv').config();
 }
 
-const config = require('../src/config');
-const gamesService = require('../src/services/games');
-const apiRoutes = require('../src/routes/api');
-const errorHandler = require('../src/middleware/errorHandler');
-const rateLimiter = require('../src/middleware/rateLimiter');
-const logger = require('../src/utils/logger');
+const config = require('../src-backend/config');
+const gamesService = require('../src-backend/services/games');
+const apiRoutes = require('../src-backend/routes/api');
+const errorHandler = require('../src-backend/middleware/errorHandler');
+const rateLimiter = require('../src-backend/middleware/rateLimiter');
+const logger = require('../src-backend/utils/logger');
 
 const app = express();
 
@@ -39,14 +39,6 @@ app.get('/health', (req, res) => {
 // Stats page
 app.get('/stats', (req, res) => {
   res.sendFile(path.join(__dirname, '../public', 'stats.html'));
-});
-
-// Static files (para Vercel, esto se maneja con vercel.json)
-app.use(express.static(path.join(__dirname, '../public')));
-
-// SPA fallback: servir index.html para rutas no encontradas
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public', 'index.html'));
 });
 
 // Error handler

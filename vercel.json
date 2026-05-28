@@ -1,10 +1,9 @@
 {
   "version": 2,
-  "rootDirectory": "client",
   "buildCommand": "npm install && npm run build",
   "outputDirectory": "dist",
   "functions": {
-    "../api/index.js": {
+    "api/index.cjs": {
       "memory": 256,
       "maxDuration": 10
     }
@@ -12,15 +11,15 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "../api/index.js"
+      "dest": "api/index.cjs"
     },
     {
       "src": "/health",
-      "dest": "../api/index.js"
+      "dest": "api/index.cjs"
     },
     {
       "src": "/stats",
-      "dest": "../api/index.js"
+      "dest": "api/index.cjs"
     },
     {
       "src": "/(.*)",
