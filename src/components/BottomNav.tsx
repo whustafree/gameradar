@@ -18,51 +18,47 @@ export default function BottomNav({
   return (
     <nav className="bottom-nav">
       <button
-        className={`nav-item ${currentMode === 'pc' ? 'active' : ''}`}
+        className={`nav-btn ${currentMode === 'pc' ? 'active' : ''}`}
         onClick={() => onModeChange('pc')}
-        title="Juegos PC"
+        title="PC"
       >
-        <span className="nav-icon">🖥️</span>
-        <span className="nav-label">PC</span>
+        <span className="nav-btn-icon">🖥️</span>
+        <span className="nav-btn-label">PC</span>
       </button>
 
       <button
-        className={`nav-item ${currentMode === 'android' ? 'active' : ''}`}
+        className={`nav-btn ${currentMode === 'android' ? 'active' : ''}`}
         onClick={() => onModeChange('android')}
-        title="Juegos Android"
+        title="Android"
       >
-        <span className="nav-icon">📱</span>
-        <span className="nav-label">Android</span>
+        <span className="nav-btn-icon">📱</span>
+        <span className="nav-btn-label">Android</span>
       </button>
 
       <button
-        className={`nav-item ${isFilterOpen ? 'active' : ''}`}
+        className={`nav-btn ${isFilterOpen ? 'active' : ''}`}
         onClick={onToggleFilters}
         title="Filtros"
       >
-        <span className="nav-icon">⚙️</span>
-        <span className="nav-label">Filtros</span>
+        <span className="nav-btn-icon">⚙️</span>
+        <span className="nav-btn-label">Filtros</span>
       </button>
 
       <button
-        className={`nav-item ${showFavoritesOnly ? 'active' : ''}`}
+        className={`nav-btn ${showFavoritesOnly ? 'active' : ''}`}
         onClick={onToggleFavorites}
         title="Favoritos"
       >
-        <span className="nav-icon">❤️</span>
-        <span className="nav-label">Fav</span>
+        <span className="nav-btn-icon">❤️</span>
+        <span className="nav-btn-label">Fav</span>
         {favoritesCount > 0 && (
           <span className="nav-badge">{favoritesCount > 99 ? '99+' : favoritesCount}</span>
         )}
       </button>
 
-      <button
-        className="nav-item"
-        onClick={onResetFilters}
-        title="Reiniciar"
-      >
-        <span className="nav-icon">🔄</span>
-        <span className="nav-label">Reset</span>
+      <button className="nav-btn" onClick={onResetFilters} title="Limpiar">
+        <span className="nav-btn-icon">🔄</span>
+        <span className="nav-btn-label">Reset</span>
       </button>
     </nav>
   );

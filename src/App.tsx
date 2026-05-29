@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Mode, SortMode, Genre, TypeFilter, StoreFilter, Game } from './types';
+import { Mode, SortMode, Genre, TypeFilter, StoreFilter } from './types';
 import { getRelativeTime, formatCurrency, parsePrice } from './utils/format';
 import { useTheme } from './hooks/useTheme';
 import { useGames } from './hooks/useGames';
@@ -30,42 +30,27 @@ export default function App() {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [showHiddenOnly, setShowHiddenOnly] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-
   const [qrOpen, setQrOpen] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
   // Debounce search
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 300);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => setDebouncedSearch(searchTerm), 300);
+    return () => clearTimeout(t);
   }, [searchTerm]);
 
   const filteredGames = useFilters({
-    games,
-    hiddenGames,
-    favorites,
-    showFavoritesOnly,
-    showHiddenOnly,
-    currentMode,
-    searchTerm: debouncedSearch,
-    sortMode,
-    activeGenre,
-    activeStore,
-    activeType
+    games, hiddenGames, favorites, showFavoritesOnly, showHiddenOnly,
+    currentMode, searchTerm: debouncedSearch, sortMode,
+    activeGenre, activeStore, activeType
   });
 
   const visibleGamesCount = games.filter(g => !hiddenGames.includes(g.id)).length;
-  const savings = games
-    .filter(g => !hiddenGames.includes(g.id))
-    .reduce((acc, g) => acc + parsePrice(g.worth), 0);
+  const savings = games.filter(g => !hiddenGames.includes(g.id)).reduce((acc, g) => acc + parsePrice(g.worth), 0);
 
-  const toggleFilters = useCallback(() => {
-    setIsFilterOpen(prev => !prev);
-  }, []);
-
-  const closeFilters = useCallback(() => {
-    setIsFilterOpen(false);
-  }, []);
+  const toggleFilters = useCallback(() => setIsFilterOpen(p => !p), []);
+  const closeFilters = useCallback(() => setIsFilterOpen(false), []);
+  const handleClearSearch = useCallback(() => setSearchTerm(''), []);
 
   const handleModeChange = useCallback((mode: Mode) => {
     setCurrentMode(mode);
@@ -76,27 +61,17 @@ export default function App() {
     closeFilters();
   }, [closeFilters]);
 
-  const handleClearSearch = useCallback(() => {
-    setSearchTerm('');
-  }, []);
-
   const handleToggleFavorites = useCallback(() => {
-    setShowFavoritesOnly(prev => !prev);
+    setShowFavoritesOnly(p => { if (!p) showToast('Mostrando favoritos ❤️', 'info'); return !p; });
     setShowHiddenOnly(false);
-    if (!showFavoritesOnly) {
-      showToast('Mostrando favoritos ❤️', 'info');
-    }
     closeFilters();
-  }, [showFavoritesOnly, closeFilters]);
+  }, [closeFilters]);
 
   const handleToggleHidden = useCallback(() => {
-    setShowHiddenOnly(prev => !prev);
+    setShowHiddenOnly(p => { if (!p) showToast('Mostrando ocultos 🙈', 'info'); return !p; });
     setShowFavoritesOnly(false);
-    if (!showHiddenOnly) {
-      showToast('Mostrando juegos ocultos 🙈', 'info');
-    }
     closeFilters();
-  }, [showHiddenOnly, closeFilters]);
+  }, [closeFilters]);
 
   const handleResetFilters = useCallback(() => {
     setSearchTerm('');
@@ -110,88 +85,68 @@ export default function App() {
     showToast('Filtros restablecidos ✅', 'info');
   }, [closeFilters]);
 
-  const handleOpenQR = useCallback(() => {
-    setQrOpen(true);
-  }, []);
-
-  const handleMarkAsViewed = useCallback((id: string) => {
-    markAsViewed(id);
-  }, [markAsViewed]);
-
-  // Handle sort from inline sort bar
-  const handleSortChange = useCallback((sort: SortMode) => {
-    setSortMode(sort);
-  }, []);
+  const handleOpenQR = useCallback(() => setQrOpen(true), []);
+  const handleMarkAsViewed = useCallback((id: string) => markAsViewed(id), [markAsViewed]);
 
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === '/') {
-        const input = document.querySelector('.header-search-input') as HTMLInputElement;
-        if (input && document.activeElement !== input) {
-          e.preventDefault();
-          input.focus();
-        }
+        const input = document.querySelector('.header-search input') as HTMLInputElement;
+        if (input && document.activeElement !== input) { e.preventDefault(); input.focus(); }
       }
-      if (e.key === 'Escape') {
-        setQrOpen(false);
-        closeFilters();
-      }
+      if (e.key === 'Escape') { setQrOpen(false); closeFilters(); }
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [closeFilters]);
 
   const isLoaded = !isLoading && !error;
+  const formatTime = getRelativeTime(lastUpdated);
+  const totalSavings = formatCurrency(savings);
 
   return (
     <>
-      <div className="bg-overlay" />
-      <div className="gradient-orb orb-1" />
-      <div className="gradient-orb orb-2" />
+      <div className="bg-glow" />
 
       <Header
         searchTerm={searchTerm}
-        gamesCount={visibleGamesCount}
-        totalSavings={formatCurrency(savings)}
-        lastUpdated={getRelativeTime(lastUpdated)}
-        favoritesCount={favorites.length}
         onSearchChange={setSearchTerm}
         onClearSearch={handleClearSearch}
         onOpenQR={handleOpenQR}
       />
 
-      {/* Sort bar / quick actions */}
-      <div className="sort-bar">
-        <div className="sort-bar-inner">
-          <button
-            className={`sort-chip ${sortMode === 'default' ? 'active' : ''}`}
-            onClick={() => handleSortChange('default')}
-          >
-            📅 Recientes
+      {/* Unified Top Bar: stats + sort */}
+      <div className="top-bar">
+        <div className="top-bar-inner">
+          <div className="top-stat">
+            🎮 <strong>{visibleGamesCount}</strong> juegos
+          </div>
+          <div className="top-stat">
+            💰 <strong>{totalSavings}</strong>
+          </div>
+          <div className="top-stat">
+            ❤️ <strong>{favorites.length}</strong>
+          </div>
+          <div className="top-stat">
+            ⏰ {formatTime}
+          </div>
+
+          <div className="top-divider" />
+
+          <button className={`sort-chip ${sortMode === 'default' ? 'active' : ''}`} onClick={() => setSortMode('default')}>
+            Recientes
           </button>
-          <button
-            className={`sort-chip ${sortMode === 'price-desc' ? 'active' : ''}`}
-            onClick={() => handleSortChange('price-desc')}
-          >
-            💰 Precio
+          <button className={`sort-chip ${sortMode === 'price-desc' ? 'active' : ''}`} onClick={() => setSortMode('price-desc')}>
+            Precio
           </button>
-          <button
-            className={`sort-chip ${sortMode === 'ending-soon' ? 'active' : ''}`}
-            onClick={() => handleSortChange('ending-soon')}
-          >
-            ⏳ Por terminar
+          <button className={`sort-chip ${sortMode === 'ending-soon' ? 'active' : ''}`} onClick={() => setSortMode('ending-soon')}>
+            Por terminar
           </button>
-          <button
-            className={`sort-chip ${sortMode === 'title' ? 'active' : ''}`}
-            onClick={() => handleSortChange('title')}
-          >
-            🔤 A-Z
+          <button className={`sort-chip ${sortMode === 'title' ? 'active' : ''}`} onClick={() => setSortMode('title')}>
+            A-Z
           </button>
-          <button
-            className={`sort-chip ${activeGenre !== 'all' ? 'active' : ''}`}
-            onClick={toggleFilters}
-          >
+          <button className={`sort-chip ${activeGenre !== 'all' ? 'active' : ''}`} onClick={toggleFilters}>
             🏷️ Género
           </button>
         </div>
@@ -231,10 +186,10 @@ export default function App() {
         )}
 
         {error && (
-          <div className="error-state empty-state">
+          <div className="empty-state">
             <div className="empty-icon">😕</div>
             <h3>Algo salió mal</h3>
-            <p>{error}. Intenta recargar la página.</p>
+            <p>{error}. Intenta recargar.</p>
             <button className="btn-primary" onClick={loadGames}>🔄 Reintentar</button>
           </div>
         )}
@@ -273,9 +228,9 @@ export default function App() {
         <p>Escanea para abrir en tu móvil</p>
         <img
           src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}`}
-          alt="QR Code"
-          width={160}
-          height={160}
+          alt="QR"
+          width={150}
+          height={150}
         />
       </Modal>
     </>
