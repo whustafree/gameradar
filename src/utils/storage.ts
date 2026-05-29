@@ -1,4 +1,4 @@
-import { Theme, ViewMode, Language, Vote, WishlistStatus, UserStats } from '../types';
+import { Theme, ViewMode, Language, Vote, WishlistStatus, UserStats, AccentColor, EmojiReaction, GameReactions, UserCollection, ActivityEntry, Achievement, AchievementId, OnboardingStep } from '../types';
 
 const KEYS = {
   HIDDEN: 'fgh_hiddenGames_v3',
@@ -6,151 +6,145 @@ const KEYS = {
   VIEWED: 'fgh_viewedGames_v3',
   WISHLIST: 'fgh_wishlist_v1',
   VOTES: 'fgh_votes_v1',
+  REACTIONS: 'fgh_reactions_v1',
   THEME: 'fgh_theme_v1',
+  ACCENT: 'fgh_accent_v1',
   VIEW_MODE: 'fgh_viewMode_v1',
   LANGUAGE: 'fgh_language_v1',
   LAST_VISIT: 'fgh_lastVisit_v1',
   NEW_IDS: 'fgh_newGameIds_v1',
   STATS: 'fgh_userStats_v1',
+  COLLECTIONS: 'fgh_collections_v1',
+  ACTIVITY: 'fgh_activity_v1',
+  ACHIEVEMENTS: 'fgh_achievements_v1',
+  ONBOARDING: 'fgh_onboarding_v1',
+  MULTISELECT: 'fgh_multiSelect_v1',
 };
 
 // --- Generic ---
 export function loadArray(key: string): string[] {
-  try {
-    return JSON.parse(localStorage.getItem(key) || '[]');
-  } catch {
-    return [];
-  }
+  try { return JSON.parse(localStorage.getItem(key) || '[]'); }
+  catch { return []; }
 }
-
 export function saveArray(key: string, arr: string[]): void {
   localStorage.setItem(key, JSON.stringify(arr));
 }
-
 export function loadObject<T>(key: string): Record<string, T> {
-  try {
-    return JSON.parse(localStorage.getItem(key) || '{}');
-  } catch {
-    return {};
-  }
+  try { return JSON.parse(localStorage.getItem(key) || '{}'); }
+  catch { return {} as Record<string, T>; }
 }
-
 export function saveObject<T>(key: string, obj: Record<string, T>): void {
   localStorage.setItem(key, JSON.stringify(obj));
 }
 
-// --- Hidden Games ---
-export function loadHiddenGames(): string[] {
-  return loadArray(KEYS.HIDDEN);
-}
-
-export function saveHiddenGames(games: string[]): void {
-  saveArray(KEYS.HIDDEN, games);
-}
+// --- Hidden ---
+export function loadHiddenGames(): string[] { return loadArray(KEYS.HIDDEN); }
+export function saveHiddenGames(games: string[]): void { saveArray(KEYS.HIDDEN, games); }
 
 // --- Favorites ---
-export function loadFavorites(): string[] {
-  return loadArray(KEYS.FAVORITES);
-}
+export function loadFavorites(): string[] { return loadArray(KEYS.FAVORITES); }
+export function saveFavorites(games: string[]): void { saveArray(KEYS.FAVORITES, games); }
 
-export function saveFavorites(games: string[]): void {
-  saveArray(KEYS.FAVORITES, games);
-}
+// --- Viewed ---
+export function loadViewedGames(): string[] { return loadArray(KEYS.VIEWED); }
+export function saveViewedGames(games: string[]): void { saveArray(KEYS.VIEWED, games); }
 
-// --- Viewed Games ---
-export function loadViewedGames(): string[] {
-  return loadArray(KEYS.VIEWED);
-}
-
-export function saveViewedGames(games: string[]): void {
-  saveArray(KEYS.VIEWED, games);
-}
-
-// --- Wishlist (claimed status per game) ---
-export function loadWishlist(): Record<string, WishlistStatus> {
-  return loadObject<WishlistStatus>(KEYS.WISHLIST);
-}
-
-export function saveWishlist(wl: Record<string, WishlistStatus>): void {
-  saveObject(KEYS.WISHLIST, wl);
-}
+// --- Wishlist ---
+export function loadWishlist(): Record<string, WishlistStatus> { return loadObject<WishlistStatus>(KEYS.WISHLIST); }
+export function saveWishlist(wl: Record<string, WishlistStatus>): void { saveObject(KEYS.WISHLIST, wl); }
 
 // --- Votes ---
-export function loadVotes(): Record<string, Vote> {
-  return loadObject<Vote>(KEYS.VOTES);
-}
+export function loadVotes(): Record<string, Vote> { return loadObject<Vote>(KEYS.VOTES); }
+export function saveVotes(votes: Record<string, Vote>): void { saveObject(KEYS.VOTES, votes); }
 
-export function saveVotes(votes: Record<string, Vote>): void {
-  saveObject(KEYS.VOTES, votes);
-}
+// --- Reactions ---
+export function loadReactions(): Record<string, GameReactions> { return loadObject<GameReactions>(KEYS.REACTIONS); }
+export function saveReactions(r: Record<string, GameReactions>): void { saveObject(KEYS.REACTIONS, r); }
 
 // --- Theme ---
 export function loadTheme(): Theme {
   return (localStorage.getItem(KEYS.THEME) as Theme) || 'dark';
 }
+export function saveTheme(theme: Theme): void { localStorage.setItem(KEYS.THEME, theme); }
 
-export function saveTheme(theme: Theme): void {
-  localStorage.setItem(KEYS.THEME, theme);
+// --- Accent Color ---
+export function loadAccentColor(): AccentColor {
+  return (localStorage.getItem(KEYS.ACCENT) as AccentColor) || 'red';
 }
+export function saveAccentColor(c: AccentColor): void { localStorage.setItem(KEYS.ACCENT, c); }
 
 // --- View Mode ---
 export function loadViewMode(): ViewMode {
   return (localStorage.getItem(KEYS.VIEW_MODE) as ViewMode) || 'grid';
 }
-
-export function saveViewMode(mode: ViewMode): void {
-  localStorage.setItem(KEYS.VIEW_MODE, mode);
-}
+export function saveViewMode(mode: ViewMode): void { localStorage.setItem(KEYS.VIEW_MODE, mode); }
 
 // --- Language ---
 export function loadLanguage(): Language {
-  // Detect browser lang on first visit
   const stored = localStorage.getItem(KEYS.LANGUAGE) as Language | null;
   if (stored) return stored;
   const browserLang = navigator.language?.startsWith('es') ? 'es' : 'en';
   localStorage.setItem(KEYS.LANGUAGE, browserLang);
   return browserLang;
 }
+export function saveLanguage(lang: Language): void { localStorage.setItem(KEYS.LANGUAGE, lang); }
 
-export function saveLanguage(lang: Language): void {
-  localStorage.setItem(KEYS.LANGUAGE, lang);
-}
+// --- Last Visit ---
+export function loadLastVisit(): string | null { return localStorage.getItem(KEYS.LAST_VISIT); }
+export function saveLastVisit(ts: string): void { localStorage.setItem(KEYS.LAST_VISIT, ts); }
 
-// --- Last Visit Timestamp (for new game detection) ---
-export function loadLastVisit(): string | null {
-  return localStorage.getItem(KEYS.LAST_VISIT);
-}
-
-export function saveLastVisit(ts: string): void {
-  localStorage.setItem(KEYS.LAST_VISIT, ts);
-}
-
-// --- New Game IDs (set by API comparison) ---
-export function loadNewGameIds(): string[] {
-  return loadArray(KEYS.NEW_IDS);
-}
-
-export function saveNewGameIds(ids: string[]): void {
-  saveArray(KEYS.NEW_IDS, ids);
-}
+// --- New Game IDs ---
+export function loadNewGameIds(): string[] { return loadArray(KEYS.NEW_IDS); }
+export function saveNewGameIds(ids: string[]): void { saveArray(KEYS.NEW_IDS, ids); }
 
 // --- User Stats ---
 export function loadUserStats(): UserStats {
   const defaults: UserStats = {
-    totalClaimed: 0,
-    totalSavings: 0,
-    totalGamesSeen: 0,
-    favoriteCount: 0,
-    votesMade: 0,
+    totalClaimed: 0, totalSavings: 0, totalGamesSeen: 0,
+    favoriteCount: 0, votesMade: 0, reactionsMade: 0,
+    gamesPerPlatform: {},
     sessionStart: new Date().toISOString(),
   };
-  try {
-    return { ...defaults, ...JSON.parse(localStorage.getItem(KEYS.STATS) || '{}') };
-  } catch {
-    return defaults;
-  }
+  try { return { ...defaults, ...JSON.parse(localStorage.getItem(KEYS.STATS) || '{}') }; }
+  catch { return defaults; }
+}
+export function saveUserStats(stats: UserStats): void { localStorage.setItem(KEYS.STATS, JSON.stringify(stats)); }
+
+// --- Collections ---
+export function loadCollections(): UserCollection[] {
+  try { return JSON.parse(localStorage.getItem(KEYS.COLLECTIONS) || '[]'); }
+  catch { return []; }
+}
+export function saveCollections(col: UserCollection[]): void {
+  localStorage.setItem(KEYS.COLLECTIONS, JSON.stringify(col));
 }
 
-export function saveUserStats(stats: UserStats): void {
-  localStorage.setItem(KEYS.STATS, JSON.stringify(stats));
+// --- Activity Log ---
+export function loadActivityLog(): ActivityEntry[] {
+  try { return JSON.parse(localStorage.getItem(KEYS.ACTIVITY) || '[]'); }
+  catch { return []; }
 }
+export function saveActivityLog(log: ActivityEntry[]): void {
+  localStorage.setItem(KEYS.ACTIVITY, JSON.stringify(log));
+}
+
+// --- Achievements ---
+export function loadAchievements(): Achievement[] {
+  try { return JSON.parse(localStorage.getItem(KEYS.ACHIEVEMENTS) || '[]'); }
+  catch { return []; }
+}
+export function saveAchievements(a: Achievement[]): void {
+  localStorage.setItem(KEYS.ACHIEVEMENTS, JSON.stringify(a));
+}
+
+// --- Onboarding ---
+export function loadOnboardingStep(): OnboardingStep {
+  return (localStorage.getItem(KEYS.ONBOARDING) as OnboardingStep) || 'welcome';
+}
+export function saveOnboardingStep(s: OnboardingStep): void {
+  localStorage.setItem(KEYS.ONBOARDING, s);
+}
+
+// --- Multi Select ---
+export function loadMultiSelectIds(): string[] { return loadArray(KEYS.MULTISELECT); }
+export function saveMultiSelectIds(ids: string[]): void { saveArray(KEYS.MULTISELECT, ids); }

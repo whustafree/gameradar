@@ -1,17 +1,40 @@
-import { Language } from '../types';
+import { useState, useRef, useEffect } from 'react';
+import { Language, Game } from '../types';
 import { t } from '../i18n';
 
 interface HeaderProps {
   searchTerm: string;
   language: Language;
+  games?: Game[];
   onSearchChange: (value: string) => void;
   onClearSearch: () => void;
   onToggleLang: () => void;
 }
 
 export default function Header({
-  searchTerm, language, onSearchChange, onClearSearch, onToggleLang
+  searchTerm, language, games = [], onSearchChange, onClearSearch, onToggleLang
 }: HeaderProps) {
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+
+  const suggestions = searchTerm.length >= 2
+    ? games
+        .filter(g => g.title.toLowerCase().includes(searchTerm.toLowerCase()))
+        .slice(0, 5)
+    : [];
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node) &&
+          inputRef.current && !inputRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
   return (
     <header className="app-header">
       <div className="header-inner">
@@ -23,14 +46,44 @@ export default function Header({
         <div className="header-search">
           <span className="header-search-icon">🔍</span>
           <input
+            ref={inputRef}
             type="text"
             placeholder={t('searchPlaceholder', language)}
             value={searchTerm}
-            onChange={e => onSearchChange(e.target.value)}
+            onChange={e => {
+              onSearchChange(e.target.value);
+              if (e.target.value.length >= 2) setShowSuggestions(true);
+            }}
+            onFocus={() => { if (searchTerm.length >= 2) setShowSuggestions(true); }}
             autoComplete="off"
           />
           {searchTerm && (
-            <button className="header-search-clear" onClick={onClearSearch}>✕</button>
+            <button className="header-search-clear" onClick={() => { onClearSearch(); setShowSuggestions(false); }}>✕</button>
+          )}
+
+          {/* Search suggestions */}
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="search-suggestions" ref={suggestionsRef}>
+              {suggestions.map(g => (
+                <div
+                  key={g.id}
+                  className="search-suggestion-item"
+                  onClick={() => {
+                    onSearchChange(g.title);
+                    setShowSuggestions(false);
+                    // Focus the game? Scroll to it
+                    const card = document.querySelector(`[data-id="${g.id}"]`);
+                    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }}
+                >
+                  <img src={g.image} alt="" className="search-suggestion-icon"
+                    onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
+                  <span className="search-suggestion-text">{g.title}</span>
+                  <span className="search-suggestion-type">{g.platformName || g.platform}</span>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 

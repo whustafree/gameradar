@@ -8,12 +8,15 @@ interface BottomNavProps {
   isFilterOpen: boolean;
   showFavoritesOnly: boolean;
   language: Language;
+  multiSelectActive?: boolean;
   onModeChange: (mode: Mode) => void;
   onToggleFilters: () => void;
   onToggleFavorites: () => void;
   onResetFilters: () => void;
   onToggleViewMode: () => void;
   onOpenStats: () => void;
+  onOpenSettings?: () => void;
+  onToggleMultiSelect?: () => void;
 }
 
 const MODES: { mode: Mode; icon: string; labelKey: 'navPC' | 'navAndroid' | 'navConsole' | 'navIos' }[] = [
@@ -25,7 +28,9 @@ const MODES: { mode: Mode; icon: string; labelKey: 'navPC' | 'navAndroid' | 'nav
 
 export default function BottomNav({
   currentMode, viewMode, favoritesCount, isFilterOpen, showFavoritesOnly, language,
-  onModeChange, onToggleFilters, onToggleFavorites, onResetFilters, onToggleViewMode, onOpenStats
+  multiSelectActive,
+  onModeChange, onToggleFilters, onToggleFavorites, onResetFilters, onToggleViewMode, onOpenStats,
+  onOpenSettings, onToggleMultiSelect
 }: BottomNavProps) {
   return (
     <nav className="bottom-nav">
@@ -71,9 +76,19 @@ export default function BottomNav({
         <span className="nav-btn-label">{viewMode === 'grid' ? t('navList', language) : t('navGrid', language)}</span>
       </button>
 
+      <button className={`nav-btn ${multiSelectActive ? 'active' : ''}`} onClick={() => { if (onToggleMultiSelect) onToggleMultiSelect(); }} title={t('multiSelect', language)}>
+        <span className="nav-btn-icon">{multiSelectActive ? '✅' : '☑️'}</span>
+        <span className="nav-btn-label">{t('multiSelect', language)}</span>
+      </button>
+
       <button className="nav-btn" onClick={onOpenStats} title={t('myStats', language)}>
         <span className="nav-btn-icon">📊</span>
         <span className="nav-btn-label">{t('navStats', language)}</span>
+      </button>
+
+      <button className="nav-btn" onClick={() => { if (onOpenSettings) onOpenSettings(); }} title={t('theme', language)}>
+        <span className="nav-btn-icon">⚙️</span>
+        <span className="nav-btn-label">{t('theme', language)}</span>
       </button>
 
       <button className="nav-btn" onClick={onResetFilters} title={t('navReset', language)}>

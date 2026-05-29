@@ -12,15 +12,20 @@ interface GameCardProps {
   votes: Record<string, Vote>;
   viewMode: ViewMode;
   language: Language;
+  multiSelectActive?: boolean;
+  isMultiSelected?: boolean;
   onToggleFavorite: (id: string) => void;
   onHideGame: (id: string) => void;
   onMarkAsViewed: (id: string) => void;
   onOpenDetail: (game: Game) => void;
+  onToggleMultiSelectGame?: (id: string) => void;
 }
 
 export default function GameCard({
   game, index, isFavorite, isViewed, isNew, votes, viewMode, language,
-  onToggleFavorite, onHideGame, onMarkAsViewed, onOpenDetail
+  multiSelectActive, isMultiSelected,
+  onToggleFavorite, onHideGame, onMarkAsViewed, onOpenDetail,
+  onToggleMultiSelectGame
 }: GameCardProps) {
   const timeInfo = getTimeInfo(game.endDate, game.type);
   const ytLink = `https://www.youtube.com/results?search_query=${encodeURIComponent(game.title + ' gameplay')}`;
@@ -91,6 +96,10 @@ export default function GameCard({
   };
 
   const handleClick = () => {
+    if (multiSelectActive) {
+      if (onToggleMultiSelectGame) onToggleMultiSelectGame(game.id);
+      return;
+    }
     onOpenDetail(game);
     onMarkAsViewed(game.id);
   };
@@ -100,7 +109,7 @@ export default function GameCard({
   return (
     <article
       ref={cardRef}
-      className={`game-card ${isViewed ? 'viewed' : ''} ${isNew ? 'new-game' : ''} ${isListView ? 'list-view' : ''}`}
+      className={`game-card ${isViewed ? 'viewed' : ''} ${isNew ? 'new-game' : ''} ${isListView ? 'list-view' : ''} ${isMultiSelected ? 'multi-selected' : ''}`}
       data-id={game.id}
       style={{
         animationDelay: `${index * 0.04}s`,
@@ -128,6 +137,13 @@ export default function GameCard({
         />
         <div className="card-img-badges">
           {isNew && <span className="card-img-badge new-badge">{t('newBadge', language)}</span>}
+          {/* Free-to-keep vs Free-to-play badge */}
+          {game.type?.toLowerCase().includes('game') && (
+            <span className="card-img-badge free-to-keep">{t('freeToKeep', language)}</span>
+          )}
+          {game.type && !game.type.toLowerCase().includes('game') && (
+            <span className="card-img-badge free-to-play">{t('freeToPlay', language)}</span>
+          )}
           <span className="card-img-badge platform">{platformIcon} {game.platformName || game.platform}</span>
           {worth}
         </div>

@@ -10,10 +10,13 @@ interface GameGridProps {
   votes: Record<string, Vote>;
   viewMode: ViewMode;
   language: Language;
+  multiSelectActive?: boolean;
+  multiSelectedIds?: string[];
   onToggleFavorite: (id: string) => void;
   onHideGame: (id: string) => void;
   onMarkAsViewed: (id: string) => void;
   onOpenDetail: (game: Game) => void;
+  onToggleMultiSelectGame?: (id: string) => void;
 }
 
 // Platform display info
@@ -74,7 +77,9 @@ function groupByPlatform(games: Game[]): GroupedGames[] {
 
 export default function GameGrid({
   games, favorites, viewedGames, newGameIds, votes, viewMode, language,
-  onToggleFavorite, onHideGame, onMarkAsViewed, onOpenDetail
+  multiSelectActive, multiSelectedIds,
+  onToggleFavorite, onHideGame, onMarkAsViewed, onOpenDetail,
+  onToggleMultiSelectGame
 }: GameGridProps) {
   const groupedGames = useMemo(() => groupByPlatform(games), [games]);
 
@@ -101,10 +106,13 @@ export default function GameGrid({
                 votes={votes}
                 viewMode={viewMode}
                 language={language}
+                multiSelectActive={multiSelectActive}
+                isMultiSelected={multiSelectedIds?.includes(game.id)}
                 onToggleFavorite={onToggleFavorite}
                 onHideGame={onHideGame}
                 onMarkAsViewed={onMarkAsViewed}
                 onOpenDetail={onOpenDetail}
+                onToggleMultiSelectGame={onToggleMultiSelectGame}
               />
             ))}
           </div>
