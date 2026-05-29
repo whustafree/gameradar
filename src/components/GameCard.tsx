@@ -24,7 +24,7 @@ export default function GameCard({
 }: GameCardProps) {
   const timeInfo = getTimeInfo(game.endDate, game.type);
   const ytLink = `https://www.youtube.com/results?search_query=${encodeURIComponent(game.title + ' gameplay')}`;
-  const sourceBadge = game.source === 'epic' ? '🎯' : game.source === 'gamerpower' ? '🎮' : game.source === 'reddit' ? '📱' : '🎯';
+  const platformIcon = game.platformIcon || (game.source === 'epic' ? '🎯' : game.source === 'gamerpower' ? '🎮' : game.source === 'reddit' ? '📱' : '🎯');
   const gameVotes = votes[game.id];
   const totalVotes = gameVotes ? gameVotes.up + gameVotes.down : 0;
 
@@ -128,7 +128,7 @@ export default function GameCard({
         />
         <div className="card-img-badges">
           {isNew && <span className="card-img-badge new-badge">{t('newBadge', language)}</span>}
-          <span className="card-img-badge platform">{sourceBadge} {game.platformName || game.platform}</span>
+          <span className="card-img-badge platform">{platformIcon} {game.platformName || game.platform}</span>
           {worth}
         </div>
 

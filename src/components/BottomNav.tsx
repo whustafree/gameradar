@@ -16,29 +16,30 @@ interface BottomNavProps {
   onOpenStats: () => void;
 }
 
+const MODES: { mode: Mode; icon: string; labelKey: 'navPC' | 'navAndroid' | 'navConsole' | 'navIos' }[] = [
+  { mode: 'pc', icon: '🖥️', labelKey: 'navPC' },
+  { mode: 'android', icon: '📱', labelKey: 'navAndroid' },
+  { mode: 'console', icon: '🎮', labelKey: 'navConsole' },
+  { mode: 'ios', icon: '🍎', labelKey: 'navIos' },
+];
+
 export default function BottomNav({
   currentMode, viewMode, favoritesCount, isFilterOpen, showFavoritesOnly, language,
   onModeChange, onToggleFilters, onToggleFavorites, onResetFilters, onToggleViewMode, onOpenStats
 }: BottomNavProps) {
   return (
     <nav className="bottom-nav">
-      <button
-        className={`nav-btn ${currentMode === 'pc' ? 'active' : ''}`}
-        onClick={() => onModeChange('pc')}
-        title={t('navPC', language)}
-      >
-        <span className="nav-btn-icon">🖥️</span>
-        <span className="nav-btn-label">{t('navPC', language)}</span>
-      </button>
-
-      <button
-        className={`nav-btn ${currentMode === 'android' ? 'active' : ''}`}
-        onClick={() => onModeChange('android')}
-        title={t('navAndroid', language)}
-      >
-        <span className="nav-btn-icon">📱</span>
-        <span className="nav-btn-label">{t('navAndroid', language)}</span>
-      </button>
+      {MODES.map(({ mode, icon, labelKey }) => (
+        <button
+          key={mode}
+          className={`nav-btn ${currentMode === mode ? 'active' : ''}`}
+          onClick={() => onModeChange(mode)}
+          title={t(labelKey, language)}
+        >
+          <span className="nav-btn-icon">{icon}</span>
+          <span className="nav-btn-label">{t(labelKey, language)}</span>
+        </button>
+      ))}
 
       <button
         className={`nav-btn ${isFilterOpen ? 'active' : ''}`}

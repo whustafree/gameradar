@@ -7,12 +7,14 @@ export interface Game {
   url: string;
   platform: string;
   platformName: string;
+  platformIcon?: string;
   endDate?: string;
   type: string;
   category: string;
   source: string;
   status?: string;
   instructions?: string;
+  genre?: string;
 }
 
 export interface GamesResponse {
@@ -41,7 +43,7 @@ export interface StatsResponse {
 }
 
 // --- Modes & Filters ---
-export type Mode = 'pc' | 'android';
+export type Mode = 'pc' | 'android' | 'console' | 'ios';
 export type Theme = 'dark';
 export type SortMode = 'default' | 'price-desc' | 'ending-soon' | 'title' | 'popular';
 export type Genre = 'all' | 'action' | 'rpg' | 'indie' | 'shooter' | 'strategy' | 'puzzle' | 'racing' | 'sports';

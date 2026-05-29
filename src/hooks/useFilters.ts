@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Game, Mode, SortMode, Genre, TypeFilter, StoreFilter } from '../types';
 import { GENRE_KEYWORDS } from '../utils/format';
 

@@ -104,6 +104,8 @@ export const translations = {
     // Bottom nav
     navPC: 'PC',
     navAndroid: 'Android',
+    navConsole: 'Consolas',
+    navIos: 'iOS',
     navFilters: 'Filtros',
     navFav: 'Fav',
     navReset: 'Reset',
@@ -113,6 +115,25 @@ export const translations = {
 
     // Footer
     footerText: 'Hecho con ❤️ para gamers',
+
+    // Platform names
+    platformSteam: 'Steam',
+    platformEpic: 'Epic Games',
+    platformGog: 'GOG',
+    platformItch: 'Itch.io',
+    platformBattlenet: 'Battle.net',
+    platformOrigin: 'Origin',
+    platformDrm: 'DRM-Free',
+    platformPs4: 'PlayStation 4',
+    platformPs5: 'PlayStation 5',
+    platformXbox: 'Xbox One',
+    platformXboxSeries: 'Xbox Series X|S',
+    platformXbox360: 'Xbox 360',
+    platformNintendo: 'Nintendo Switch',
+    platformAndroid: 'Play Store',
+    platformIos: 'App Store',
+    platformVr: 'VR',
+    platformPc: 'PC',
   },
 
   en: {
@@ -208,6 +229,8 @@ export const translations = {
 
     navPC: 'PC',
     navAndroid: 'Android',
+    navConsole: 'Consoles',
+    navIos: 'iOS',
     navFilters: 'Filters',
     navFav: 'Fav',
     navReset: 'Reset',
@@ -216,6 +239,24 @@ export const translations = {
     navGrid: 'Grid',
 
     footerText: 'Made with ❤️ for gamers',
+
+    platformSteam: 'Steam',
+    platformEpic: 'Epic Games',
+    platformGog: 'GOG',
+    platformItch: 'Itch.io',
+    platformBattlenet: 'Battle.net',
+    platformOrigin: 'Origin',
+    platformDrm: 'DRM-Free',
+    platformPs4: 'PlayStation 4',
+    platformPs5: 'PlayStation 5',
+    platformXbox: 'Xbox One',
+    platformXboxSeries: 'Xbox Series X|S',
+    platformXbox360: 'Xbox 360',
+    platformNintendo: 'Nintendo Switch',
+    platformAndroid: 'Play Store',
+    platformIos: 'App Store',
+    platformVr: 'VR',
+    platformPc: 'PC',
   },
 };
 

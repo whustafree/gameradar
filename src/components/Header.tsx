@@ -6,12 +6,11 @@ interface HeaderProps {
   language: Language;
   onSearchChange: (value: string) => void;
   onClearSearch: () => void;
-  onOpenQR: () => void;
   onToggleLang: () => void;
 }
 
 export default function Header({
-  searchTerm, language, onSearchChange, onClearSearch, onOpenQR, onToggleLang
+  searchTerm, language, onSearchChange, onClearSearch, onToggleLang
 }: HeaderProps) {
   return (
     <header className="app-header">
@@ -38,9 +37,6 @@ export default function Header({
         <div className="header-actions">
           <button className="header-action lang-btn" onClick={onToggleLang} title={language === 'es' ? 'English' : 'Español'}>
             {language === 'es' ? 'EN' : 'ES'}
-          </button>
-          <button className="header-action" onClick={onOpenQR} title={t('shareTitle', language)}>
-            📱
           </button>
         </div>
       </div>

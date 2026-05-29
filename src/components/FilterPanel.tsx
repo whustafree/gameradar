@@ -72,9 +72,12 @@ export default function FilterPanel({
           <div className="filter-group">
             <span className="filter-label">{t('platformFilter', language)}</span>
             <div className="filter-chips">
-              {(['pc', 'android'] as Mode[]).map(mode => (
+              {(['pc', 'android', 'console', 'ios'] as Mode[]).map(mode => (
                 <button key={mode} className={`filter-chip ${currentMode === mode ? 'active' : ''}`} onClick={() => onModeChange(mode)}>
-                  {mode === 'pc' ? `🖥️ ${t('navPC', language)}` : `📱 ${t('navAndroid', language)}`}
+                  {mode === 'pc' ? `🖥️ ${t('navPC', language)}` :
+                   mode === 'android' ? `📱 ${t('navAndroid', language)}` :
+                   mode === 'console' ? `🎮 ${t('navConsole', language)}` :
+                   `🍎 ${t('navIos', language)}`}
                 </button>
               ))}
             </div>

@@ -12,7 +12,6 @@ import SkeletonGrid from './components/SkeletonGrid';
 import EmptyState from './components/EmptyState';
 import Footer from './components/Footer';
 import ToastContainer, { showToast } from './components/Toast';
-import Modal from './components/Modal';
 import BottomNav from './components/BottomNav';
 import GameDetail from './components/GameDetail';
 import StatsPanel from './components/StatsPanel';
@@ -38,7 +37,6 @@ export default function App() {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [showHiddenOnly, setShowHiddenOnly] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [qrOpen, setQrOpen] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
   // New features state
@@ -103,7 +101,6 @@ export default function App() {
     if (!isLoading && !error && games.length > 0) {
       const now = new Date().toISOString();
       if (lastVisit) {
-        // Compare game IDs with last visit
         const knownIds = loadNewGameIds();
         const currentIds = games.map(g => g.id);
         const trulyNew = currentIds.filter(id => !knownIds.includes(id));
@@ -112,7 +109,6 @@ export default function App() {
           saveNewGameIds([...new Set([...knownIds, ...trulyNew])]);
         }
       } else {
-        // First visit: save IDs as known
         const ids = games.map(g => g.id);
         setNewGameIds([]);
         saveNewGameIds(ids);
@@ -256,7 +252,6 @@ export default function App() {
     showToast(t('filtersReset', language), 'info');
   }, [closeFilters, language]);
 
-  const handleOpenQR = useCallback(() => setQrOpen(true), []);
   const handleMarkAsViewed = useCallback((id: string) => markAsViewed(id), [markAsViewed]);
 
   const handleToggleViewMode = useCallback(() => {
@@ -281,10 +276,8 @@ export default function App() {
     setVotes(prev => {
       const current = prev[gameId] || { up: 0, down: 0, userVote: null };
       if (current.userVote === type) {
-        // Remove vote
         return { ...prev, [gameId]: { ...current, [type]: Math.max(0, current[type] - 1), userVote: null } };
       }
-      // Switch or add vote
       const up = type === 'up' ? current.up + 1 : (current.userVote === 'up' ? Math.max(0, current.up - 1) : current.up);
       const down = type === 'down' ? current.down + 1 : (current.userVote === 'down' ? Math.max(0, current.down - 1) : current.down);
       return { ...prev, [gameId]: { up, down, userVote: type } };
@@ -333,7 +326,6 @@ export default function App() {
         if (input && document.activeElement !== input) { e.preventDefault(); input.focus(); }
       }
       if (e.key === 'Escape') {
-        setQrOpen(false);
         closeFilters();
         setSelectedGame(null);
         setShowStats(false);
@@ -365,7 +357,6 @@ export default function App() {
         language={language}
         onSearchChange={setSearchTerm}
         onClearSearch={handleClearSearch}
-        onOpenQR={handleOpenQR}
         onToggleLang={handleToggleLang}
       />
 
@@ -535,17 +526,6 @@ export default function App() {
           onClose={handleCloseStats}
         />
       )}
-
-      {/* QR Modal */}
-      <Modal isOpen={qrOpen} onClose={() => setQrOpen(false)} title={`📱 ${t('shareTitle', language)}`}>
-        <p>{language === 'es' ? 'Escanea para abrir en tu móvil' : 'Scan to open on your phone'}</p>
-        <img
-          src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}`}
-          alt="QR"
-          width={150}
-          height={150}
-        />
-      </Modal>
     </>
   );
 }
