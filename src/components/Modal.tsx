@@ -7,10 +7,13 @@ interface ModalProps {
 
 export default function Modal({ isOpen, onClose, title, children }: ModalProps) {
   return (
-    <div className={`modal ${isOpen ? '' : 'hidden'}`} onClick={onClose}>
+    <div className={`modal-overlay ${isOpen ? '' : 'hidden'}`} onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
         <h3>{title}</h3>
         {children}
+        <div className="modal-actions">
+          <button className="btn-primary" onClick={onClose}>Cerrar</button>
+        </div>
       </div>
     </div>
   );

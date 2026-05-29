@@ -1,4 +1,4 @@
-import { Mode, SortMode, Genre, TypeFilter, StoreFilter, Theme } from '../types';
+import { Mode, SortMode, Genre, TypeFilter, StoreFilter } from '../types';
 
 interface FilterPanelProps {
   currentMode: Mode;
@@ -19,13 +19,14 @@ interface FilterPanelProps {
   onToggleFavorites: () => void;
   onToggleHidden: () => void;
   onResetFilters: () => void;
+  onClose: () => void;
 }
 
 export default function FilterPanel({
   currentMode, sortMode, activeGenre, activeStore, activeType,
   favoritesCount, hiddenCount, showFavoritesOnly, showHiddenOnly, isOpen,
   onModeChange, onSortChange, onGenreChange, onStoreChange, onTypeChange,
-  onToggleFavorites, onToggleHidden, onResetFilters
+  onToggleFavorites, onToggleHidden, onResetFilters, onClose
 }: FilterPanelProps) {
   const genres: { value: Genre; label: string }[] = [
     { value: 'all', label: '🎮 Todo' },
@@ -41,125 +42,142 @@ export default function FilterPanel({
 
   const stores: { value: StoreFilter; label: string }[] = [
     { value: 'all', label: 'Todas' },
-    { value: 'steam', label: '🎮 Steam' },
-    { value: 'epic', label: '🎯 Epic' },
-    { value: 'gog', label: '🎲 GOG' },
-    { value: 'itch', label: '🕹️ Itch.io' },
+    { value: 'steam', label: 'Steam' },
+    { value: 'epic', label: 'Epic' },
+    { value: 'gog', label: 'GOG' },
+    { value: 'itch', label: 'Itch.io' },
+  ];
+
+  const sortOptions: { value: SortMode; label: string }[] = [
+    { value: 'default', label: '📅 Más recientes' },
+    { value: 'price-desc', label: '💰 Mayor precio' },
+    { value: 'ending-soon', label: '⏳ Termina pronto' },
+    { value: 'title', label: '🔤 Alfabético' },
   ];
 
   return (
-    <div className={`filter-panel ${isOpen ? 'open' : ''}`}>
-      <div className="filter-panel-inner">
-        <div className="filter-section">
-          <span className="filter-label">Modo:</span>
-          <div className="mode-switcher">
-            {(['pc', 'android'] as Mode[]).map(mode => (
-              <button
-                key={mode}
-                className={`mode-btn ${currentMode === mode ? 'active' : ''}`}
-                onClick={() => onModeChange(mode)}
-              >
-                <span className="mode-icon">{mode === 'pc' ? '💻' : '📱'}</span>
-                <span className="mode-text">{mode === 'pc' ? 'PC' : 'Android'}</span>
-              </button>
-            ))}
-          </div>
-          <div className="sort-box sort-box-inline">
-            <select value={sortMode} onChange={e => onSortChange(e.target.value as SortMode)}>
-              <option value="default">📅 Recientes</option>
-              <option value="price-desc">💰 Precio</option>
-              <option value="ending-soon">⏳ Por terminar</option>
-              <option value="title">🔤 A-Z</option>
-            </select>
-          </div>
+    <>
+      <div className={`filter-overlay ${isOpen ? 'open' : ''}`} onClick={onClose} />
+      <div className={`filter-sheet ${isOpen ? 'open' : ''}`}>
+        <div className="filter-sheet-handle" />
+        <div className="filter-sheet-header">
+          <h3 className="filter-sheet-title">Filtros</h3>
+          <button className="filter-sheet-close" onClick={onClose}>✕</button>
         </div>
 
-        <div className="filter-section">
-          <span className="filter-label">Orden:</span>
-          <div className="sort-box">
-            <select value={sortMode} onChange={e => onSortChange(e.target.value as SortMode)}>
-              <option value="default">📅 Más recientes</option>
-              <option value="price-desc">💰 Mayor precio</option>
-              <option value="ending-soon">⏳ Termina pronto</option>
-              <option value="title">🔤 Alfabético</option>
-            </select>
+        <div className="filter-sheet-body">
+          {/* Mode */}
+          <div className="filter-group">
+            <span className="filter-group-label">Plataforma</span>
+            <div className="filter-chips">
+              {(['pc', 'android'] as Mode[]).map(mode => (
+                <button
+                  key={mode}
+                  className={`filter-chip ${currentMode === mode ? 'active' : ''}`}
+                  onClick={() => onModeChange(mode)}
+                >
+                  {mode === 'pc' ? '🖥️ PC' : '📱 Android'}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div className="filter-section">
-          <span className="filter-label">Género:</span>
-          <div className="scroll-container">
-            {genres.map(g => (
-              <button
-                key={g.value}
-                className={`chip ${activeGenre === g.value ? 'active' : ''}`}
-                onClick={() => onGenreChange(g.value)}
-              >
-                {g.label}
-              </button>
-            ))}
+          {/* Sort */}
+          <div className="filter-group">
+            <span className="filter-group-label">Ordenar por</span>
+            <div className="filter-chips">
+              {sortOptions.map(opt => (
+                <button
+                  key={opt.value}
+                  className={`filter-chip ${sortMode === opt.value ? 'active' : ''}`}
+                  onClick={() => onSortChange(opt.value)}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div className="filter-section">
-          <span className="filter-label">Tipo:</span>
-          <div className={`scroll-container ${currentMode === 'android' ? 'hidden' : ''}`}>
-            {(['all', 'game', 'dlc'] as TypeFilter[]).map(t => (
-              <button
-                key={t}
-                className={`type-btn ${activeType === t ? 'active' : ''}`}
-                onClick={() => onTypeChange(t)}
-              >
-                {t === 'all' ? 'Todo' : t === 'game' ? '🎮 Juegos' : '📦 DLCs'}
-              </button>
-            ))}
+          {/* Genre */}
+          <div className="filter-group">
+            <span className="filter-group-label">Género</span>
+            <div className="filter-chips">
+              {genres.map(g => (
+                <button
+                  key={g.value}
+                  className={`filter-chip ${activeGenre === g.value ? 'active' : ''}`}
+                  onClick={() => onGenreChange(g.value)}
+                >
+                  {g.label}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className={`scroll-container ${currentMode === 'pc' ? 'hidden' : ''}`}>
-            {(['all', 'game', 'app'] as TypeFilter[]).map(t => (
-              <button
-                key={t}
-                className={`type-btn ${activeType === t ? 'active' : ''}`}
-                onClick={() => onTypeChange(t)}
-              >
-                {t === 'all' ? 'Todo' : t === 'game' ? '🎮 Juegos' : '📱 Apps'}
-              </button>
-            ))}
-          </div>
-        </div>
 
-        <div className={`filter-section ${currentMode === 'android' ? 'hidden' : ''}`}>
-          <span className="filter-label">Tienda:</span>
-          <div className="scroll-container">
-            {stores.map(s => (
-              <button
-                key={s.value}
-                className={`filter-btn ${activeStore === s.value ? 'active' : ''}`}
-                onClick={() => onStoreChange(s.value)}
-              >
-                {s.label}
-              </button>
-            ))}
+          {/* Type */}
+          <div className="filter-group">
+            <span className="filter-group-label">Tipo</span>
+            <div className="filter-chips">
+              {(['all', 'game', 'dlc'] as TypeFilter[]).map(t => (
+                <button
+                  key={t}
+                  className={`filter-chip ${activeType === t ? 'active' : ''}`}
+                  onClick={() => onTypeChange(t)}
+                >
+                  {t === 'all' ? 'Todo' : t === 'game' ? '🎮 Juegos' : '📦 DLCs'}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div className="favorites-bar">
-          <button
-            className={`fav-btn ${showFavoritesOnly ? 'active' : ''}`}
-            onClick={onToggleFavorites}
-          >
-            <span>❤️</span>
-            <span>Mis Favoritos</span>
-            <span className="fav-badge">{favoritesCount}</span>
-          </button>
-          <button className="hidden-btn" onClick={onToggleHidden}>
-            <span>🙈</span>
-            <span className="hidden-badge">{hiddenCount}</span>
-          </button>
-          <button className="hidden-btn" onClick={onResetFilters} title="Limpiar filtros">
-            <span>🔄</span>
-          </button>
+          {/* Store (PC only) */}
+          {currentMode === 'pc' && (
+            <div className="filter-group">
+              <span className="filter-group-label">Tienda</span>
+              <div className="filter-chips">
+                {stores.map(s => (
+                  <button
+                    key={s.value}
+                    className={`filter-chip ${activeStore === s.value ? 'active' : ''}`}
+                    onClick={() => onStoreChange(s.value)}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Special filters */}
+          <div className="filter-group">
+            <span className="filter-group-label">Especiales</span>
+            <div className="filter-chips">
+              <button
+                className={`filter-chip ${showFavoritesOnly ? 'active danger' : ''}`}
+                onClick={onToggleFavorites}
+              >
+                ❤️ Favoritos {favoritesCount > 0 && `(${favoritesCount})`}
+              </button>
+              <button
+                className={`filter-chip ${showHiddenOnly ? 'active' : ''}`}
+                onClick={onToggleHidden}
+              >
+                🙈 Ocultos ({hiddenCount})
+              </button>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="filter-actions">
+            <button className="filter-action-btn secondary" onClick={onResetFilters}>
+              Restablecer
+            </button>
+            <button className="filter-action-btn primary" onClick={onClose}>
+              Aplicar
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

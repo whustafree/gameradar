@@ -66,11 +66,3 @@ export const GENRE_KEYWORDS: Record<string, string[]> = {
   shooter: ['shooter', 'fps', 'call of duty', 'battlefield', 'valorant']
 };
 
-export function getThemeIcon(theme: string): string {
-  const icons: Record<string, string> = {
-    default: '🎨',
-    cyberpunk: '💜',
-    matrix: '💚'
-  };
-  return icons[theme] || '🎨';
-}

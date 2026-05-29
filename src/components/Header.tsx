@@ -1,87 +1,67 @@
-import { Mode, Theme } from '../types';
-import { getThemeIcon } from '../utils/format';
-
 interface HeaderProps {
-  currentMode: Mode;
-  currentTheme: Theme;
+  searchTerm: string;
   gamesCount: number;
   totalSavings: string;
   lastUpdated: string;
-  searchTerm: string;
-  isFilterOpen: boolean;
+  favoritesCount: number;
   onSearchChange: (value: string) => void;
   onClearSearch: () => void;
-  onToggleFilters: () => void;
-  onCycleTheme: () => void;
   onOpenQR: () => void;
-  onRequestNotification: () => void;
 }
 
 export default function Header({
-  currentMode, currentTheme, gamesCount, totalSavings, lastUpdated,
-  searchTerm, isFilterOpen,
-  onSearchChange, onClearSearch, onToggleFilters, onCycleTheme,
-  onOpenQR, onRequestNotification
+  searchTerm, gamesCount, totalSavings, lastUpdated, favoritesCount,
+  onSearchChange, onClearSearch, onOpenQR
 }: HeaderProps) {
   return (
-    <header>
-      <div className="header-content">
-        <div className="top-bar">
-          <div className="logo">
-            <div className="logo-icon">🎮</div>
-            <h1>FreeGameHub</h1>
-            <span className="version">v2.1</span>
-          </div>
-          <div className="top-actions">
-            <button className="icon-header-btn" onClick={onCycleTheme} title="Cambiar Tema">
-              <span>{getThemeIcon(currentTheme)}</span>
-            </button>
-            <button className="icon-header-btn" onClick={onOpenQR} title="Compartir">
-              <span>📱</span>
-            </button>
-            <button className="icon-header-btn" onClick={onRequestNotification} title="Notificaciones">
-              <span id="notif-icon">🔔</span>
-            </button>
-          </div>
+    <header className="app-header">
+      <div className="header-inner">
+        <div className="header-logo">
+          <div className="header-logo-icon">🎮</div>
+          <span className="header-logo-text">FreeGameHub</span>
         </div>
 
-        <div className="stats-banner">
-          <div className="stat-item">
-            <span className="stat-label">💰 Ahorro</span>
-            <span className="stat-value">{totalSavings}</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-label">🎮 Juegos</span>
-            <span className="stat-value">{gamesCount}</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-label">⏰ Actualizado</span>
-            <span className="stat-value">{lastUpdated}</span>
-          </div>
+        <div className="header-search">
+          <span className="header-search-icon">🔍</span>
+          <input
+            type="text"
+            className="header-search-input"
+            placeholder="Buscar juegos..."
+            value={searchTerm}
+            onChange={e => onSearchChange(e.target.value)}
+            autoComplete="off"
+          />
+          {searchTerm && (
+            <button className="header-search-clear" onClick={onClearSearch}>✕</button>
+          )}
         </div>
 
-        <div className="search-row">
-          <div className="search-box">
-            <span className="search-icon">🔍</span>
-            <input
-              type="text"
-              id="search-input"
-              placeholder="Buscar juegos..."
-              value={searchTerm}
-              onChange={e => onSearchChange(e.target.value)}
-              autoComplete="off"
-            />
-            {searchTerm && (
-              <button className="clear-search" onClick={onClearSearch}>✕</button>
-            )}
-          </div>
-          <button
-            className={`filter-toggle ${isFilterOpen ? 'active' : ''}`}
-            onClick={onToggleFilters}
-          >
-            <span>⚙️</span>
-            <span>Filtros</span>
+        <div className="header-actions">
+          <button className="header-btn" onClick={onOpenQR} title="Compartir">
+            <span>📱</span>
           </button>
+        </div>
+      </div>
+
+      <div className="stats-bar">
+        <div className="stat-pill">
+          <span>🎮</span>
+          <span className="stat-pill-value">{gamesCount}</span>
+          <span>juegos</span>
+        </div>
+        <div className="stat-pill">
+          <span>💰</span>
+          <span className="stat-pill-value">{totalSavings}</span>
+          <span>ahorro</span>
+        </div>
+        <div className="stat-pill">
+          <span>❤️</span>
+          <span className="stat-pill-value">{favoritesCount}</span>
+          <span>favoritos</span>
+        </div>
+        <div className="stat-pill">
+          <span>⏰</span>
+          <span className="stat-pill-value">{lastUpdated}</span>
         </div>
       </div>
     </header>

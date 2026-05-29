@@ -12,9 +12,10 @@ import EmptyState from './components/EmptyState';
 import Footer from './components/Footer';
 import ToastContainer, { showToast } from './components/Toast';
 import Modal from './components/Modal';
+import BottomNav from './components/BottomNav';
 
 export default function App() {
-  const { theme, cycleTheme } = useTheme();
+  useTheme();
   const {
     games, favorites, hiddenGames, viewedGames, lastUpdated, isLoading, error,
     loadGames, toggleFavorite, hideGame, markAsViewed
@@ -106,6 +107,7 @@ export default function App() {
     setShowFavoritesOnly(false);
     setShowHiddenOnly(false);
     closeFilters();
+    showToast('Filtros restablecidos ✅', 'info');
   }, [closeFilters]);
 
   const handleOpenQR = useCallback(() => {
@@ -116,29 +118,16 @@ export default function App() {
     markAsViewed(id);
   }, [markAsViewed]);
 
-  const handleRequestNotification = useCallback(() => {
-    if (!('Notification' in window)) {
-      showToast('Tu navegador no soporta notificaciones', 'error');
-      return;
-    }
-    Notification.requestPermission().then(permission => {
-      if (permission === 'granted') {
-        showToast('Notificaciones activadas 🔔', 'success');
-        new Notification('FreeGameHub', {
-          body: '¡Recibirás alertas de nuevos juegos gratuitos!',
-          icon: '/manifest.json'
-        });
-      } else {
-        showToast('Notificaciones desactivadas', 'info');
-      }
-    });
+  // Handle sort from inline sort bar
+  const handleSortChange = useCallback((sort: SortMode) => {
+    setSortMode(sort);
   }, []);
 
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === '/') {
-        const input = document.getElementById('search-input');
+        const input = document.querySelector('.header-search-input') as HTMLInputElement;
         if (input && document.activeElement !== input) {
           e.preventDefault();
           input.focus();
@@ -153,46 +142,60 @@ export default function App() {
     return () => document.removeEventListener('keydown', handler);
   }, [closeFilters]);
 
-  // Close filters on outside click (mobile)
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (window.innerWidth <= 768 && isFilterOpen) {
-        const panel = document.getElementById('filter-panel');
-        const toggle = document.querySelector('.filter-toggle');
-        if (panel && toggle) {
-          if (!panel.contains(e.target as Node) && !toggle.contains(e.target as Node)) {
-            closeFilters();
-          }
-        }
-      }
-    };
-    document.addEventListener('click', handler);
-    return () => document.removeEventListener('click', handler);
-  }, [isFilterOpen, closeFilters]);
-
   const isLoaded = !isLoading && !error;
 
   return (
     <>
-      <div className="background-overlay" />
+      <div className="bg-overlay" />
       <div className="gradient-orb orb-1" />
       <div className="gradient-orb orb-2" />
 
       <Header
-        currentMode={currentMode}
-        currentTheme={theme}
+        searchTerm={searchTerm}
         gamesCount={visibleGamesCount}
         totalSavings={formatCurrency(savings)}
         lastUpdated={getRelativeTime(lastUpdated)}
-        searchTerm={searchTerm}
-        isFilterOpen={isFilterOpen}
+        favoritesCount={favorites.length}
         onSearchChange={setSearchTerm}
         onClearSearch={handleClearSearch}
-        onToggleFilters={toggleFilters}
-        onCycleTheme={cycleTheme}
         onOpenQR={handleOpenQR}
-        onRequestNotification={handleRequestNotification}
       />
+
+      {/* Sort bar / quick actions */}
+      <div className="sort-bar">
+        <div className="sort-bar-inner">
+          <button
+            className={`sort-chip ${sortMode === 'default' ? 'active' : ''}`}
+            onClick={() => handleSortChange('default')}
+          >
+            📅 Recientes
+          </button>
+          <button
+            className={`sort-chip ${sortMode === 'price-desc' ? 'active' : ''}`}
+            onClick={() => handleSortChange('price-desc')}
+          >
+            💰 Precio
+          </button>
+          <button
+            className={`sort-chip ${sortMode === 'ending-soon' ? 'active' : ''}`}
+            onClick={() => handleSortChange('ending-soon')}
+          >
+            ⏳ Por terminar
+          </button>
+          <button
+            className={`sort-chip ${sortMode === 'title' ? 'active' : ''}`}
+            onClick={() => handleSortChange('title')}
+          >
+            🔤 A-Z
+          </button>
+          <button
+            className={`sort-chip ${activeGenre !== 'all' ? 'active' : ''}`}
+            onClick={toggleFilters}
+          >
+            🏷️ Género
+          </button>
+        </div>
+      </div>
 
       <FilterPanel
         currentMode={currentMode}
@@ -213,6 +216,7 @@ export default function App() {
         onToggleFavorites={handleToggleFavorites}
         onToggleHidden={handleToggleHidden}
         onResetFilters={handleResetFilters}
+        onClose={closeFilters}
       />
 
       <main>
@@ -227,7 +231,7 @@ export default function App() {
         )}
 
         {error && (
-          <div className="empty-state">
+          <div className="error-state empty-state">
             <div className="empty-icon">😕</div>
             <h3>Algo salió mal</h3>
             <p>{error}. Intenta recargar la página.</p>
@@ -254,13 +258,25 @@ export default function App() {
       <Footer />
       <ToastContainer />
 
+      <BottomNav
+        currentMode={currentMode}
+        favoritesCount={favorites.length}
+        isFilterOpen={isFilterOpen}
+        showFavoritesOnly={showFavoritesOnly}
+        onModeChange={handleModeChange}
+        onToggleFilters={toggleFilters}
+        onToggleFavorites={handleToggleFavorites}
+        onResetFilters={handleResetFilters}
+      />
+
       <Modal isOpen={qrOpen} onClose={() => setQrOpen(false)} title="📱 Compartir">
         <p>Escanea para abrir en tu móvil</p>
         <img
           src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}`}
           alt="QR Code"
+          width={160}
+          height={160}
         />
-        <button className="close-btn" onClick={() => setQrOpen(false)}>Cerrar</button>
       </Modal>
     </>
   );

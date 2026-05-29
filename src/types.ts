@@ -41,7 +41,7 @@ export interface StatsResponse {
 }
 
 export type Mode = 'pc' | 'android';
-export type Theme = 'default' | 'cyberpunk' | 'matrix';
+export type Theme = 'dark';
 export type SortMode = 'default' | 'price-desc' | 'ending-soon' | 'title';
 export type Genre = 'all' | 'action' | 'rpg' | 'indie' | 'shooter' | 'strategy' | 'puzzle' | 'racing' | 'sports';
 export type TypeFilter = 'all' | 'game' | 'dlc' | 'app';
