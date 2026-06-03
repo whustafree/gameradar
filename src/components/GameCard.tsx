@@ -144,8 +144,13 @@ export default function GameCard({
             {worth}
           </div>
         )}
-        {!isListView && (
-          <div className="card-actions">
+      </div>
+
+      <div className="card-body">
+        <h3 className="card-title">{game.title}</h3>
+        <div className="card-meta">
+          <span className={`card-time ${timeInfo.className}`}>{timeInfo.text}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
             <button
               className={`card-action ${isFavorite ? 'fav' : ''}`}
               onClick={e => { e.stopPropagation(); onToggleFavorite(game.id); }}
@@ -153,30 +158,17 @@ export default function GameCard({
             >
               {isFavorite ? '❤️' : '🤍'}
             </button>
-          </div>
-        )}
-      </div>
-
-      <div className="card-body">
-        <h3 className="card-title">{game.title}</h3>
-        {!isListView && <p className="card-desc">{game.description ? game.description.slice(0, 80) + '...' : 'Juego gratuito'}</p>}          <div className="card-meta">
-            <span className={`card-time ${timeInfo.className}`}>{timeInfo.text}</span>
-            {totalVotes > 0 && (
-              <span style={{ fontSize: '0.55rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.15rem' }}>
-                👍 {gameVotes.up}
-              </span>
-            )}
             <a
               href={game.url}
               target="_blank"
               rel="noopener"
               className="claim-btn"
               onClick={e => e.stopPropagation()}
-              style={{ fontSize: '0.65rem', padding: '0.25rem 0.5rem' }}
             >
               {t('reclaim', language)}
             </a>
           </div>
+        </div>
       </div>
     </article>
   );
