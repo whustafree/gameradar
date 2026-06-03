@@ -170,6 +170,7 @@ input, textarea { user-select: text; -webkit-user-select: text; }
   animation: cardIn .4s var(--ease-spring) backwards;
   display: flex; flex-direction: column;
   box-shadow: var(--shadow-sm);
+  min-height: 150px;
 }
 .game-card:active { transform: scale(.96); }
 @keyframes cardIn { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
