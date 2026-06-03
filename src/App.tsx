@@ -1,5 +1,4 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { useTheme } from './hooks/useTheme';
 import { App as CapacitorApp } from '@capacitor/app';
 import { Mode, SortMode, Genre, TypeFilter, StoreFilter, ViewMode, Language, Game } from './types';
 import { getRelativeTime, formatCurrency, parsePrice } from './utils/format';
@@ -270,7 +269,7 @@ export default function App() {
     const observer = new IntersectionObserver(
       entries => {
         if (entries[0].isIntersecting) {
-          setDisplayCount(prev => Math.min(prev + ITEMS_PER_PAGE, contentFilteredGames.length));
+          setDisplayCount(prev => Math.min(prev + ITEMS_PER_PAGE, sortedFiltered.length));
         }
       },
       { rootMargin: '200px' }
@@ -278,7 +277,7 @@ export default function App() {
     const sentinel = sentinelRef.current;
     if (sentinel) observer.observe(sentinel);
     return () => { if (sentinel) observer.unobserve(sentinel); };
-  }, [hasMore, contentFilteredGames.length]);
+  }, [hasMore, sortedFiltered.length]);
 
   // --- Pull to refresh ---
   const handleTouchStart = useCallback((e: TouchEvent) => {
@@ -614,8 +613,6 @@ export default function App() {
 
           <div className="top-divider" />
 
-          <div className="top-divider" />
-
           <button className={`sort-chip ${sortMode === 'default' ? 'active' : ''}`} onClick={() => setSortMode('default')}>
             {t('sortRecent', language)}
           </button>
@@ -813,8 +810,8 @@ export default function App() {
               </div>
             )}
 
-            {/* Ending Soon Timeline - giveaways only */}
-            {contentTab === 'giveaways' && endingSoonGames.length > 0 && !showFavoritesOnly && !showHiddenOnly && !multiSelectActive && (
+            {/* Ending Soon Timeline */}
+            {endingSoonGames.length > 0 && !showFavoritesOnly && !showHiddenOnly && !multiSelectActive && (
               <section className="timeline-section">
                 <div className="timeline-header">
                   <div className="recommended-icon">⏳</div>
@@ -844,8 +841,8 @@ export default function App() {
               </section>
             )}
 
-            {/* Trending Section - giveaways only */}
-            {contentTab === 'giveaways' && trendingGames.length > 0 && !showFavoritesOnly && !showHiddenOnly && !multiSelectActive && (
+            {/* Trending Section */}
+            {trendingGames.length > 0 && !showFavoritesOnly && !showHiddenOnly && !multiSelectActive && (
               <section className="trending-section">
                 <div className="trending-header">
                   <div className="trending-icon">🔥</div>
