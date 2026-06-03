@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { Game, GamesResponse, Vote, GameReactions, EmojiReaction, WishlistStatus, UserCollection, ActivityEntry, Achievement, AchievementId, UserStats } from '../types';
 import {
   loadFavorites, saveFavorites,
@@ -116,7 +117,9 @@ export function useGames() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/free-games');
+      const isNative = Capacitor.isNativePlatform();
+      const apiBase = isNative ? 'https://freegamehub.vercel.app' : '';
+      const res = await fetch(`${apiBase}/api/free-games`);
       if (!res.ok) throw new Error('Error en la API');
       const data: GamesResponse = await res.json();
       setGames(data.games || []);
