@@ -16,10 +16,6 @@ export const translations = {
     globalValue: 'Valor total',
 
     // Content tabs
-    contentGiveaways: '🎁 Giveaways',
-    contentFreeToPlay: '🎮 Free-to-Play',
-    freeToPlaySection: '🆓 Siempre gratis',
-    freeToPlayDesc: 'Juegos free-to-play sin fecha de término',
     giveawaysDesc: 'Juegos gratis por tiempo limitado',
 
     // Sort chips
@@ -35,7 +31,6 @@ export const translations = {
     storeAll: 'Todas',
     storeNav: 'Tienda',
     storeFreeWeekend: '🎉 Finde gratis',
-    storeFreeToPlay: '🆓 Free-to-play',
 
     // Game card
     alwaysFree: '✓ Gratis permanente',
@@ -193,13 +188,6 @@ export const translations = {
     platformVr: 'VR',
     platformPc: 'PC',
 
-    // Recommendations
-    recommendedTitle: 'Recomendados para ti',
-    recommendedSubtitle: 'Basado en tus géneros más vistos',
-    similarGames: 'Juegos similares',
-    noRecommendations: 'Sigue explorando juegos para obtener recomendaciones',
-    recommendedGenre: 'Porque te gusta',
-
     // Trending
     trendingTitle: 'Tendencias 🔥',
     trendingSubtitle: 'Los más populares de la semana',
@@ -350,10 +338,6 @@ export const translations = {
     globalValue: 'Total value',
 
     // Content tabs
-    contentGiveaways: '🎁 Giveaways',
-    contentFreeToPlay: '🎮 Free-to-Play',
-    freeToPlaySection: '🆓 Always free',
-    freeToPlayDesc: 'Free-to-play games with no end date',
     giveawaysDesc: 'Limited-time free games',
 
     // Sort chips
@@ -369,7 +353,6 @@ export const translations = {
     storeAll: 'All',
     storeNav: 'Store',
     storeFreeWeekend: '🎉 Free weekend',
-    storeFreeToPlay: '🆓 Free-to-play',
 
     alwaysFree: '✓ Always free',
     flashOffer: '⚡ Flash Offer',
@@ -516,11 +499,7 @@ export const translations = {
     platformVr: 'VR',
     platformPc: 'PC',
 
-    recommendedTitle: 'Recommended for you',
-    recommendedSubtitle: 'Based on your most viewed genres',
-    similarGames: 'Similar games',
-    noRecommendations: 'Keep exploring games to get recommendations',
-    recommendedGenre: 'Because you like',
+
 
     trendingTitle: 'Trending 🔥',
     trendingSubtitle: 'Most popular this week',

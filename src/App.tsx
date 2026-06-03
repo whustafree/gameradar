@@ -81,7 +81,6 @@ export default function App() {
 
   // --- State ---
   const [currentMode, setCurrentMode] = useState<Mode>('pc');
-  const [contentTab, setContentTab] = useState<'giveaways' | 'free-to-play'>('giveaways');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortMode, setSortMode] = useState<SortMode>('default');
   const [activeGenre, setActiveGenre] = useState<Genre>('all');
@@ -199,32 +198,7 @@ export default function App() {
     });
   }
 
-  // --- Recommended games ---
-  const topGenres = useMemo(() => {
-    const viewedObjects = games.filter(g => viewedGames.includes(g.id) && g.genre);
-    const genreCount: Record<string, number> = {};
-    viewedObjects.forEach(g => {
-      const genre = g.genre || 'other';
-      genreCount[genre] = (genreCount[genre] || 0) + 1;
-    });
-    return Object.entries(genreCount)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(([genre]) => genre);
-  }, [games, viewedGames]);
 
-  const recommendedGames = useMemo(() => {
-    if (topGenres.length === 0) return [];
-    const hidden = showHiddenOnly ? [] : hiddenGames;
-    return games.filter(g =>
-      !hidden.includes(g.id) &&
-      !viewedGames.includes(g.id) &&
-      g.category === currentMode &&
-      g.genre &&
-      topGenres.includes(g.genre) &&
-      !showFavoritesOnly
-    ).slice(0, 8);
-  }, [games, hiddenGames, viewedGames, currentMode, topGenres, showFavoritesOnly]);
 
   // --- Game of the day ---
   const gameOfDay = useMemo(() => {
@@ -254,23 +228,7 @@ export default function App() {
     return withVotes;
   }, [sortedFiltered, votes]);
 
-  // --- Free-to-Play games (separate list) ---
-  const freeToPlayGames = useMemo(() => {
-    const allF2P = games.filter(g => g.type === 'free-to-play' || g.source === 'freetogame');
-    // Apply current mode and platform filters to free-to-play games too
-    return allF2P.filter(g => {
-      if (g.category !== currentMode && !g.platform?.includes(currentMode)) return false;
-      return true;
-    });
-  }, [games, currentMode]);
 
-  // --- Final content filter: giveaways vs free-to-play ---
-  const contentFilteredGames = useMemo(() => {
-    if (contentTab === 'free-to-play') {
-      return sortedFiltered.filter(g => g.type === 'free-to-play' || g.source === 'freetogame');
-    }
-    return sortedFiltered.filter(g => g.type !== 'free-to-play' && g.source !== 'freetogame');
-  }, [contentTab, sortedFiltered]);
 
   // --- Ending soon (timeline) ---
   const endingSoonGames = useMemo(() => {
@@ -304,8 +262,8 @@ export default function App() {
   }, [sortedFiltered, hiddenGames, viewedGames, language]);
 
   // Infinite scroll
-  const displayedGames = contentFilteredGames.slice(0, displayCount);
-  const hasMore = displayCount < contentFilteredGames.length;
+  const displayedGames = sortedFiltered.slice(0, displayCount);
+  const hasMore = displayCount < sortedFiltered.length;
 
   useEffect(() => {
     if (!hasMore) return;
@@ -414,7 +372,6 @@ export default function App() {
     setActiveType('all');
     setShowFavoritesOnly(false);
     setShowHiddenOnly(false);
-    setContentTab('giveaways');
     closeFilters();
     showToast(t('filtersReset', language), 'info');
   }, [closeFilters, language]);
@@ -657,22 +614,6 @@ export default function App() {
 
           <div className="top-divider" />
 
-          {/* Content tabs: Giveaways vs Free-to-Play */}
-          <button
-            className={`sort-chip content-tab ${contentTab === 'giveaways' ? 'active' : ''}`}
-            onClick={() => { setContentTab('giveaways'); setDisplayCount(ITEMS_PER_PAGE); }}
-            title={t('giveawaysDesc', language)}
-          >
-            {t('contentGiveaways', language)}
-          </button>
-          <button
-            className={`sort-chip content-tab ${contentTab === 'free-to-play' ? 'active' : ''}`}
-            onClick={() => { setContentTab('free-to-play'); setDisplayCount(ITEMS_PER_PAGE); }}
-            title={t('freeToPlayDesc', language)}
-          >
-            {t('contentFreeToPlay', language)}
-          </button>
-
           <div className="top-divider" />
 
           <button className={`sort-chip ${sortMode === 'default' ? 'active' : ''}`} onClick={() => setSortMode('default')}>
@@ -731,12 +672,6 @@ export default function App() {
               title={t('storeFreeWeekend', language)}
             >
               🎉 {language === 'es' ? 'Finde gratis' : 'Weekend'}
-            </button>            <button
-              className={`store-chip special ${contentTab === 'free-to-play' ? 'active' : ''}`}
-              onClick={() => setContentTab(contentTab === 'free-to-play' ? 'giveaways' : 'free-to-play')}
-              title={t('storeFreeToPlay', language)}
-            >
-              🆓 {language === 'es' ? 'F2P' : 'F2P'}
             </button>
           </div>
         </div>
@@ -939,65 +874,7 @@ export default function App() {
               </section>
             )}
 
-            {/* Recommended for you - giveaways only */}
-            {contentTab === 'giveaways' && recommendedGames.length > 0 && !showFavoritesOnly && !showHiddenOnly && !multiSelectActive && (
-              <section className="recommended-section">
-                <div className="recommended-header">
-                  <div className="recommended-icon">✨</div>
-                  <h2 className="recommended-title">{t('recommendedTitle', language)}</h2>
-                  <span className="recommended-subtitle">{t('recommendedSubtitle', language)}</span>
-                </div>
-                <div className="recommended-scroll">
-                  {recommendedGames.map((game, index) => (
-                    <GameCard
-                      key={game.id}
-                      game={game}
-                      index={index}
-                      isFavorite={favorites.includes(game.id)}
-                      isViewed={viewedGames.includes(game.id)}
-                      isNew={newGameIds.includes(game.id)}
-                      votes={votes}
-                      viewMode={viewMode}
-                      language={language}
-                      onToggleFavorite={toggleFavorite}
-                      onHideGame={hideGame}
-                      onMarkAsViewed={handleMarkAsViewed}
-                      onOpenDetail={handleOpenDetail}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
 
-            {/* Free-to-Play Scroll Section - only in giveaways mode */}
-            {contentTab === 'giveaways' && freeToPlayGames.length > 0 && !showFavoritesOnly && !showHiddenOnly && !multiSelectActive && (
-              <section className="recommended-section">
-                <div className="recommended-header">
-                  <div className="recommended-icon">🆓</div>
-                  <h2 className="recommended-title">{t('freeToPlaySection', language)}</h2>
-                  <span className="recommended-subtitle">{freeToPlayGames.length} {language === 'es' ? 'juegos' : 'games'}</span>
-                </div>
-                <div className="recommended-scroll">
-                  {freeToPlayGames.map((game, index) => (
-                    <GameCard
-                      key={game.id}
-                      game={game}
-                      index={index}
-                      isFavorite={favorites.includes(game.id)}
-                      isViewed={viewedGames.includes(game.id)}
-                      isNew={newGameIds.includes(game.id)}
-                      votes={votes}
-                      viewMode={viewMode}
-                      language={language}
-                      onToggleFavorite={toggleFavorite}
-                      onHideGame={hideGame}
-                      onMarkAsViewed={handleMarkAsViewed}
-                      onOpenDetail={handleOpenDetail}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
 
             {/* Main Game Grid */}
             <GameGrid
