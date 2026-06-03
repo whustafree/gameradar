@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef, useCallback } from 'react';
 import { Game, Vote, Language, WishlistStatus, GameReactions, EmojiReaction } from '../types';
 import { t } from '../i18n';
 import { getTimeInfo } from '../utils/format';
@@ -33,6 +33,35 @@ export default function GameDetail({
   game, games = [], votes, reactions, wishlist, language, isOpen,
   onClose, onVote, onReaction, onToggleWishlist, onMarkClaimed, onOpenGame
 }: GameDetailProps) {
+  // Swipe to close gesture
+  const swipeStartX = useRef(0);
+  const swipeOffset = useRef(0);
+  const sheetRef = useRef<HTMLDivElement>(null);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    swipeStartX.current = e.touches[0].clientX;
+    swipeOffset.current = 0;
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    const diff = e.touches[0].clientX - swipeStartX.current;
+    if (diff > 0 && sheetRef.current) {
+      swipeOffset.current = diff;
+      sheetRef.current.style.transform = `translateX(${diff * 0.3}px)`;
+      sheetRef.current.style.transition = 'none';
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (sheetRef.current) {
+      sheetRef.current.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      sheetRef.current.style.transform = '';
+    }
+    if (swipeOffset.current > 80) {
+      onClose();
+    }
+    swipeOffset.current = 0;
+  }, [onClose]);
   const timeInfo = getTimeInfo(game.endDate, game.type);
   const gameVotes = votes[game.id] || { up: 0, down: 0, userVote: null };
   const gameReactions = reactions[game.id] || { counts: { fire: 0, heart: 0, star: 0, laugh: 0, cool: 0, sad: 0 }, userReaction: null };
@@ -108,8 +137,14 @@ export default function GameDetail({
   }, [games, game]);
 
   return (
-    <div className={`detail-overlay ${isOpen ? 'open' : ''}`} onClick={onClose}>
-      <div className="detail-sheet" onClick={e => e.stopPropagation()}>
+    <div
+      className={`detail-overlay ${isOpen ? 'open' : ''}`}
+      onClick={onClose}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      <div ref={sheetRef} className="detail-sheet" onClick={e => e.stopPropagation()}>
         <div className="detail-handle" />
 
         {game.image ? (

@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { App as CapacitorApp } from '@capacitor/app';
 import { Mode, SortMode, Genre, TypeFilter, StoreFilter, ViewMode, Language, Game } from './types';
 import { getRelativeTime, formatCurrency, parsePrice } from './utils/format';
 import { loadViewMode, saveViewMode, loadLanguage, saveLanguage, loadLastVisit, saveLastVisit, loadNewGameIds, saveNewGameIds, saveTheme, saveAccentColor } from './utils/storage';
@@ -371,6 +372,20 @@ export default function App() {
   const closeFilters = useCallback(() => setIsFilterOpen(false), []);
   const handleClearSearch = useCallback(() => setSearchTerm(''), []);
 
+  // Refs for back gesture handler (avoid re-registering listener)
+  const selectedGameRef = useRef(selectedGame);
+  const isFilterOpenRef = useRef(isFilterOpen);
+  const showStatsRef = useRef(showStats);
+  const showSettingsRef = useRef(showSettings);
+  const multiSelectActiveRef = useRef(multiSelectActive);
+
+  // Sync refs on every render for the back gesture handler
+  selectedGameRef.current = selectedGame;
+  isFilterOpenRef.current = isFilterOpen;
+  showStatsRef.current = showStats;
+  showSettingsRef.current = showSettings;
+  multiSelectActiveRef.current = multiSelectActive;
+
   const handleModeChange = useCallback((mode: Mode) => {
     setCurrentMode(mode);
     setActiveType('all');
@@ -485,6 +500,38 @@ export default function App() {
   const handleCloseSettings = useCallback(() => {
     setShowSettings(false);
   }, []);
+
+  // --- Back gesture handler (Android native) - register once with refs ---
+  useEffect(() => {
+    let listenerHandle: any;
+    const setup = async () => {
+      listenerHandle = await CapacitorApp.addListener('backButton', () => {
+        // Close modals in order of priority (using refs for fresh state)
+        if (selectedGameRef.current) {
+          handleCloseDetail();
+        } else if (isFilterOpenRef.current) {
+          closeFilters();
+        } else if (showStatsRef.current) {
+          handleCloseStats();
+        } else if (showSettingsRef.current) {
+          handleCloseSettings();
+        } else if (multiSelectActiveRef.current) {
+          setMultiSelectActive(false);
+          setMultiSelectedIds([]);
+        } else {
+          // No modals open - minimize app instead of exiting
+          CapacitorApp.minimizeApp();
+        }
+      });
+    };
+    setup();
+    return () => {
+      // Clean up listener on unmount only
+      if (listenerHandle && typeof listenerHandle.remove === 'function') {
+        listenerHandle.remove();
+      }
+    };
+  }, []); // Empty deps = register once, never re-register
 
   // --- Auto-hide nav on scroll (mobile native feel) ---
   useEffect(() => {
