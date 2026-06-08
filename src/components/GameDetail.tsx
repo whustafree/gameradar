@@ -204,13 +204,13 @@ export default function GameDetail({
               <span className="detail-section-label">{t('type', language)}</span>
               <span className="card-img-badge" style={{
                 display: 'inline-block',
-                background: game.type.toLowerCase().includes('game') ? 'rgba(34,197,94,0.15)' : 'rgba(59,130,246,0.15)',
-                color: game.type.toLowerCase().includes('game') ? 'var(--green)' : 'var(--blue)',
-                border: `1px solid ${game.type.toLowerCase().includes('game') ? 'rgba(34,197,94,0.2)' : 'rgba(59,130,246,0.2)'}`,
+                background: 'rgba(59,130,246,0.15)',
+                color: 'var(--blue)',
+                border: '1px solid rgba(59,130,246,0.2)',
                 fontSize: '0.7rem',
                 padding: '0.25rem 0.6rem',
               }}>
-                {game.type.toLowerCase().includes('game') ? t('freeToKeep', language) : t('limitedOffer', language)}
+                {t('limitedOffer', language)}
               </span>
             </div>
           )}

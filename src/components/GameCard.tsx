@@ -127,9 +127,6 @@ export default function GameCard({
         {!isListView && (
           <div className="card-img-badges">
             {isNew && <span className="card-img-badge new-badge">{t('newBadge', language)}</span>}
-            {game.type?.toLowerCase().includes('game') && game.source !== 'freetogame' && (
-              <span className="card-img-badge free-to-keep">{t('freeToKeep', language)}</span>
-            )}
             {worth}
           </div>
         )}

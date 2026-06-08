@@ -19,7 +19,7 @@ export function getTimeInfo(endDate?: string, type?: string): { text: string; cl
   if (!endDate) {
     return type === 'App'
       ? { text: '⚡ Oferta Flash', className: 'urgent' }
-      : { text: '✓ Siempre gratis', className: 'normal' };
+      : { text: '', className: 'normal' };
   }
 
   const end = new Date(endDate);

@@ -50,9 +50,9 @@ describe('formatCurrency', () => {
 });
 
 describe('getTimeInfo', () => {
-  it('returns always free for games without endDate', () => {
+  it('returns empty text for games without endDate', () => {
     const result = getTimeInfo(undefined, 'game');
-    expect(result.text).toContain('Siempre gratis');
+    expect(result.text).toBe('');
     expect(result.className).toBe('normal');
   });
 

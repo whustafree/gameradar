@@ -434,7 +434,6 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 .card-img-badge.platform { background: rgba(0,0,0,0.65); color: var(--text); }
 .card-img-badge.worth { background: rgba(255,214,10,0.9); color: #000; }
 .card-img-badge.new-badge { background: var(--accent); color: white; animation: pulse 1.5s infinite; }
-.card-img-badge.free-to-keep { background: var(--green-bg); color: var(--green); }
 .card-img-badge.free-to-play { background: rgba(10,132,255,0.9); color: white; }
 .card-img-badge.free-weekend { background: rgba(255,214,10,0.9); color: #000; animation: pulse 1.5s infinite; }
 
