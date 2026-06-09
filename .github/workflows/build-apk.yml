@@ -63,8 +63,22 @@ jobs:
           fi
           ./gradlew assembleRelease
 
+      - name: Find APK
+        if: always()
+        run: |
+          echo "Searching for APK files..."
+          find . -name "*.apk" -type f 2>/dev/null || echo "No APKs found"
+          echo "---"
+          echo "Checking standard location..."
+          ls -la android/app/build/outputs/apk/release/ 2>/dev/null || echo "Standard release dir not found"
+          ls -la android/app/build/outputs/apk/ 2>/dev/null | head -20 || echo "APK output dir not found"
+
       - name: Upload APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          path: android/app/build/outputs/apk/release/app-release.apk
+          path: |
+            android/app/build/outputs/apk/release/*.apk
+            android/app/build/outputs/apk/**/*.apk
           name: FreeGameHub-Release
+          if-no-files-found: warn
