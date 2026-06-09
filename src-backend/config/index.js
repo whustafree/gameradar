@@ -9,6 +9,12 @@ module.exports = {
     chatId: process.env.TELEGRAM_CHAT_ID,
     enabled: !!(process.env.TELEGRAM_TOKEN && process.env.TELEGRAM_CHAT_ID)
   },
+
+  instagram: {
+    accessToken: process.env.INSTAGRAM_ACCESS_TOKEN,
+    igUserId: process.env.INSTAGRAM_USER_ID,
+    enabled: !!(process.env.INSTAGRAM_ACCESS_TOKEN && process.env.INSTAGRAM_USER_ID)
+  },
   
   app: {
     url: process.env.APP_URL || 'https://freegamehub.onrender.com',

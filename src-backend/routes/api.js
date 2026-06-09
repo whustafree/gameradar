@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const gamesService = require('../services/games');
 const telegramService = require('../services/telegram');
+const instagramService = require('../services/instagram');
 const logger = require('../utils/logger');
 
 // GET /api/free-games
@@ -82,6 +83,23 @@ router.post('/test-telegram', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Error enviando mensaje de prueba'
+    });
+  }
+});
+
+// POST /api/test-instagram
+router.post('/test-instagram', async (req, res) => {
+  try {
+    const result = await instagramService.sendTestMessage();
+    res.json({
+      success: result,
+      message: result ? 'Post de prueba publicado en Instagram' : 'Error publicando en Instagram'
+    });
+  } catch (err) {
+    logger.error('Error en /api/test-instagram', err);
+    res.status(500).json({
+      success: false,
+      error: 'Error publicando en Instagram'
     });
   }
 });

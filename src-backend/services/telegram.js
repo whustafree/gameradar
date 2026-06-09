@@ -1,6 +1,7 @@
 const axios = require('axios');
 const config = require('../config');
 const logger = require('../utils/logger');
+const { isVipGame, escapeHtml } = require('../utils/gameUtils');
 
 class TelegramService {
   constructor() {
@@ -10,7 +11,7 @@ class TelegramService {
   }
 
   isVipGame(title) {
-    return config.vipKeywords.some(k => title.toLowerCase().includes(k));
+    return isVipGame(title);
   }
 
   async sendAlert(newGames) {
@@ -77,10 +78,7 @@ class TelegramService {
   }
 
   escapeHtml(text) {
-    return text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+    return escapeHtml(text);
   }
 }
 

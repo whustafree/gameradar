@@ -3,6 +3,7 @@ const redditService = require('./reddit');
 const epicGamesService = require('./epicgames');
 const freeToGameService = require('./freetogame');
 const telegramService = require('./telegram');
+const instagramService = require('./instagram');
 const cacheManager = require('../utils/cache');
 const statsManager = require('../utils/stats');
 const logger = require('../utils/logger');
@@ -60,8 +61,17 @@ class GamesService {
         
         if (newGames.length > 0) {
           logger.success(`${newGames.length} juegos nuevos detectados`);
+          
+          // Telegram
           const alertSent = await telegramService.sendAlert(newGames);
           if (alertSent) statsManager.incrementAlerts();
+          
+          // Instagram (no bloquea si falla)
+          const instagramPosted = await instagramService.sendAlert(newGames).catch(err => {
+            logger.error('Instagram: error en sendAlert', err);
+            return 0;
+          });
+          if (instagramPosted > 0) statsManager.incrementAlerts();
         }
 
         // Actualizar caché
