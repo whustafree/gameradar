@@ -1,4 +1,2 @@
-node_modules/.DS_Storegames-cache.json.env*.lognpm-debug.log*yarn-debug.log*yarn-error.log*.cache/dist/coverage/nul.vercel
-# Keystore files
-*.keystore
-*.jks
+node_modules/.DS_Storegames-cache.json.env*.lognpm-debug.log*yarn-debug.log*yarn-error.log*.cache/dist/coverage/nul.vercel# Keystore files*.keystore*.jks# Base64 keystore (sensitive - do not commit)
+*.base64.txt
