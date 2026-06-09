@@ -53,7 +53,7 @@ jobs:
             echo "$KEYSTORE_BASE64" | base64 -d > android/freegamehub-release.keystore 2>/dev/null && echo "Keystore created" || echo "WARNING: Invalid base64"
           fi
 
-      - name: Build Android App Bundle (AAB) for Play Store
+      - name: Build Android (AAB + APKs)
         run: |
           cd android
           chmod +x gradlew
@@ -63,12 +63,7 @@ jobs:
             export KEY_ALIAS="${{ secrets.KEY_ALIAS }}"
             export KEY_PASSWORD="${{ secrets.KEY_PASSWORD }}"
           fi
-          ./gradlew bundleRelease
-
-      - name: Build Android APKs (debug + release)
-        run: |
-          cd android
-          ./gradlew assembleRelease assembleDebug
+          ./gradlew bundleRelease assembleRelease assembleDebug
 
       - name: Upload AAB (for Play Store)
         if: always()
