@@ -40,6 +40,12 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
+      - name: Restore custom app icon (prevent Capacitor overwrite)
+        run: |
+          git checkout -- android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          git checkout -- android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+          echo "Custom icon restored after Capacitor sync"
+
       - name: Create keystore from secret
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -66,20 +72,6 @@ jobs:
         run: |
           cd android
           ./gradlew assembleDebug
-
-      - name: Find APKs
-        if: always()
-        run: |
-          echo "=== Release APK ==="
-          find . -path "*/release/*.apk" -type f 2>/dev/null || echo "No release APKs found"
-          ls -la android/app/build/outputs/apk/release/ 2>/dev/null || echo "No release dir"
-          echo ""
-          echo "=== Debug APK ==="
-          find . -path "*/debug/*.apk" -type f 2>/dev/null || echo "No debug APKs found"
-          ls -la android/app/build/outputs/apk/debug/ 2>/dev/null || echo "No debug dir"
-          echo ""
-          echo "=== All APKs ==="
-          find . -name "*.apk" -type f 2>/dev/null || echo "No APKs at all"
 
       - name: Upload Release APK
         if: always()
