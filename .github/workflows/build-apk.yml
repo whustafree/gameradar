@@ -7,9 +7,6 @@ on:
       - master
   workflow_dispatch:
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -52,15 +49,14 @@ jobs:
           fi
 
       - name: Build Android Release APK
+        env:
+          KEYSTORE_PATH: ${{ github.workspace }}/android/freegamehub-release.keystore
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           cd android
           chmod +x gradlew
-          if [ -f freegamehub-release.keystore ]; then
-            export KEYSTORE_PATH="$GITHUB_WORKSPACE/android/freegamehub-release.keystore"
-            export KEYSTORE_PASSWORD="${{ secrets.KEYSTORE_PASSWORD }}"
-            export KEY_ALIAS="${{ secrets.KEY_ALIAS }}"
-            export KEY_PASSWORD="${{ secrets.KEY_PASSWORD }}"
-          fi
           ./gradlew assembleRelease
 
       - name: Upload APK
