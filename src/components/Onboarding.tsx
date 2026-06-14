@@ -11,9 +11,9 @@ interface OnboardingProps {
 
 const STEPS: { icon: string; titleKey: string; descKey: string }[] = [
   { icon: '🎮', titleKey: 'onboardingWelcome', descKey: 'onboardingWelcomeDesc' },
-  { icon: '👆', titleKey: 'onboardingSwipe', descKey: 'onboardingSwipeDesc' },
-  { icon: '⚙️', titleKey: 'onboardingFilters', descKey: 'onboardingFiltersDesc' },
+  { icon: '🖥️', titleKey: 'onboardingPlatform', descKey: 'onboardingPlatformDesc' },
   { icon: '👁️', titleKey: 'onboardingDetail', descKey: 'onboardingDetailDesc' },
+  { icon: '❤️', titleKey: 'onboardingFavorite', descKey: 'onboardingFavoriteDesc' },
   { icon: '📋', titleKey: 'onboardingWishlist', descKey: 'onboardingWishlistDesc' },
   { icon: '🚀', titleKey: 'onboardingDone', descKey: 'onboardingDoneDesc' },
 ];

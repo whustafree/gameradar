@@ -565,6 +565,7 @@ export default function App() {
       <Header
         searchTerm={searchTerm}
         language={language}
+        totalSavings={totalSavings}
         onSearchChange={setSearchTerm}
         onClearSearch={handleClearSearch}
         onToggleLang={handleToggleLang}

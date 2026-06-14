@@ -6,6 +6,7 @@ interface HeaderProps {
   searchTerm: string;
   language: Language;
   games?: Game[];
+  totalSavings?: string;
   onSearchChange: (value: string) => void;
   onClearSearch: () => void;
   onToggleLang: () => void;
@@ -13,7 +14,7 @@ interface HeaderProps {
 }
 
 export default function Header({
-  searchTerm, language, games = [], onSearchChange, onClearSearch, onToggleLang, onOpenDetail
+  searchTerm, language, games = [], totalSavings, onSearchChange, onClearSearch, onToggleLang, onOpenDetail
 }: HeaderProps) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -92,6 +93,14 @@ export default function Header({
         </div>
 
         <div className="header-actions">
+          {totalSavings && (
+            <button
+              className="header-savings-badge"
+              title={language === 'es' ? 'Valor total en juegos gratis' : 'Total value in free games'}
+            >
+              💰 {totalSavings}
+            </button>
+          )}
           <button className="header-action lang-btn" onClick={onToggleLang} title={language === 'es' ? 'English' : 'Español'}>
             {language === 'es' ? 'EN' : 'ES'}
           </button>

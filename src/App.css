@@ -157,7 +157,7 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 }
 .header-search-clear:active { color: var(--text); background: rgba(255,255,255,0.08); }
 
-.header-actions { display: flex; gap: .05rem; flex-shrink: 0; }
+.header-actions { display: flex; gap: .25rem; flex-shrink: 0; align-items: center; }
 .header-action {
   width: 30px;
   height: 30px;
@@ -175,6 +175,23 @@ input, textarea { user-select: text; -webkit-user-select: text; }
 }
 .header-action:active { background: rgba(255,255,255,0.06); }
 .lang-btn { font-weight: 700; font-size: .55rem; letter-spacing: .5px; text-transform: uppercase; }
+
+.header-savings-badge {
+  display: flex;
+  align-items: center;
+  gap: .15rem;
+  padding: .1rem .35rem;
+  background: rgba(255,214,10,0.1);
+  border: 0.5px solid rgba(255,214,10,0.15);
+  border-radius: 12px;
+  color: var(--gold);
+  font-size: .6rem;
+  font-weight: 700;
+  cursor: default;
+  font-family: inherit;
+  white-space: nowrap;
+  pointer-events: none;
+}
 
 .search-suggestions {
   position: absolute;
