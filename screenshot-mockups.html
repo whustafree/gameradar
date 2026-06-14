@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>FreeGameHub - Screenshot Mockups</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0D1117; font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; display: flex; flex-direction: column; align-items: center; gap: 40px; }
+.phone {
+  width: 360px; height: 780px;
+  background: linear-gradient(145deg, #1a1a2e, #16213e);
+  border-radius: 40px;
+  border: 2px solid #333;
+  padding: 20px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.status-bar { height: 30px; display: flex; justify-content: space-between; align-items: center; padding: 0 10px; color: #888; font-size: 12px; margin-bottom: 10px; }
+.header { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #333; }
+.header h2 { color: #fff; font-size: 18px; }
+.header-badge { background: #FF6B35; color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+.game-card { margin-top: 16px; border-radius: 16px; overflow: hidden; background: #1e1e3a; }
+.game-card img { width: 100%; height: 160px; background: linear-gradient(135deg, #0f3460, #533483); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 40px; }
+.game-card .info { padding: 12px 16px; }
+.game-card .info h3 { color: #fff; font-size: 16px; }
+.game-card .info p { color: #888; font-size: 13px; margin-top: 4px; }
+.game-card .info .tag { display: inline-block; background: #FF6B35; color: #fff; padding: 2px 8px; border-radius: 8px; font-size: 10px; margin-top: 8px; }
+.bottom-nav { position: absolute; bottom: 20px; left: 20px; right: 20px; display: flex; justify-content: space-around; padding: 12px; background: #1a1a2e; border-radius: 20px; border: 1px solid #333; }
+.bottom-nav span { color: #555; font-size: 12px; }
+.bottom-nav span.active { color: #FF6B35; }
+.title { color: #fff; font-size: 24px; margin-bottom: 10px; text-align: center; }
+.subtitle { color: #888; font-size: 14px; margin-bottom: 30px; text-align: center; }
+.row { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; }
+</style>
+</head>
+<body>
+<h1 class="title">FreeGameHub - Capturas para Play Store</h1>
+<p class="subtitle">Abre esta página en tu navegador y toma capturas (F12 o Recortes)</p>
+<div class="row">
+  <div class="phone">
+    <div class="status-bar"><span>9:41</span><span>4G • 75%</span></div>
+    <div class="header"><h2>FreeGameHub</h2><span class="header-badge">NUEVO</span></div>
+    <div class="game-card">
+      <div style="background:linear-gradient(135deg,#0f3460,#533483);height:160px;display:flex;align-items:center;justify-content:center;font-size:48px;">🎮</div>
+      <div class="info">
+        <h3>Grand Theft Auto V</h3>
+        <p>Epic Games • GRATIS por tiempo limitado</p>
+        <span class="tag">AAA</span>
+      </div>
+    </div>
+    <div class="game-card" style="margin-top:12px;">
+      <div style="background:linear-gradient(135deg,#16213e,#0f3460);height:160px;display:flex;align-items:center;justify-content:center;font-size:48px;">🕹️</div>
+      <div class="info">
+        <h3>Celeste</h3>
+        <p>Steam • GRATIS</p>
+      </div>
+    </div>
+    <div class="game-card" style="margin-top:12px;">
+      <div style="background:linear-gradient(135deg,#533483,#1a1a2e);height:160px;display:flex;align-items:center;justify-content:center;font-size:48px;">⚔️</div>
+      <div class="info">
+        <h3>Assassin's Creed Origins</h3>
+        <p>Ubisoft Connect • GRATIS</p>
+      </div>
+    </div>
+    <div class="bottom-nav"><span class="active">🏠</span><span>🔥</span><span>🔍</span><span>⚙️</span></div>
+  </div>
+  
+  <div class="phone">
+    <div class="status-bar"><span>9:41</span><span>4G • 75%</span></div>
+    <div class="header"><h2>Detalle</h2></div>
+    <div style="margin-top:16px;border-radius:16px;overflow:hidden;background:#1e1e3a;">
+      <div style="background:linear-gradient(135deg,#0f3460,#533483);height:200px;display:flex;align-items:center;justify-content:center;font-size:64px;">🎮</div>
+      <div style="padding:16px;">
+        <h3 style="color:#fff;font-size:20px;">Grand Theft Auto V</h3>
+        <span style="display:inline-block;background:#FF6B35;color:#fff;padding:4px 12px;border-radius:12px;font-size:11px;font-weight:bold;margin-top:8px;">GRATIS</span>
+        <p style="color:#aaa;font-size:14px;margin-top:12px;line-height:1.5;">
+          Juego de accion y aventura en mundo abierto. ¡Consiguelo gratis por tiempo limitado!
+        </p>
+        <div style="margin-top:16px;">
+          <span style="color:#00E5FF;font-size:14px;">⭐ 4.8</span>
+          <span style="color:#555;margin-left:16px;font-size:14px;">|</span>
+          <span style="color:#888;margin-left:16px;font-size:14px;">Accion</span>
+        </div>
+        <div style="background:#FF6B35;padding:14px;border-radius:12px;text-align:center;margin-top:20px;color:#fff;font-weight:bold;font-size:16px;">
+          VER OFERTA
+        </div>
+      </div>
+    </div>
+    <div class="bottom-nav" style="position:absolute;bottom:20px;"><span>🏠</span><span class="active">🔥</span><span>🔍</span><span>⚙️</span></div>
+  </div>
+</div>
+</body>
+</html>

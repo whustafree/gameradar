@@ -11,10 +11,8 @@ interface TrendingSectionProps {
   viewMode: ViewMode;
   language: Language;
   showFavoritesOnly: boolean;
-  showHiddenOnly: boolean;
   multiSelectActive: boolean;
   toggleFavorite: (id: string) => void;
-  hideGame: (id: string) => void;
   handleMarkAsViewed: (id: string) => void;
   handleOpenDetail: (game: Game) => void;
 }
@@ -28,14 +26,12 @@ export default function TrendingSection({
   viewMode,
   language,
   showFavoritesOnly,
-  showHiddenOnly,
   multiSelectActive,
   toggleFavorite,
-  hideGame,
   handleMarkAsViewed,
   handleOpenDetail,
 }: TrendingSectionProps) {
-  if (trendingGames.length === 0 || showFavoritesOnly || showHiddenOnly || multiSelectActive) {
+  if (trendingGames.length === 0 || showFavoritesOnly || multiSelectActive) {
     return null;
   }
 
@@ -72,7 +68,6 @@ export default function TrendingSection({
               viewMode={viewMode}
               language={language}
               onToggleFavorite={toggleFavorite}
-              onHideGame={hideGame}
               onMarkAsViewed={handleMarkAsViewed}
               onOpenDetail={handleOpenDetail}
             />

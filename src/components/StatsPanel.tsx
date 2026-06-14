@@ -9,7 +9,6 @@ interface StatsPanelProps {
   games: Game[];
   favorites: string[];
   viewedGames: string[];
-  hiddenGames: string[];
   votes: Record<string, Vote>;
   reactions: Record<string, GameReactions>;
   wishlist: Record<string, WishlistStatus>;
@@ -22,24 +21,23 @@ interface StatsPanelProps {
 }
 
 export default function StatsPanel({
-  userStats, games, favorites, viewedGames, hiddenGames,
+  userStats, games, favorites, viewedGames,
   votes, reactions, wishlist, collections, activityLog, achievements,
   language, onClose, onOpenSettings
 }: StatsPanelProps) {
   // Compute global stats
   const globalStats = useMemo(() => {
-    const visible = games.filter(g => !hiddenGames.includes(g.id));
-    const totalValue = visible.reduce((acc, g) => acc + parsePrice(g.worth), 0);
+    const totalValue = games.reduce((acc, g) => acc + parsePrice(g.worth), 0);
     const platformCount: Record<string, number> = {};
-    visible.forEach(g => {
+    games.forEach(g => {
       const p = g.platformName || g.platform || 'other';
       platformCount[p] = (platformCount[p] || 0) + 1;
     });
     const topPlatform = Object.entries(platformCount).sort((a, b) => b[1] - a[1])[0];
-    const endingSoon = visible.filter(g => g.endDate && new Date(g.endDate).getTime() > Date.now()).length;
-    const highestValue = visible.reduce((max, g) => parsePrice(g.worth) > parsePrice(max.worth) ? g : max, visible[0] || null);
-    return { totalValue, totalGames: visible.length, topPlatform, endingSoon, highestValue, platformCount };
-  }, [games, hiddenGames]);
+    const endingSoon = games.filter(g => g.endDate && new Date(g.endDate).getTime() > Date.now()).length;
+    const highestValue = games.reduce((max, g) => parsePrice(g.worth) > parsePrice(max.worth) ? g : max, games[0] || null);
+    return { totalValue, totalGames: games.length, topPlatform, endingSoon, highestValue, platformCount };
+  }, [games]);
 
   const handleExportJSON = () => {
     const data = JSON.stringify({ userStats, globalStats }, null, 2);

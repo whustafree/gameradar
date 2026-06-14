@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { loadArray, saveArray, loadFavorites, saveFavorites, loadHiddenGames, saveHiddenGames, loadViewedGames, saveViewedGames, loadViewMode, saveViewMode, loadLanguage, saveLanguage } from '../storage';
+import { loadArray, saveArray, loadFavorites, saveFavorites, loadViewedGames, saveViewedGames, loadViewMode, saveViewMode, loadLanguage, saveLanguage } from '../storage';
 
 // Mock localStorage
 const store: Record<string, string> = {};
@@ -43,17 +43,6 @@ describe('favorites', () => {
   it('saves and loads favorites', () => {
     saveFavorites(['id1', 'id2']);
     expect(loadFavorites()).toEqual(['id1', 'id2']);
-  });
-});
-
-describe('hidden games', () => {
-  it('loads empty hidden games', () => {
-    expect(loadHiddenGames()).toEqual([]);
-  });
-
-  it('saves and loads hidden games', () => {
-    saveHiddenGames(['hidden1']);
-    expect(loadHiddenGames()).toEqual(['hidden1']);
   });
 });
 

@@ -67,12 +67,12 @@ function createConfetti() {
 
 export default function App() {
   const {
-    games, favorites, hiddenGames, viewedGames,
+    games, favorites, viewedGames,
     votes, reactions, wishlist, userStats,
     collections, activityLog, achievements, onboardingStep,
     lastUpdated, isLoading, error,
     visibleGamesCount, savings, deepLinkedGame, clearDeepLinked,
-    loadGames, toggleFavorite, hideGame, markAsViewed,
+    loadGames, toggleFavorite, markAsViewed,
     handleVote, handleReaction,
     handleToggleWishlist, handleMarkClaimed,
     createCollection, deleteCollection, addToCollection, removeFromCollection,
@@ -87,7 +87,6 @@ export default function App() {
   const [activeStore, setActiveStore] = useState<StoreFilter>('all');
   const [activeType, setActiveType] = useState<TypeFilter>('all');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const [showHiddenOnly, setShowHiddenOnly] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
   // UI state
@@ -180,7 +179,7 @@ export default function App() {
 
   // --- Filtered games ---
   const filteredGames = useFilters({
-    games, hiddenGames, favorites, showFavoritesOnly, showHiddenOnly,
+    games, favorites, showFavoritesOnly,
     currentMode, searchTerm: debouncedSearch, sortMode,
     activeGenre, activeStore, activeType
   });
@@ -201,13 +200,13 @@ export default function App() {
 
   // --- Game of the day ---
   const gameOfDay = useMemo(() => {
-    const visible = sortedFiltered.filter(g => !hiddenGames.includes(g.id) && !showFavoritesOnly);
+    const visible = sortedFiltered.filter(g => !showFavoritesOnly);
     if (visible.length === 0) return null;
     const today = new Date();
     const daySeed = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
     const idx = Math.abs(daySeed.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)) % visible.length;
     return visible[idx];
-  }, [sortedFiltered, hiddenGames, showFavoritesOnly]);
+  }, [sortedFiltered, showFavoritesOnly]);
 
   // --- Trending (most voted this session) ---
   const trendingGames = useMemo(() => {
@@ -239,7 +238,7 @@ export default function App() {
 
   // --- Surprise me ---
   const handleSurpriseMe = useCallback(() => {
-    const visible = sortedFiltered.filter(g => !hiddenGames.includes(g.id) && !viewedGames.includes(g.id));
+    const visible = sortedFiltered.filter(g => !viewedGames.includes(g.id));
     if (visible.length === 0) {
       showToast(t('surpriseEmpty', language), 'info');
       return;
@@ -258,7 +257,7 @@ export default function App() {
     setTimeout(() => {
       document.querySelector('.surprise-result-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
-  }, [sortedFiltered, hiddenGames, viewedGames, language]);
+  }, [sortedFiltered, viewedGames, language]);
 
   // Infinite scroll
   const displayedGames = sortedFiltered.slice(0, displayCount);
@@ -343,17 +342,10 @@ export default function App() {
     setActiveType('all');
     setActiveStore('all');
     setShowFavoritesOnly(false);
-    setShowHiddenOnly(false);
   }, []);
 
   const handleToggleFavorites = useCallback(() => {
     setShowFavoritesOnly(p => { showToast(p ? t('favoritesOff', language) : t('favoritesOn', language), 'info'); return !p; });
-    setShowHiddenOnly(false);
-  }, [language]);
-
-  const handleToggleHidden = useCallback(() => {
-    setShowHiddenOnly(p => { if (!p) showToast(t('hiddenOn', language), 'info'); return !p; });
-    setShowFavoritesOnly(false);
   }, [language]);
 
   const handleResetFilters = useCallback(() => {
@@ -363,7 +355,6 @@ export default function App() {
     setActiveStore('all');
     setActiveType('all');
     setShowFavoritesOnly(false);
-    setShowHiddenOnly(false);
     setActiveCollectionFilter(null);
     showToast(t('filtersReset', language), 'info');
   }, [language]);
@@ -409,16 +400,14 @@ export default function App() {
   // Long press to trigger multi-select
   const mainLongPressTimer = useRef<number | null>(null);
 
-  const handleMultiSelectAction = useCallback((action: 'fav' | 'hide' | 'collection') => {
+  const handleMultiSelectAction = useCallback((action: 'fav' | 'collection') => {
     if (action === 'fav') {
       multiSelectedIds.forEach(id => toggleFavorite(id));
-    } else if (action === 'hide') {
-      multiSelectedIds.forEach(id => hideGame(id));
     }
     showToast(t('multiSelectAction', language).replace('{n}', String(multiSelectedIds.length)), 'success');
     setMultiSelectedIds([]);
     setMultiSelectActive(false);
-  }, [multiSelectedIds, toggleFavorite, hideGame, language]);
+  }, [multiSelectedIds, toggleFavorite, language]);
 
   // Open specific collection in stats
   const [activeCollectionFilter, setActiveCollectionFilter] = useState<string | null>(null);
@@ -426,7 +415,6 @@ export default function App() {
   const handleOpenCollectionGames = useCallback((collection: import('./types').UserCollection) => {
     setShowSettings(false);
     setShowFavoritesOnly(false);
-    setShowHiddenOnly(false);
     setSearchTerm('');
     setActiveCollectionFilter(collection.id);
     // Can't directly filter by collection in the grid, but we'll use search to hint
@@ -621,7 +609,7 @@ export default function App() {
       </div>
 
       {/* PC Store Sub-nav - visible solo en modo PC */}
-      {currentMode === 'pc' && !showFavoritesOnly && !showHiddenOnly && !multiSelectActive && (
+      {currentMode === 'pc' && !showFavoritesOnly && !multiSelectActive && (
         <div className="pc-store-nav">
           <div className="pc-store-nav-inner">
             <button
@@ -669,9 +657,6 @@ export default function App() {
             </span>
             <button className="multi-select-btn" onClick={() => handleMultiSelectAction('fav')}>
               {t('multiSelectFavorite', language)}
-            </button>
-            <button className="multi-select-btn" onClick={() => handleMultiSelectAction('hide')}>
-              {t('multiSelectHide', language)}
             </button>
             <button className="multi-select-btn clear" onClick={() => setMultiSelectedIds([])}>
               {t('multiSelectClear', language)}
@@ -721,7 +706,7 @@ export default function App() {
             )}
 
             {/* Surprise Me Button */}
-            {!showFavoritesOnly && !showHiddenOnly && !multiSelectActive && (
+            {!showFavoritesOnly && !multiSelectActive && (
               <button className="surprise-btn" onClick={handleSurpriseMe}>
                 🎲 {t('surpriseMe', language)}
               </button>
@@ -752,7 +737,7 @@ export default function App() {
             )}
 
             {/* Game of the Day */}
-            {gameOfDay && !showFavoritesOnly && !showHiddenOnly && !multiSelectActive && (
+            {gameOfDay && !showFavoritesOnly && !multiSelectActive && (
               <div className="game-of-day" onClick={() => handleOpenDetail(gameOfDay)}>
                 <img src={gameOfDay.image} alt="" className="game-of-day-bg" loading="lazy"
                   onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
@@ -774,7 +759,7 @@ export default function App() {
             )}
 
             {/* Ending Soon Timeline */}
-            {endingSoonGames.length > 0 && !showFavoritesOnly && !showHiddenOnly && !multiSelectActive && (
+            {endingSoonGames.length > 0 && !showFavoritesOnly && !multiSelectActive && (
               <section className="timeline-section">
                 <div className="timeline-header">
                   <div className="recommended-icon">⏳</div>
@@ -814,10 +799,8 @@ export default function App() {
               viewMode={viewMode}
               language={language}
               showFavoritesOnly={showFavoritesOnly}
-              showHiddenOnly={showHiddenOnly}
               multiSelectActive={multiSelectActive}
               toggleFavorite={toggleFavorite}
-              hideGame={hideGame}
               handleMarkAsViewed={handleMarkAsViewed}
               handleOpenDetail={handleOpenDetail}
             />
@@ -836,7 +819,6 @@ export default function App() {
               multiSelectActive={multiSelectActive}
               multiSelectedIds={multiSelectedIds}
               onToggleFavorite={toggleFavorite}
-              onHideGame={hideGame}
               onMarkAsViewed={handleMarkAsViewed}
               onOpenDetail={handleOpenDetail}
               onToggleMultiSelectGame={handleToggleMultiSelectGame}
@@ -919,7 +901,6 @@ export default function App() {
           games={games}
           favorites={favorites}
           viewedGames={viewedGames}
-          hiddenGames={hiddenGames}
           votes={votes}
           reactions={reactions}
           wishlist={wishlist}

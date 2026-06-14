@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useCallback } from 'react';
 import { Game, ViewMode, Language, Vote } from '../types';
 import { getTimeInfo, parsePrice } from '../utils/format';
 import { t } from '../i18n';
@@ -15,7 +15,6 @@ interface GameCardProps {
   multiSelectActive?: boolean;
   isMultiSelected?: boolean;
   onToggleFavorite: (id: string) => void;
-  onHideGame: (id: string) => void;
   onMarkAsViewed: (id: string) => void;
   onOpenDetail: (game: Game) => void;
   onToggleMultiSelectGame?: (id: string) => void;
@@ -24,18 +23,13 @@ interface GameCardProps {
 export default function GameCard({
   game, index, isFavorite, isViewed, isNew, votes, viewMode, language,
   multiSelectActive, isMultiSelected,
-  onToggleFavorite, onHideGame, onMarkAsViewed, onOpenDetail,
+  onToggleFavorite, onMarkAsViewed, onOpenDetail,
   onToggleMultiSelectGame
 }: GameCardProps) {
   const timeInfo = getTimeInfo(game.endDate, game.type);
   const gameVotes = votes[game.id];
   const isListView = viewMode === 'list';
 
-  const [swipeOffset, setSwipeOffset] = useState(0);
-  const [showSwipeLeft, setShowSwipeLeft] = useState(false);
-  const [showSwipeRight, setShowSwipeRight] = useState(false);
-  const touchStartX = useRef(0);
-  const swiping = useRef(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   const worth = game.worth && game.worth !== 'N/A' && game.worth !== 'Pago'
@@ -45,42 +39,6 @@ export default function GameCard({
   const worthValue = game.worth && game.worth !== 'N/A' && game.worth !== 'Pago'
     ? parsePrice(game.worth)
     : 0;
-
-  // Touch handlers for swipe gestures
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    swiping.current = true;
-  }, []);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!swiping.current) return;
-    const diff = e.touches[0].clientX - touchStartX.current;
-    if (Math.abs(diff) > 10) {
-      setSwipeOffset(diff);
-      setShowSwipeLeft(diff < -30);
-      setShowSwipeRight(diff > 30);
-    }
-  }, []);
-
-  const handleTouchEnd = useCallback(() => {
-    swiping.current = false;
-    if (swipeOffset < -60) {
-      onHideGame(game.id);
-      if (navigator.vibrate) navigator.vibrate(20);
-    } else if (swipeOffset > 60) {
-      onToggleFavorite(game.id);
-      if (navigator.vibrate) navigator.vibrate(20);
-    }
-    setSwipeOffset(0);
-    setShowSwipeLeft(false);
-    setShowSwipeRight(false);
-  }, [swipeOffset, game.id, onHideGame, onToggleFavorite]);
-
-  const handleContextMenu = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    onHideGame(game.id);
-    if (navigator.vibrate) navigator.vibrate(15);
-  }, [game.id, onHideGame]);
 
   const handleClick = useCallback(() => {
     if (multiSelectActive) {
@@ -102,21 +60,9 @@ export default function GameCard({
         isMultiSelected ? 'multi-selected' : '',
       ].filter(Boolean).join(' ')}
       data-id={game.id}
-      style={{
-        animationDelay: `${index * 0.04}s`,
-        transform: swiping.current ? `translateX(${swipeOffset}px)` : undefined,
-        transition: swiping.current ? 'none' : undefined,
-      }}
+      style={{ animationDelay: `${index * 0.04}s` }}
       onClick={handleClick}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onContextMenu={handleContextMenu}
     >
-      {/* Swipe indicators */}
-      <div className={`swipe-indicator left ${showSwipeLeft ? 'visible' : ''}`}>🙈</div>
-      <div className={`swipe-indicator right ${showSwipeRight ? 'visible' : ''}`}>❤️</div>
-
       {/* Image */}
       <div className="card-img">
         <img

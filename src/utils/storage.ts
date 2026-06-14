@@ -1,7 +1,6 @@
 import { Theme, ViewMode, Language, Vote, WishlistStatus, UserStats, AccentColor, EmojiReaction, GameReactions, UserCollection, ActivityEntry, Achievement, AchievementId, OnboardingStep } from '../types';
 
 const KEYS = {
-  HIDDEN: 'fgh_hiddenGames_v3',
   FAVORITES: 'fgh_favorites_v3',
   VIEWED: 'fgh_viewedGames_v3',
   WISHLIST: 'fgh_wishlist_v1',
@@ -36,10 +35,6 @@ export function loadObject<T>(key: string): Record<string, T> {
 export function saveObject<T>(key: string, obj: Record<string, T>): void {
   localStorage.setItem(key, JSON.stringify(obj));
 }
-
-// --- Hidden ---
-export function loadHiddenGames(): string[] { return loadArray(KEYS.HIDDEN); }
-export function saveHiddenGames(games: string[]): void { saveArray(KEYS.HIDDEN, games); }
 
 // --- Favorites ---
 export function loadFavorites(): string[] { return loadArray(KEYS.FAVORITES); }

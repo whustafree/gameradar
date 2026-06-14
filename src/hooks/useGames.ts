@@ -3,7 +3,6 @@ import { Capacitor } from '@capacitor/core';
 import { Game, GamesResponse, Vote, GameReactions, EmojiReaction, WishlistStatus, UserCollection, ActivityEntry, Achievement, AchievementId, UserStats } from '../types';
 import {
   loadFavorites, saveFavorites,
-  loadHiddenGames, saveHiddenGames,
   loadViewedGames, saveViewedGames,
   loadVotes, saveVotes,
   loadReactions, saveReactions,
@@ -39,7 +38,6 @@ const DEFAULT_ACHIEVEMENTS: Achievement[] = [
 export function useGames() {
   const [games, setGames] = useState<Game[]>([]);
   const [favorites, setFavorites] = useState<string[]>(() => loadFavorites());
-  const [hiddenGames, setHiddenGames] = useState<string[]>(() => loadHiddenGames());
   const [viewedGames, setViewedGames] = useState<string[]>(() => loadViewedGames());
   const [votes, setVotes] = useState<Record<string, Vote>>(() => loadVotes());
   const [reactions, setReactions] = useState<Record<string, GameReactions>>(() => loadReactions());
@@ -62,7 +60,6 @@ export function useGames() {
 
   // Persist
   useEffect(() => { saveFavorites(favorites); }, [favorites]);
-  useEffect(() => { saveHiddenGames(hiddenGames); }, [hiddenGames]);
   useEffect(() => { saveViewedGames(viewedGames); }, [viewedGames]);
   useEffect(() => { saveVotes(votes); }, [votes]);
   useEffect(() => { saveReactions(reactions); }, [reactions]);
@@ -141,12 +138,6 @@ export function useGames() {
       if (game) logActivity('favorite', id, game.title);
       return [...prev, id];
     });
-  }, [games, logActivity]);
-
-  const hideGame = useCallback((id: string) => {
-    setHiddenGames(prev => [...prev, id]);
-    const game = games.find(g => g.id === id);
-    if (game) logActivity('hide', id, game.title);
   }, [games, logActivity]);
 
   const markAsViewed = useCallback((id: string) => {
@@ -302,8 +293,8 @@ export function useGames() {
   }, [games]);
 
   // --- Derived ---
-  const visibleGamesCount = games.filter(g => !hiddenGames.includes(g.id)).length;
-  const savings = games.filter(g => !hiddenGames.includes(g.id)).reduce((acc, g) => acc + parsePrice(g.worth), 0);
+  const visibleGamesCount = games.length;
+  const savings = games.reduce((acc, g) => acc + parsePrice(g.worth), 0);
 
 
   // For deep linking - this will be read by App
@@ -312,7 +303,6 @@ export function useGames() {
   return {
     games,
     favorites,
-    hiddenGames,
     viewedGames,
     votes,
     reactions,
@@ -331,7 +321,6 @@ export function useGames() {
     clearDeepLinked: () => setDeepLinkedGame(null),
     loadGames,
     toggleFavorite,
-    hideGame,
     markAsViewed,
     handleVote,
     handleReaction,
