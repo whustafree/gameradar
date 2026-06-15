@@ -4,7 +4,7 @@ const logger = require('../utils/logger');
 
 class GooglePlayService {
   constructor() {
-    this.timeout = 15000;
+    this.TIMEOUT_MS = 4000;
   }
 
   async fetchAll() {
@@ -13,15 +13,19 @@ class GooglePlayService {
     try {
       logger.info('Obteniendo apps Android desde Google Play Store...');
 
-      // Single fast call: TOP_FREE apps from Play Store
-      // We don't filter by originalPrice because most free apps are permanently free (F2P).
-      // The library's list() endpoint rarely returns originalPrice even for temporarily free apps.
-      // Instead we just return top free games as-is — they're all free Android content.
-      const apps = await gplay.list({
-        collection: gplay.collection.TOP_FREE,
-        num: 25,
-        fullDetail: false,
-      });
+      // Race the API call against a timeout to prevent blocking
+      // Vercel serverless functions have a 10s maxDuration and this
+      // service can take 5-10s on slow connections
+      const apps = await Promise.race([
+        gplay.list({
+          collection: gplay.collection.TOP_FREE,
+          num: 15,
+          fullDetail: false,
+        }),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('timeout')), this.TIMEOUT_MS)
+        ),
+      ]);
 
       if (!Array.isArray(apps)) return [];
 
@@ -42,7 +46,11 @@ class GooglePlayService {
       return result;
 
     } catch (err) {
-      logger.warn(`GooglePlayStore: error (${err?.message || err})`);
+      if (err?.message === 'timeout') {
+        logger.warn('GooglePlayStore: timeout (4s), omitiendo fuente');
+      } else {
+        logger.warn(`GooglePlayStore: error (${err?.message || err})`);
+      }
       return [];
     }
   }
@@ -62,7 +70,7 @@ class GooglePlayService {
       platformIcon: '📱',
       category: 'android',
       endDate: null,
-      worth: null, // All free apps, no deal price to show
+      worth: null,
       type: type,
       genre: app.genre ? app.genre.toLowerCase().replace(/\s+/g, '') : 'other',
       source: 'googleplay',
