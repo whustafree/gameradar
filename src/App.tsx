@@ -617,6 +617,32 @@ export default function App() {
         </div>
       </div>
 
+      {/* Android Type Sub-nav - visible en modo Android */}
+      {currentMode === 'android' && !showFavoritesOnly && !multiSelectActive && (
+        <div className="pc-store-nav">
+          <div className="pc-store-nav-inner">
+            <button
+              className={`store-chip ${activeType === 'all' ? 'active' : ''}`}
+              onClick={() => setActiveType('all')}
+            >
+              {t('all', language)}
+            </button>
+            <button
+              className={`store-chip ${activeType === 'game' ? 'active' : ''}`}
+              onClick={() => setActiveType('game')}
+            >
+              🎮 {t('games', language)}
+            </button>
+            <button
+              className={`store-chip ${activeType === 'app' ? 'active' : ''}`}
+              onClick={() => setActiveType('app')}
+            >
+              📱 {t('apps', language)}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* PC Store Sub-nav - visible solo en modo PC */}
       {currentMode === 'pc' && !showFavoritesOnly && !multiSelectActive && (
         <div className="pc-store-nav">

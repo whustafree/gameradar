@@ -124,6 +124,7 @@ export const translations = {
     apply: 'Aplicar',
     all: 'Todo',
     games: 'Juegos',
+    apps: 'Apps',
     dlcs: 'DLCs',
     allStores: 'Todas',
 
@@ -440,6 +441,7 @@ export const translations = {
     apply: 'Apply',
     all: 'All',
     games: 'Games',
+    apps: 'Apps',
     dlcs: 'DLCs',
     allStores: 'All stores',
 
