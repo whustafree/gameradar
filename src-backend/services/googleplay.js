@@ -1,21 +1,45 @@
-const _gplay = require('google-play-scraper');
-const gplay = _gplay.default || _gplay;
 const logger = require('../utils/logger');
 
+/**
+ * GooglePlayService - Obtiene juegos gratis destacados de Google Play Store
+ *
+ * Usa import() dinámico para cargar google-play-scraper (ESM module)
+ * en lugar de require() (CJS), para evitar errores en entornos como Vercel.
+ * Si falla la carga del módulo, el servicio retorna [] silenciosamente.
+ */
 class GooglePlayService {
   constructor() {
     this.TIMEOUT_MS = 4000;
+    this._gplay = null;
+    this._loadError = null;
+  }
+
+  async _loadModule() {
+    if (this._gplay) return this._gplay;
+    try {
+      const mod = await import('google-play-scraper');
+      this._gplay = mod.default || mod;
+      return this._gplay;
+    } catch (err) {
+      this._loadError = err?.message || err;
+      logger.warn(`GooglePlayStore: no se pudo cargar el módulo (${this._loadError})`);
+      return null;
+    }
   }
 
   async fetchAll() {
     const startTime = Date.now();
 
     try {
+      const gplay = await this._loadModule();
+      if (!gplay || !gplay.list || !gplay.collection?.TOP_FREE) {
+        logger.warn(`GooglePlayStore: módulo no disponible${this._loadError ? ` (${this._loadError})` : ''}`);
+        return [];
+      }
+
       logger.info('Obteniendo apps Android desde Google Play Store...');
 
       // Race the API call against a timeout to prevent blocking
-      // Vercel serverless functions have a 10s maxDuration and this
-      // service can take 5-10s on slow connections
       const apps = await Promise.race([
         gplay.list({
           collection: gplay.collection.TOP_FREE,
