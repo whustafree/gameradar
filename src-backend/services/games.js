@@ -4,6 +4,7 @@ const epicGamesService = require('./epicgames');
 const freeToGameService = require('./freetogame');
 const googlePlayService = require('./googleplay');
 const androidFeedsService = require('./androidfeeds');
+const mmobombService = require('./mmobomb');
 const telegramService = require('./telegram');
 const instagramService = require('./instagram');
 const cacheManager = require('../utils/cache');
@@ -43,7 +44,8 @@ class GamesService {
         epicGamesService.fetchFreeGames(),
         freeToGameService.fetchAll(),
         googlePlayService.fetchAll(),
-        androidFeedsService.fetchAll()
+        androidFeedsService.fetchAll(),
+        mmobombService.fetchAll()
       ]);
 
       // Combinar todos los resultados
