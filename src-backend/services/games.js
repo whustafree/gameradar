@@ -6,6 +6,7 @@ const androidFeedsService = require('./androidfeeds');
 const mmobombService = require('./mmobomb');
 const notengoSueltoService = require('./notengosuelto');
 const googlePlayDealsService = require('./googleplaydeals');
+const fdroidService = require('./fdroid');
 const telegramService = require('./telegram');
 const instagramService = require('./instagram');
 const cacheManager = require('../utils/cache');
@@ -47,7 +48,8 @@ class GamesService {
         androidFeedsService.fetchAll(),
         mmobombService.fetchAll(),
         notengoSueltoService.fetchAll(),
-        googlePlayDealsService.fetchAll()
+        googlePlayDealsService.fetchAll(),
+        fdroidService.fetchAll()
       ]);
 
       // Combinar todos los resultados
