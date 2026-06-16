@@ -86,181 +86,95 @@ export default function FilterPanel({
 }: FilterPanelProps) {
   const [localSearch, setLocalSearch] = useState(searchTerm);
 
-  // Sync local search with parent
-  useEffect(() => {
-    setLocalSearch(searchTerm);
-  }, [searchTerm, isOpen]);
+  useEffect(() => { setLocalSearch(searchTerm); }, [searchTerm, isOpen]);
 
-  // Close on overlay click
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) onClose();
   };
 
-  // Prevent body scroll when open
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow = isOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
   return (
     <>
-      {/* Overlay */}
-      <div
-        className={`filter-overlay ${isOpen ? 'open' : ''}`}
-        onClick={handleOverlayClick}
-      />
-
-      {/* Sheet */}
-      <div
-        className={`filter-sheet ${isOpen ? 'open' : ''}`}
-        role="dialog"
-        aria-label={t('filters', language)}
-      >
+      <div className={`filter-overlay ${isOpen ? 'open' : ''}`} onClick={handleOverlayClick} />
+      <div className={`filter-sheet ${isOpen ? 'open' : ''}`} role="dialog" aria-label={t('filters', language)}>
         <div className="filter-handle" />
-
-        {/* Header */}
         <div className="filter-head">
-          <h2 className="filter-title">
-            🔍 {t('filters', language)}
-          </h2>
-          <button className="filter-close" onClick={onClose}>
-            ✕
-          </button>
+          <h2 className="filter-title">🔍 {t('filters', language)}</h2>
+          <button className="filter-close" onClick={onClose}>✕</button>
         </div>
-
         <div className="filter-body">
-          {/* Search */}
           <div className="filter-group">
             <span className="filter-label">{t('searchPlaceholder', language)}</span>
             <div className="filter-search-wrapper">
               <span className="filter-search-icon">🔍</span>
-              <input
-                type="text"
-                className="filter-search-input"
-                placeholder={t('searchPlaceholder', language)}
+              <input type="text" className="filter-search-input" placeholder={t('searchPlaceholder', language)}
                 value={localSearch}
-                onChange={e => {
-                  setLocalSearch(e.target.value);
-                  onSearchChange(e.target.value);
-                }}
-                autoComplete="off"
-              />
-              {localSearch && (
-                <button
-                  className="filter-search-clear"
-                  onClick={() => { setLocalSearch(''); onSearchChange(''); }}
-                >
-                  ✕
-                </button>
-              )}
+                onChange={e => { setLocalSearch(e.target.value); onSearchChange(e.target.value); }}
+                autoComplete="off" />
+              {localSearch && <button className="filter-search-clear" onClick={() => { setLocalSearch(''); onSearchChange(''); }}>✕</button>}
             </div>
           </div>
-
-          {/* Sort */}
           <div className="filter-group">
             <span className="filter-label">{t('sortBy', language)}</span>
             <div className="filter-chips">
               {SORT_OPTIONS.map(opt => (
-                <button
-                  key={opt.value}
-                  className={`filter-chip ${sortMode === opt.value ? 'active' : ''}`}
-                  onClick={() => onSortChange(opt.value)}
-                >
+                <button key={opt.value} className={`filter-chip ${sortMode === opt.value ? 'active' : ''}`} onClick={() => onSortChange(opt.value)}>
                   {opt.icon} {t(opt.labelKey, language)}
                 </button>
               ))}
             </div>
           </div>
-
-          {/* Genre */}
           <div className="filter-group">
             <span className="filter-label">{t('genre', language)}</span>
             <div className="filter-chips">
               {GENRES.map(g => (
-                <button
-                  key={g.value}
-                  className={`filter-chip ${activeGenre === g.value ? 'active' : ''}`}
-                  onClick={() => onGenreChange(g.value)}
-                >
+                <button key={g.value} className={`filter-chip ${activeGenre === g.value ? 'active' : ''}`} onClick={() => onGenreChange(g.value)}>
                   {g.icon} {g.value === 'all' ? t('all', language) : g.value.charAt(0).toUpperCase() + g.value.slice(1)}
                 </button>
               ))}
             </div>
           </div>
-
-          {/* Store */}
           <div className="filter-group">
             <span className="filter-label">{t('storeFilter', language)}</span>
             <div className="filter-chips">
               {STORES.map(s => (
-                <button
-                  key={s.value}
-                  className={`filter-chip ${activeStore === s.value ? 'active' : ''}`}
-                  onClick={() => onStoreChange(s.value)}
-                >
+                <button key={s.value} className={`filter-chip ${activeStore === s.value ? 'active' : ''}`} onClick={() => onStoreChange(s.value)}>
                   {s.icon} {s.label === 'storeAll' ? t('storeAll', language) : s.label}
                 </button>
               ))}
             </div>
           </div>
-
-          {/* Type */}
           <div className="filter-group">
             <span className="filter-label">{t('type', language)}</span>
             <div className="filter-chips">
               {TYPES.map(tp => (
-                <button
-                  key={tp.value}
-                  className={`filter-chip ${activeType === tp.value ? 'active' : ''}`}
-                  onClick={() => onTypeChange(tp.value)}
-                >
+                <button key={tp.value} className={`filter-chip ${activeType === tp.value ? 'active' : ''}`} onClick={() => onTypeChange(tp.value)}>
                   {tp.icon} {t(tp.labelKey, language)}
                 </button>
               ))}
             </div>
           </div>
-
-          {/* Year */}
           <div className="filter-group">
             <span className="filter-label">Año</span>
             <div className="filter-chips">
               {YEARS.map(y => (
-                <button
-                  key={y.value}
-                  className={`filter-chip ${activeYear === y.value ? 'active' : ''}`}
-                  onClick={() => onYearChange(y.value)}
-                >
-                  {y.label}
-                </button>
+                <button key={y.value} className={`filter-chip ${activeYear === y.value ? 'active' : ''}`} onClick={() => onYearChange(y.value)}>{y.label}</button>
               ))}
             </div>
           </div>
-
-          {/* Favorites only */}
           <div className="filter-group">
             <span className="filter-label">{t('specials', language)}</span>
             <div className="filter-chips">
-              <button
-                className={`filter-chip ${showFavoritesOnly ? 'active' : ''}`}
-                onClick={onToggleFavorites}
-              >
-                ❤️ {t('favOnly', language)}
-              </button>
+              <button className={`filter-chip ${showFavoritesOnly ? 'active' : ''}`} onClick={onToggleFavorites}>❤️ {t('favOnly', language)}</button>
             </div>
           </div>
-
-          {/* Actions */}
           <div className="filter-actions">
-            <button className="filter-btn secondary" onClick={onReset}>
-              🔄 {t('reset', language)}
-            </button>
-            <button className="filter-btn primary" onClick={onClose}>
-              {t('apply', language)}
-            </button>
+            <button className="filter-btn secondary" onClick={onReset}>🔄 {t('reset', language)}</button>
+            <button className="filter-btn primary" onClick={onClose}>{t('apply', language)}</button>
           </div>
         </div>
       </div>

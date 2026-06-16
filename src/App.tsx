@@ -20,7 +20,6 @@ import StatsPanel from './components/StatsPanel';
 import Onboarding from './components/Onboarding';
 import SettingsPanel from './components/SettingsPanel';
 import TrendingSection from './components/TrendingSection';
-import HeroCarousel from './components/HeroCarousel';
 import FilterPanel from './components/FilterPanel';
 import { t } from './i18n';
 
@@ -749,15 +748,6 @@ export default function App() {
                 <span>{newGameIds.length} {language === 'es' ? 'nuevos juegos disponibles' : 'new games available'}!</span>
                 <button className="notification-banner-close" onClick={e => { e.stopPropagation(); setShowNewGamesBanner(false); }}>✕</button>
               </div>
-            )}
-
-            {/* Hero Carousel */}
-            {!showFavoritesOnly && !multiSelectActive && sortedFiltered.length > 0 && (
-              <HeroCarousel
-                games={sortedFiltered}
-                language={language}
-                onOpenDetail={handleOpenDetail}
-              />
             )}
 
             {/* Surprise Me Button */}
