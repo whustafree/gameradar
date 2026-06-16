@@ -48,6 +48,41 @@ class GooglePlayDealsService {
       logger.warn(`GooglePlayDeals: Reddit falló (${err?.message || err})`);
     }
 
+    // Fuente 1.5: Enriquecer deals de Reddit con google-play-scraper
+    if (deals.length > 0) {
+      try {
+        const gplay = require('google-play-scraper');
+        for (const deal of deals) {
+          if (deal.url?.includes('id=')) {
+            const idMatch = deal.url.match(/[?&]id=([^&]+)/);
+            if (idMatch) {
+              try {
+                const details = await gplay.app({ appId: idMatch[1], lang: 'es', country: 'cl' });
+                if (details) {
+                  deal.rating = details.score || null;
+                  deal.ratingsCount = details.ratings || null;
+                  deal.installs = details.installs || null;
+                  deal.publisher = details.developer || details.publisher || null;
+                  deal.title = details.title || deal.title;
+                  deal.image = details.icon || details.coverImage || deal.image;
+                  deal.description = (details.summary || details.description || '').substring(0, 300) || deal.description;
+                  deal.worth = deal.worth || details.originalPrice || details.priceText || null;
+                  if (details.genre) deal.genre = this.mapGenre(details.genre);
+                }
+              } catch (e) {
+                // Skip enrichment for this app
+              }
+              // Pequeña pausa para no rate-limit
+              await new Promise(r => setTimeout(r, 200));
+            }
+          }
+        }
+        logger.info(`GooglePlayDeals: ${deals.length} deals enriquecidos con Play Store`);
+      } catch (err) {
+        logger.warn(`GooglePlayDeals: enrichment falló (${err?.message || err})`);
+      }
+    }
+
     // Fuente 2: google-play-scraper (fallback) - Top juegos gratis
     if (deals.length < 5) {
       try {

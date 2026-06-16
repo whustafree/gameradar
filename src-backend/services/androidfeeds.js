@@ -94,8 +94,30 @@ class AndroidFeedsService {
         const skipKeywords = ['review', 'scam', 'warning', 'malware', 'virus',
                               'interview', 'podcast', 'opinion', 'editorial',
                               'best phone', 'best tablet', 'accessories',
-                              'how to', 'tips', 'tricks'];
+                              'how to', 'tips', 'tricks',
+                              'microsd', 'micro sd', 'sd card', 'memory card',
+                              'usb-c', 'usb c', 'usb-c cable', 'charger', 'charging',
+                              'power bank', 'cable', 'adapter', 'headphone',
+                              'earbuds', 'speaker', 'bluetooth', 'case', 'cover',
+                              'screen protector', 'tempered glass', 'stand',
+                              'mount', 'tripod', 'keyboard', 'mouse', 'smartwatch',
+                              'fitness tracker', 'router', 'modem', 'wifi',
+                              'smart home', 'security camera', 'ring light',
+                              'laptop', 'chromebook', 'tablet', 'monitor',
+                              'tv', 'streaming', 'subscription', 'music',
+                              'movie', 'book', 'kindle', 'audible',
+                              'printer', 'scanner', 'shipping', 'pixel',
+                              'samsung galaxy', 'oneplus', 'xiaomi', 'motorola',
+                              'google home', 'nest', 'echo', 'alexa',
+                              'app of the week', 'weekly roundup', 'weekly recap'];
         if (skipKeywords.some(kw => combined.includes(kw))) continue;
+
+        // Must contain at least one app-related keyword to pass
+        const appKeywords = ['app', 'game', 'play store', 'google play', 'apk',
+                             'android app', 'mobile game', 'free to play',
+                             'update', 'feature', 'launch', 'release', 'beta',
+                             'iap', 'in-app', 'store', 'gratis', 'paid'];
+        if (!appKeywords.some(kw => combined.includes(kw))) continue;
 
         // Extract possible app name from title (first meaningful part)
         const cleanTitle = title
