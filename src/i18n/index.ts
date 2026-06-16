@@ -323,6 +323,7 @@ export const translations = {
     // Game detail
     similarGames: 'Juegos similares',
     addWishlist: 'Añadir a lista',
+    license: 'Licencia',
 
     // Deep link / share
     shareGameLink: 'Compartir enlace',
@@ -630,6 +631,7 @@ export const translations = {
     // Game detail
     similarGames: 'Similar games',
     addWishlist: 'Add to list',
+    license: 'License',
 
     shareGameLink: 'Share link',
     gameUrlCopied: 'Game link copied',

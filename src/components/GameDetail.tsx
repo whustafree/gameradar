@@ -198,20 +198,33 @@ export default function GameDetail({
             </div>
           </div>
 
-          {/* Free-to-keep badge */}
-          {game.type && (
-            <div className="detail-section">
-              <span className="detail-section-label">{t('type', language)}</span>
-              <span className="card-img-badge" style={{
-                display: 'inline-block',
-                background: 'rgba(59,130,246,0.15)',
-                color: 'var(--blue)',
-                border: '1px solid rgba(59,130,246,0.2)',
-                fontSize: '0.7rem',
-                padding: '0.25rem 0.6rem',
-              }}>
-                {t('limitedOffer', language)}
-              </span>
+          {/* Badges: type + F-Droid license */}
+          {(game.type || game.license) && (
+            <div className="detail-section" style={{ flexDirection: 'row', flexWrap: 'wrap', gap: '0.35rem' }}>
+              {game.type && (
+                <span className="card-img-badge" style={{
+                  display: 'inline-block',
+                  background: 'rgba(59,130,246,0.15)',
+                  color: 'var(--blue)',
+                  border: '1px solid rgba(59,130,246,0.2)',
+                  fontSize: '0.7rem',
+                  padding: '0.25rem 0.6rem',
+                }}>
+                  {t('limitedOffer', language)}
+                </span>
+              )}
+              {game.license && (
+                <span className="card-img-badge" style={{
+                  display: 'inline-block',
+                  background: 'rgba(76,175,80,0.12)',
+                  color: 'var(--green)',
+                  border: '1px solid rgba(76,175,80,0.2)',
+                  fontSize: '0.65rem',
+                  padding: '0.25rem 0.6rem',
+                }}>
+                  📜 {t('license', language)}: {game.license}
+                </span>
+              )}
             </div>
           )}
 

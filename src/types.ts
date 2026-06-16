@@ -21,6 +21,8 @@ export interface Game {
   rating?: number;
   ratingsCount?: number;
   installs?: string;
+  // F-Droid license info
+  license?: string;
 }
 
 export interface GamesResponse {

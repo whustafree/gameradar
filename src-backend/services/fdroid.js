@@ -17,8 +17,15 @@ class FDroidService {
     this.timeout = 15000;
     this.maxApps = 30;
     // Categorías de F-Droid que nos interesan
+    // Incluye juegos y categorías adyacentes (entretenimiento, emuladores, multimedia)
     this.targetCategories = new Set([
       'games', 'game', 'gaming',
+      'entertainment', 'entretenimiento',
+      'emulation', 'emuladores', 'emulator',
+      'music' , 'audio',
+      'reading',
+      'sports', 'deportes',
+      'science & education', 'education', 'educación',
     ]);
   }
 
