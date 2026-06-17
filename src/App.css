@@ -1550,8 +1550,10 @@ input, textarea, [contenteditable] { user-select: text; -webkit-user-select: tex
   transform: translateX(-50%);
   min-width: 200px;
   max-width: calc(100vw - 1.5rem);
-  max-height: calc(50vh);
+  max-height: min(60vh, calc(100vh - var(--nav-h) - 2rem));
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
@@ -1561,6 +1563,11 @@ input, textarea, [contenteditable] { user-select: text; -webkit-user-select: tex
   box-shadow: var(--shadow-xl);
   animation: overflowIn .25s var(--ease-spring);
   z-index: 250;
+}
+.platform-dropdown::after {
+  content: '';
+  display: block;
+  height: 0.25rem;
 }
 .platform-dropdown-header {
   font-size: .55rem;

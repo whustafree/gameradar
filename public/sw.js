@@ -1,149 +1,210 @@
 /**
- * GameRadar Service Worker v3.0
- * Estrategia: Cache First para Vite assets, Network First para API
- * Offline support para juegos guardados
+ * GameRadar Service Worker v4.0
+ * Estrategia: Cache First con renovación en segundo plano
+ * Offline total para assets estáticos + API en caché
  */
 
-const CACHE_NAME = 'gameradar-v3';
-const STATIC_CACHE = 'grd-static-v3';
-const API_CACHE = 'grd-api-v3';
-const IMAGE_CACHE = 'grd-images-v3';
+const CACHE_VERSION = 'v4';
+const CACHE_NAMES = {
+  static: `grd-static-${CACHE_VERSION}`,
+  api: `grd-api-${CACHE_VERSION}`,
+  images: `grd-images-${CACHE_VERSION}`,
+  fonts: `grd-fonts-${CACHE_VERSION}`,
+  shell: `grd-shell-${CACHE_VERSION}`,
+};
 
-// Instalación: Cachear el shell mínimo
+// Assets a precachear en instalación
+const PRECACHE_URLS = [
+  '/',
+  '/index.html',
+  '/vite.svg',
+];
+
+// Instalación: Cachear shell + assets críticos
 self.addEventListener('install', (event) => {
-  console.log('[SW] Instalando v3...');
   event.waitUntil(
-    caches.open(STATIC_CACHE)
-      .then((cache) => cache.addAll(['/', '/index.html']))
-      .then(() => self.skipWaiting())
+    (async () => {
+      const cache = await caches.open(CACHE_NAMES.shell);
+      // Pre-cachear URLs conocidas
+      await cache.addAll(PRECACHE_URLS).catch(() => {});
+      // Intentar cachear recursos de Vite (se agregarán dinámicamente)
+      self.skipWaiting();
+    })()
   );
 });
 
-// Activación: Limpiar cachés antiguas
+// Activación: Limpiar cachés antiguas y tomar control
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activando v3...');
   event.waitUntil(
-    caches.keys().then((cacheNames) =>
-      Promise.all(
-        cacheNames
-          .filter((name) => name.startsWith('gameradar-') || (name.startsWith('grd-') && !name.includes('v3')))
-          .map((name) => caches.delete(name))
-      )
-    ).then(() => self.clients.claim())
+    (async () => {
+      const validCacheNames = new Set(Object.values(CACHE_NAMES));
+      const keys = await caches.keys();
+      await Promise.all(
+        keys
+          .filter(key => key.startsWith('grd-') && !validCacheNames.has(key))
+          .map(key => caches.delete(key))
+      );
+      await self.clients.claim();
+    })()
   );
 });
 
-// Fetch: Estrategias de cacheo
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  if (request.method !== 'GET') return;
-  if (url.protocol === 'chrome-extension:') return;
-
-  // API calls: Network First
-  if (url.pathname.startsWith('/api/')) {
-    event.respondWith(networkFirst(request, API_CACHE));
-    return;
-  }
-
-  // Images: Cache First con límite
-  if (request.destination === 'image') {
-    event.respondWith(cacheFirstLimited(request, IMAGE_CACHE, 150));
-    return;
-  }
-
-  // Vite assets (JS, CSS, fonts): Cache First
-  if (request.destination === 'script' || request.destination === 'style' || request.destination === 'font') {
-    event.respondWith(cacheFirst(request, STATIC_CACHE));
-    return;
-  }
-
-  // Everything else: Network First, fallback to cache
-  event.respondWith(networkFirst(request, STATIC_CACHE));
-});
-
-async function cacheFirst(request, cacheName) {
+// Estrategia: Cache First + renovación en segundo plano
+async function cacheFirstRefresh(request, cacheName, maxAge = null) {
   const cache = await caches.open(cacheName);
   const cached = await cache.match(request);
-  if (cached) return cached;
 
+  if (cached) {
+    // Si hay maxAge y el caché es viejo, renovar en background
+    if (maxAge) {
+      const cachedDate = cached.headers.get('date');
+      if (cachedDate) {
+        const age = Date.now() - new Date(cachedDate).getTime();
+        if (age > maxAge) {
+          // Renovación en segundo plano (no bloquear)
+          fetchAndCache(request, cache).catch(() => {});
+        }
+      }
+    }
+    return cached;
+  }
+
+  // No hay caché, obtener de red
   try {
     const response = await fetch(request);
     if (response.ok) cache.put(request, response.clone());
     return response;
   } catch {
-    return caches.match('/');
+    // Fallback: devolver offline page o error amigable
+    if (request.destination === 'document') return caches.match('/');
+    return new Response(
+      JSON.stringify({ success: false, error: 'Sin conexión', offline: true }),
+      { status: 503, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 }
 
-async function networkFirst(request, cacheName) {
+async function fetchAndCache(request, cache) {
+  try {
+    const response = await fetch(request);
+    if (response.ok) cache.put(request, response.clone());
+  } catch {}
+}
+
+// Network First con timeout
+async function networkFirstTimeout(request, cacheName, timeout = 3000) {
   const cache = await caches.open(cacheName);
 
   try {
-    const response = await fetch(request);
+    const fetchPromise = fetch(request);
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), timeout)
+    );
+
+    const response = await Promise.race([fetchPromise, timeoutPromise]);
     if (response.ok) cache.put(request, response.clone());
     return response;
   } catch {
     const cached = await cache.match(request);
     if (cached) return cached;
-
-    if (request.destination === 'document') return caches.match('/');
-
+    // Fallback para API
     return new Response(
       JSON.stringify({ success: false, error: 'Sin conexión', offline: true }),
-      { headers: { 'Content-Type': 'application/json' }, status: 503 }
+      { status: 503, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }
 
-async function cacheFirstLimited(request, cacheName, maxItems) {
-  const cache = await caches.open(cacheName);
-  const cached = await cache.match(request);
-  if (cached) return cached;
+// Manejo de fetch con estrategias por tipo
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  if (request.method !== 'GET') return;
 
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const keys = await cache.keys();
-      if (keys.length < maxItems) {
-        cache.put(request, response.clone());
-      }
-    }
-    return response;
-  } catch {
-    return new Response(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="150"><rect fill="%2311111b" width="300" height="150"/><text fill="%235c5c70" x="50%" y="50%" text-anchor="middle" font-family="sans-serif">Offline</text></svg>`,
-      { headers: { 'Content-Type': 'image/svg+xml' } }
-    );
+  const url = new URL(request.url);
+  if (url.protocol === 'chrome-extension:' || url.protocol === 'chrome-extension:') return;
+
+  // Solo manejar requests del mismo origen o CDNs conocidos
+  const isSameOrigin = url.origin === self.location.origin;
+  const isGoogleFonts = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
+
+  if (!isSameOrigin && !isGoogleFonts) return;
+
+  // API: Network First con timeout de 3s
+  if (isSameOrigin && url.pathname.startsWith('/api/')) {
+    event.respondWith(networkFirstTimeout(request, CACHE_NAMES.api, 3000));
+    return;
   }
-}
+
+  // Imágenes: Cache First, renovar en segundo plano cada 1 hora
+  if (request.destination === 'image') {
+    event.respondWith(cacheFirstRefresh(request, CACHE_NAMES.images, 3600000));
+    return;
+  }
+
+  // Fuentes: Cache First (casi estáticas)
+  if (request.destination === 'font' || isGoogleFonts) {
+    event.respondWith(cacheFirstRefresh(request, CACHE_NAMES.fonts));
+    return;
+  }
+
+  // Scripts y estilos (Vite assets): Cache First con renovación cada 24h
+  if (request.destination === 'script' || request.destination === 'style') {
+    event.respondWith(cacheFirstRefresh(request, CACHE_NAMES.static, 86400000));
+    return;
+  }
+
+  // Documentos y otros: Cache First con renovación
+  event.respondWith(cacheFirstRefresh(request, CACHE_NAMES.static));
+});
 
 // Push notifications
 self.addEventListener('push', (event) => {
   if (!event.data) return;
-  const data = event.data.json();
-  event.waitUntil(
-    self.registration.showNotification('GameRadar', {
-      body: data.body || '¡Nuevos juegos gratuitos disponibles!',
-      icon: '/vite.svg',
-      tag: 'new-games',
-      requireInteraction: true,
-      actions: [
-        { action: 'open', title: 'Ver juegos' },
-        { action: 'close', title: 'Cerrar' }
-      ]
-    })
-  );
+  try {
+    const data = event.data.json();
+    event.waitUntil(
+      self.registration.showNotification(data.notification?.title || 'GameRadar', {
+        body: data.notification?.body || '¡Nuevos juegos gratuitos disponibles!',
+        icon: data.notification?.icon || '/vite.svg',
+        badge: '/vite.svg',
+        tag: 'new-games',
+        requireInteraction: true,
+        vibrate: data.notification?.vibrate || [100, 50, 100],
+        actions: [
+          { action: 'open', title: 'Ver juegos' },
+          { action: 'close', title: 'Cerrar' }
+        ]
+      })
+    );
+  } catch {
+    // Si no es JSON válido, mostrar el texto plano
+    event.waitUntil(
+      self.registration.showNotification('GameRadar', {
+        body: event.data.text(),
+        icon: '/vite.svg',
+      })
+    );
+  }
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  if (event.action === 'open' || !event.action) {
+  const action = event.action;
+  if (action === 'open' || !action) {
     event.waitUntil(clients.openWindow('/'));
   }
 });
 
 self.addEventListener('message', (event) => {
-  if (event.data === 'SKIP_WAITING') self.skipWaiting();
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+  if (event.data?.type === 'CACHE_URLS' && Array.isArray(event.data.urls)) {
+    event.waitUntil(
+      (async () => {
+        const cache = await caches.open(CACHE_NAMES.static);
+        await cache.addAll(event.data.urls).catch(() => {});
+      })()
+    );
+  }
 });

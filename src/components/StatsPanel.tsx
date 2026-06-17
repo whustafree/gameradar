@@ -1,11 +1,9 @@
-import { useMemo, useRef, useEffect } from 'react';
+import { useMemo } from 'react';
 import { Language, UserStats, Game, Vote, GameReactions, WishlistStatus, UserCollection, ActivityEntry, Achievement } from '../types';
 import { t } from '../i18n';
 import { parsePrice } from '../utils/format';
 import { showToast } from './Toast';
-import { Chart, registerables } from 'chart.js';
-
-Chart.register(...registerables);
+import ChartCharts from './ChartCharts';
 
 interface StatsPanelProps {
   userStats: UserStats;
@@ -94,191 +92,20 @@ export default function StatsPanel({
   const unlockedAchievements = achievements.filter(a => a.unlockedAt).length;
   const totalAchievements = achievements.length;
 
-  // Weekly activity data
+  // Weekly activity data for charts
   const weeklyActivity = useMemo(() => {
     const days: { label: string; count: number }[] = [];
     const now = new Date();
     for (let i = 6; i >= 0; i--) {
       const d = new Date(now);
       d.setDate(d.getDate() - i);
-      const dayStr = d.toLocaleDateString('en-CA'); // YYYY-MM-DD
+      const dayStr = d.toLocaleDateString('en-CA');
       const label = d.toLocaleDateString(language === 'es' ? 'es' : 'en', { weekday: 'short' });
       const count = activityLog.filter(a => a.timestamp?.startsWith(dayStr)).length;
       days.push({ label, count });
     }
     return days;
   }, [activityLog, language]);
-
-  // Chart.js refs
-  const platformChartRef = useRef<HTMLCanvasElement>(null);
-  const savingsChartRef = useRef<HTMLCanvasElement>(null);
-  const weeklyChartRef = useRef<HTMLCanvasElement>(null);
-  const chartInstances = useRef<Chart[]>([]);
-
-  // Platform donut chart
-  useEffect(() => {
-    if (!platformChartRef.current || !globalStats.platformCount) return;
-    const ctx = platformChartRef.current.getContext('2d');
-    if (!ctx) return;
-    
-    const entries = Object.entries(globalStats.platformCount)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 6);
-    
-    const colors = [
-      'hsl(120, 70%, 40%)', 'hsl(0, 70%, 50%)', 'hsl(215, 70%, 50%)',
-      'hsl(270, 60%, 50%)', 'hsl(40, 90%, 50%)', 'hsl(180, 70%, 40%)',
-    ];
-    
-    const chart = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: entries.map(([p]) => p),
-        datasets: [{
-          data: entries.map(([, c]) => c),
-          backgroundColor: colors.slice(0, entries.length),
-          borderColor: 'transparent',
-          borderWidth: 2,
-          hoverOffset: 8,
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: {
-            display: true,
-            position: 'bottom',
-            labels: { color: '#8a8a96', font: { size: 10 }, padding: 8 },
-          }
-        },
-        cutout: '65%',
-      }
-    });
-    chartInstances.current.push(chart);
-    return () => { chart.destroy(); };
-  }, [globalStats.platformCount]);
-
-  // Savings bar chart
-  useEffect(() => {
-    if (!savingsChartRef.current) return;
-    const ctx = savingsChartRef.current.getContext('2d');
-    if (!ctx) return;
-    
-    const milestones = [100, 500, 1000, 2500, 5000];
-    const chart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: milestones.map(m => `$${m}`),
-        datasets: [{
-          label: '',
-          data: milestones.map(m => Math.min(userStats.totalSavings / m, 1) * 100),
-          backgroundColor: milestones.map(m => userStats.totalSavings >= m
-            ? 'hsl(40, 90%, 50%)' : 'rgba(255,255,255,0.08)'),
-          borderRadius: 4,
-          borderSkipped: false,
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        scales: {
-          y: { display: false, max: 100 },
-          x: {
-            ticks: { color: '#505060', font: { size: 9 } },
-            grid: { display: false },
-          }
-        },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: (ctx) => {
-                const milestone = milestones[ctx.dataIndex];
-                return `${userStats.totalSavings >= milestone ? '✅' : '⏳'} $${Math.min(userStats.totalSavings, milestone).toFixed(0)} / $${milestone}`;
-              }
-            }
-          }
-        }
-      }
-    });
-    chartInstances.current.push(chart);
-    return () => { chart.destroy(); };
-  }, [userStats.totalSavings]);
-
-  // Weekly activity line chart
-  useEffect(() => {
-    if (!weeklyChartRef.current || weeklyActivity.every(d => d.count === 0)) return;
-    const ctx = weeklyChartRef.current.getContext('2d');
-    if (!ctx) return;
-
-    const gradient = ctx.createLinearGradient(0, 0, 0, 100);
-    gradient.addColorStop(0, 'hsla(var(--accent-hsl), 0.3)');
-    gradient.addColorStop(1, 'hsla(var(--accent-hsl), 0.0)');
-
-    const chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: weeklyActivity.map(d => d.label),
-        datasets: [{
-          label: language === 'es' ? 'Actividad' : 'Activity',
-          data: weeklyActivity.map(d => d.count),
-          borderColor: 'hsl(var(--accent-hsl))',
-          backgroundColor: gradient,
-          fill: true,
-          tension: 0.4,
-          pointBackgroundColor: 'hsl(var(--accent-hsl))',
-          pointBorderColor: 'var(--bg-surface)',
-          pointBorderWidth: 2,
-          pointRadius: 3,
-          pointHoverRadius: 6,
-          borderWidth: 2,
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: { color: '#505060', font: { size: 9 }, stepSize: 1 },
-            grid: { color: 'rgba(255,255,255,0.04)' },
-          },
-          x: {
-            ticks: { color: '#505060', font: { size: 9 } },
-            grid: { display: false },
-          }
-        },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: 'var(--glass-bg)',
-            titleColor: 'var(--text)',
-            bodyColor: 'var(--text-secondary)',
-            borderColor: 'var(--glass-border)',
-            borderWidth: 1,
-            callbacks: {
-              label: (ctx) => `${ctx.parsed.y} ${language === 'es' ? 'acciones' : 'actions'}`,
-            }
-          }
-        },
-        interaction: {
-          intersect: false,
-          mode: 'index' as const,
-        }
-      }
-    });
-    chartInstances.current.push(chart);
-    return () => { chart.destroy(); };
-  }, [weeklyActivity, language]);
-
-  // Clear charts on unmount
-  useEffect(() => {
-    return () => {
-      chartInstances.current.forEach(c => c.destroy());
-      chartInstances.current = [];
-    };
-  }, []);
 
   return (
     <div className="filter-overlay open" onClick={onClose} style={{ zIndex: 400 }}>
@@ -375,29 +202,13 @@ export default function StatsPanel({
             </>
           )}
 
-          {/* 📊 Chart.js - Plataformas (Dona) */}
-          {Object.keys(globalStats.platformCount).length > 0 && (
-            <>
-              <span className="chart-title" style={{ marginTop: '0.5rem' }}>
-                📱 {language === 'es' ? 'Juegos por plataforma' : 'Games by platform'}
-              </span>
-              <div className="chart-js-wrapper">
-                <canvas ref={platformChartRef} style={{ maxHeight: '180px' }} />
-              </div>
-            </>
-          )}
-
-          {/* 📊 Chart.js - Metas de ahorro (Barras) */}
-          {userStats.totalSavings > 0 && (
-            <>
-              <span className="chart-title" style={{ marginTop: '0.5rem' }}>
-                💰 {language === 'es' ? 'Metas de ahorro' : 'Savings goals'}
-              </span>
-              <div className="chart-js-wrapper">
-                <canvas ref={savingsChartRef} style={{ maxHeight: '140px' }} />
-              </div>
-            </>
-          )}
+          {/* 📊 Chart.js - Componente extraído */}
+          <ChartCharts
+            platformCount={globalStats.platformCount}
+            totalSavings={userStats.totalSavings}
+            weeklyActivity={weeklyActivity}
+            language={language}
+          />
 
           {/* 📊 Dashboard de ahorros — Gráfico de barras mejorado */}
           {userStats.totalSavings > 0 && (
@@ -494,18 +305,6 @@ export default function StatsPanel({
                     </div>
                   );
                 })}
-              </div>
-            </>
-          )}
-
-          {/* 📊 Chart.js - Actividad semanal (Línea) */}
-          {weeklyActivity.some(d => d.count > 0) && (
-            <>
-              <span className="chart-title" style={{ marginTop: '0.5rem' }}>
-                📈 {language === 'es' ? 'Actividad semanal' : 'Weekly activity'}
-              </span>
-              <div className="chart-js-wrapper">
-                <canvas ref={weeklyChartRef} style={{ maxHeight: '140px' }} />
               </div>
             </>
           )}
