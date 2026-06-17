@@ -1,7 +1,7 @@
 import { useMemo, useState, useRef, useCallback } from 'react';
 import { Game, Vote, Language, WishlistStatus, GameReactions, EmojiReaction } from '../types';
 import { t } from '../i18n';
-import { getTimeInfo } from '../utils/format';
+import { getTimeInfo, playSound } from '../utils/format';
 import { showToast } from './Toast';
 
 interface GameDetailProps {
@@ -96,17 +96,20 @@ export default function GameDetail({
 
   const handleVoteAction = (type: 'up' | 'down') => {
     onVote(game.id, type);
+    playSound('click');
     showToast(t('voteRecorded', language), 'success');
     if (navigator.vibrate) navigator.vibrate(10);
   };
 
   const handleReaction = (r: EmojiReaction) => {
     onReaction(game.id, r);
+    playSound('click');
     if (navigator.vibrate) navigator.vibrate(10);
   };
 
   const handleClaim = () => {
     onMarkClaimed(game.id);
+    playSound('success');
     showToast(t('gameClaimed', language), 'success');
     if (navigator.vibrate) navigator.vibrate(20);
     window.location.href = game.url;
@@ -114,6 +117,7 @@ export default function GameDetail({
 
   const handleWishlist = () => {
     onToggleWishlist(game.id);
+    playSound('favorite');
     showToast(wishlistStatus ? t('gameRemoved', language) : t('gameWishlisted', language), 'info');
     if (navigator.vibrate) navigator.vibrate(10);
   };

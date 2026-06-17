@@ -1,7 +1,7 @@
 import { useRef, useCallback, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Game, ViewMode, Language } from '../types';
-import { getTimeInfo, parsePrice, vibrate } from '../utils/format';
+import { getTimeInfo, parsePrice, vibrate, playSound } from '../utils/format';
 import { t } from '../i18n';
 import { useSwipeGesture, createRipple } from '../hooks/useSwipeGesture';
 import { showToast } from './Toast';
@@ -72,12 +72,14 @@ export default function GameCard({
     // Swipe left = add to favorites
     if (!isFavorite) {
       onToggleFavorite(game.id);
+      playSound('favorite');
       showToast(`❤️ ${t('addFav', language)}`, 'success');
     }
   }, [game.id, isFavorite, onToggleFavorite, language]);
 
   const handleSwipeRight = useCallback(() => {
     // Swipe right = mark as claimed
+    playSound('swipe');
     showToast(`🎮 ${t('reclaim', language)}`, 'info');
     window.open(game.url, '_blank');
   }, [game.url, language]);
@@ -86,6 +88,7 @@ export default function GameCard({
     if (!multiSelectActive) {
       setContextMenu({ x: 0, y: 0 });
       vibrate(20);
+      playSound('click');
     }
   }, [multiSelectActive]);
 
@@ -95,6 +98,7 @@ export default function GameCard({
     setFavoritePulse(true);
     setTimeout(() => setFavoritePulse(false), 400);
     vibrate(10);
+    playSound('favorite');
     showToast(isFavorite ? `💔 ${t('removeFav', language)}` : `❤️ ${t('addFav', language)}`, 'info');
   }, [game.id, onToggleFavorite, isFavorite, language]);
 
@@ -126,6 +130,7 @@ export default function GameCard({
   const handleFavoriteClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     onToggleFavorite(game.id);
+    playSound('favorite');
     setFavoritePulse(true);
     if (favTimeoutRef.current) clearTimeout(favTimeoutRef.current);
     favTimeoutRef.current = setTimeout(() => setFavoritePulse(false), 400);

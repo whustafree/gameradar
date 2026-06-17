@@ -94,10 +94,25 @@ export default function StatsPanel({
   const unlockedAchievements = achievements.filter(a => a.unlockedAt).length;
   const totalAchievements = achievements.length;
 
+  // Weekly activity data
+  const weeklyActivity = useMemo(() => {
+    const days: { label: string; count: number }[] = [];
+    const now = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const dayStr = d.toLocaleDateString('en-CA'); // YYYY-MM-DD
+      const label = d.toLocaleDateString(language === 'es' ? 'es' : 'en', { weekday: 'short' });
+      const count = activityLog.filter(a => a.timestamp?.startsWith(dayStr)).length;
+      days.push({ label, count });
+    }
+    return days;
+  }, [activityLog, language]);
+
   // Chart.js refs
   const platformChartRef = useRef<HTMLCanvasElement>(null);
   const savingsChartRef = useRef<HTMLCanvasElement>(null);
-  const genreChartRef = useRef<HTMLCanvasElement>(null);
+  const weeklyChartRef = useRef<HTMLCanvasElement>(null);
   const chartInstances = useRef<Chart[]>([]);
 
   // Platform donut chart
@@ -190,6 +205,72 @@ export default function StatsPanel({
     chartInstances.current.push(chart);
     return () => { chart.destroy(); };
   }, [userStats.totalSavings]);
+
+  // Weekly activity line chart
+  useEffect(() => {
+    if (!weeklyChartRef.current || weeklyActivity.every(d => d.count === 0)) return;
+    const ctx = weeklyChartRef.current.getContext('2d');
+    if (!ctx) return;
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, 100);
+    gradient.addColorStop(0, 'hsla(var(--accent-hsl), 0.3)');
+    gradient.addColorStop(1, 'hsla(var(--accent-hsl), 0.0)');
+
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: weeklyActivity.map(d => d.label),
+        datasets: [{
+          label: language === 'es' ? 'Actividad' : 'Activity',
+          data: weeklyActivity.map(d => d.count),
+          borderColor: 'hsl(var(--accent-hsl))',
+          backgroundColor: gradient,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: 'hsl(var(--accent-hsl))',
+          pointBorderColor: 'var(--bg-surface)',
+          pointBorderWidth: 2,
+          pointRadius: 3,
+          pointHoverRadius: 6,
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#505060', font: { size: 9 }, stepSize: 1 },
+            grid: { color: 'rgba(255,255,255,0.04)' },
+          },
+          x: {
+            ticks: { color: '#505060', font: { size: 9 } },
+            grid: { display: false },
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: 'var(--glass-bg)',
+            titleColor: 'var(--text)',
+            bodyColor: 'var(--text-secondary)',
+            borderColor: 'var(--glass-border)',
+            borderWidth: 1,
+            callbacks: {
+              label: (ctx) => `${ctx.parsed.y} ${language === 'es' ? 'acciones' : 'actions'}`,
+            }
+          }
+        },
+        interaction: {
+          intersect: false,
+          mode: 'index' as const,
+        }
+      }
+    });
+    chartInstances.current.push(chart);
+    return () => { chart.destroy(); };
+  }, [weeklyActivity, language]);
 
   // Clear charts on unmount
   useEffect(() => {
@@ -413,6 +494,18 @@ export default function StatsPanel({
                     </div>
                   );
                 })}
+              </div>
+            </>
+          )}
+
+          {/* 📊 Chart.js - Actividad semanal (Línea) */}
+          {weeklyActivity.some(d => d.count > 0) && (
+            <>
+              <span className="chart-title" style={{ marginTop: '0.5rem' }}>
+                📈 {language === 'es' ? 'Actividad semanal' : 'Weekly activity'}
+              </span>
+              <div className="chart-js-wrapper">
+                <canvas ref={weeklyChartRef} style={{ maxHeight: '140px' }} />
               </div>
             </>
           )}

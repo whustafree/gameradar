@@ -3,6 +3,7 @@ const router = express.Router();
 const gamesService = require('../services/games');
 const telegramService = require('../services/telegram');
 const instagramService = require('../services/instagram');
+const pushService = require('../services/push');
 const logger = require('../utils/logger');
 
 // GET /api/free-games
@@ -203,9 +204,7 @@ router.get('/docs', (req, res) => {
   });
 });
 
-// POST /api/subscribe-push — Suscripción a notificaciones push
-let pushSubscriptions = [];
-
+// POST /api/subscribe-push — Suscripción a notificaciones push (persistente en JSON)
 router.post('/subscribe-push', (req, res) => {
   try {
     const { subscription, platforms } = req.body;
@@ -213,23 +212,60 @@ router.post('/subscribe-push', (req, res) => {
       return res.status(400).json({ success: false, error: 'Suscripción inválida' });
     }
     
-    // Guardar suscripción con plataforma
-    const existing = pushSubscriptions.findIndex(s => s.endpoint === subscription.endpoint);
-    if (existing >= 0) {
-      pushSubscriptions[existing] = { ...subscription, platforms: platforms || ['pc', 'android'], updatedAt: new Date().toISOString() };
-    } else {
-      pushSubscriptions.push({ ...subscription, platforms: platforms || ['pc', 'android'], createdAt: new Date().toISOString() });
-    }
-    
-    // Mantener solo las últimas 100 suscripciones
-    if (pushSubscriptions.length > 100) {
-      pushSubscriptions = pushSubscriptions.slice(-100);
-    }
-    
-    res.json({ success: true, message: 'Suscripción registrada' });
+    const total = pushService.addSubscription(subscription, platforms);
+    logger.info(`Push subscription registrada. Total: ${total}`);
+    res.json({ success: true, message: 'Suscripción registrada', total });
   } catch (err) {
     logger.error('Error en /api/subscribe-push', err);
     res.status(500).json({ success: false, error: 'Error registrando suscripción' });
+  }
+});
+
+// POST /api/unsubscribe-push — Eliminar suscripción
+router.post('/unsubscribe-push', (req, res) => {
+  try {
+    const { endpoint } = req.body;
+    if (!endpoint) {
+      return res.status(400).json({ success: false, error: 'Endpoint requerido' });
+    }
+    const total = pushService.removeSubscription(endpoint);
+    res.json({ success: true, message: 'Suscripción eliminada', total });
+  } catch (err) {
+    logger.error('Error en /api/unsubscribe-push', err);
+    res.status(500).json({ success: false, error: 'Error eliminando suscripción' });
+  }
+});
+
+// POST /api/send-push — Enviar notificación a todas las suscripciones
+router.post('/send-push', async (req, res) => {
+  try {
+    const { title, body, icon, platform } = req.body;
+    if (!title || !body) {
+      return res.status(400).json({ success: false, error: 'title y body son requeridos' });
+    }
+    const result = await pushService.broadcastNotification(title, body, icon, platform);
+    res.json({ success: true, ...result });
+  } catch (err) {
+    logger.error('Error en /api/send-push', err);
+    res.status(500).json({ success: false, error: 'Error enviando notificaciones' });
+  }
+});
+
+// GET /api/push-subscriptions — Ver suscripciones activas (admin)
+router.get('/push-subscriptions', (req, res) => {
+  try {
+    const subs = pushService.getSubscriptions();
+    // No exponer las claves completas por seguridad
+    const safe = subs.map(s => ({
+      endpoint: s.endpoint?.slice(0, 50) + '...',
+      platforms: s.platforms,
+      createdAt: s.createdAt,
+      updatedAt: s.updatedAt,
+    }));
+    res.json({ success: true, total: subs.length, subscriptions: safe });
+  } catch (err) {
+    logger.error('Error en /api/push-subscriptions', err);
+    res.status(500).json({ success: false, error: 'Error obteniendo suscripciones' });
   }
 });
 

@@ -24,6 +24,7 @@ import SettingsPanel from './components/SettingsPanel';
 import TrendingSection from './components/TrendingSection';
 import FilterPanel from './components/FilterPanel';
 import ActiveFiltersBar from './components/ActiveFiltersBar';
+import SplashScreen from './components/SplashScreen';
 
 const ITEMS_PER_PAGE = 30;
 
@@ -642,6 +643,7 @@ export default function App() {
 
   return (
     <>
+      <SplashScreen />
       <div className="bg-glow" />        <Header
         searchTerm={searchTerm}
         language={language}
