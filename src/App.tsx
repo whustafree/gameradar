@@ -3,7 +3,7 @@ import { App as CapacitorApp } from '@capacitor/app';
 import { Mode, SortMode, Genre, TypeFilter, StoreFilter, ViewMode, Language, Game, LicenseFilter, Theme, AccentColor } from './types';
 import { t } from './i18n';
 import { parsePrice, vibrate, getSeasonalTheme, playSound } from './utils/format';
-import { loadViewMode, saveViewMode, loadLanguage, saveLanguage, loadLastVisit, saveLastVisit, loadNewGameIds, saveNewGameIds, loadTheme, saveTheme, loadAccentColor, saveAccentColor } from './utils/storage';
+import { loadViewMode, saveViewMode, loadLanguage, saveLanguage, loadLastVisit, saveLastVisit, loadNewGameIds, saveNewGameIds, loadTheme, saveTheme, loadAccentColor, saveAccentColor, loadFilterPresets, saveFilterPresets, FilterPreset, addFilterPreset, removeFilterPreset } from './utils/storage';
 
 import { useGames } from './hooks/useGames';
 import { useFilters } from './hooks/useFilters';
@@ -26,7 +26,7 @@ import FilterPanel from './components/FilterPanel';
 import ActiveFiltersBar from './components/ActiveFiltersBar';
 import SplashScreen from './components/SplashScreen';
 
-const ITEMS_PER_PAGE = 30;
+const ITEMS_PER_PAGE = 20;
 
 // Confetti characters
 function createConfetti() {
@@ -98,11 +98,45 @@ export default function App() {
   // Filter panel state
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // UI state
+  const [filterPresets, setFilterPresets] = useState<FilterPreset[]>(() => loadFilterPresets());
   const [viewMode, setViewMode] = useState<ViewMode>(() => loadViewMode());
   const [language, setLanguage] = useState<Language>(() => loadLanguage());
   const [newGameIds, setNewGameIds] = useState<string[]>(() => loadNewGameIds());
   const [lastVisit, setLastVisit] = useState<string | null>(() => loadLastVisit());
+
+  // Filter presets handlers (after language declaration)
+  const handleSavePreset = useCallback(() => {
+    const presets = loadFilterPresets();
+    const name = language === 'es' ? `Filtro ${presets.length + 1}` : `Preset ${presets.length + 1}`;
+    const icons = ['🎯', '🔥', '💎', '⭐', '🎮', '🕹️', '👾', '🎲', '🏆', '💿'];
+    const newPreset: FilterPreset = {
+      id: Date.now().toString(),
+      name,
+      icon: icons[presets.length % icons.length],
+      sortMode, activeGenre, activeStore, activeType, activeLicense,
+      showFavoritesOnly, searchTerm,
+    };
+    setFilterPresets(addFilterPreset(newPreset));
+    showToast(language === 'es' ? '💾 Preset guardado' : '💾 Preset saved', 'success');
+    vibrate(10);
+  }, [language, sortMode, activeGenre, activeStore, activeType, activeLicense, showFavoritesOnly, searchTerm]);
+
+  const handleLoadPreset = useCallback((preset: FilterPreset) => {
+    setSortMode(preset.sortMode as SortMode);
+    setActiveGenre(preset.activeGenre as Genre);
+    setActiveStore(preset.activeStore as StoreFilter);
+    setActiveType(preset.activeType as TypeFilter);
+    setActiveLicense(preset.activeLicense as LicenseFilter);
+    setShowFavoritesOnly(preset.showFavoritesOnly);
+    setSearchTerm(preset.searchTerm);
+    showToast(`📋 ${preset.name} ${language === 'es' ? 'cargado' : 'loaded'}`, 'info');
+    vibrate(8);
+  }, [language]);
+
+  const handleDeletePreset = useCallback((id: string) => {
+    setFilterPresets(removeFilterPreset(id));
+    showToast(language === 'es' ? '🗑️ Preset eliminado' : '🗑️ Preset deleted', 'info');
+  }, [language]);
 
   // Theme & Accent Color
   const [currentTheme, setCurrentTheme] = useState<Theme>(() => loadTheme());
@@ -591,6 +625,23 @@ export default function App() {
     }
   }, [isLoading, newGameIds.length, games.length, lastVisit]);
 
+  // --- Jump to top ---
+  const [showJumpToTop, setShowJumpToTop] = useState(false);
+  useEffect(() => {
+    const main = mainRef.current;
+    if (!main) return;
+    const handleScroll = () => {
+      setShowJumpToTop(main.scrollTop > 600);
+    };
+    main.addEventListener('scroll', handleScroll, { passive: true });
+    return () => main.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleJumpToTop = useCallback(() => {
+    mainRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    vibrate(6);
+  }, []);
+
   // --- Keyboard shortcuts ---
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -655,6 +706,9 @@ export default function App() {
         onToggleTheme={() => setCurrentTheme(p => p === 'dark' ? 'amoled' : p === 'amoled' ? 'light' : 'dark')}
         onOpenDetail={handleOpenDetail}
         games={games}
+        totalGames={games.length}
+        totalSavings={games.reduce((sum, g) => sum + parsePrice(g.worth), 0)}
+        favoritesCount={favorites.length}
       />
 
       {/* Multi-select bar */}
@@ -891,6 +945,42 @@ export default function App() {
               {/* Desktop sidebar filters - hidden on mobile via CSS */}
               <div className="desktop-sidebar">
                 <div className="sidebar-title">🔍 {t('filters', language)}</div>
+
+                {/* Filter Presets */}
+                {filterPresets.length > 0 && (
+                  <div className="filter-group" style={{ marginBottom: '0.5rem' }}>
+                    <span className="filter-label">📋 {language === 'es' ? 'Presets' : 'Presets'}</span>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.2rem' }}>
+                      {filterPresets.map(p => (
+                        <div key={p.id} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+                          <button
+                            className="filter-chip"
+                            onClick={() => handleLoadPreset(p)}
+                            style={{ fontSize: '0.55rem', padding: '0.15rem 0.4rem', paddingRight: '1.2rem' }}
+                          >
+                            {p.icon} {p.name}
+                          </button>
+                          <button
+                            onClick={() => handleDeletePreset(p.id)}
+                            style={{
+                              position: 'absolute', right: '2px', top: '50%', transform: 'translateY(-50%)',
+                              background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer',
+                              fontSize: '0.45rem', padding: '2px', lineHeight: 1,
+                            }}
+                          >✕</button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  className="filter-btn secondary"
+                  onClick={handleSavePreset}
+                  style={{ width: '100%', marginBottom: '0.5rem', fontSize: '0.62rem', padding: '0.3rem' }}
+                >
+                  💾 {language === 'es' ? 'Guardar filtros actuales' : 'Save current filters'}
+                </button>
                 <div className="filter-group">
                   <span className="filter-label">{t('sortBy', language)}</span>
                   <div className="filter-chips">
@@ -990,6 +1080,27 @@ export default function App() {
 
         {isLoaded && collectionFilteredGames.length === 0 && !activeCollectionFilter && (
           <EmptyState language={language} onReset={handleResetFilters} />
+        )}
+
+        {/* Jump to top button */}
+        {showJumpToTop && (
+          <button
+            onClick={handleJumpToTop}
+            style={{
+              position: 'fixed', bottom: 'calc(var(--nav-h) + 1rem)', right: '1rem', zIndex: 300,
+              width: '40px', height: '40px', borderRadius: '50%',
+              background: 'var(--accent)', color: 'white', border: 'none',
+              fontSize: '1.1rem', cursor: 'pointer',
+              boxShadow: '0 2px 12px var(--accent-glow)',
+              animation: 'scaleIn 0.25s var(--ease-spring)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'transform 0.2s var(--ease)',
+            }}
+            onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            ↑
+          </button>
         )}
       </main>
 

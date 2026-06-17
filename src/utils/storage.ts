@@ -144,6 +144,45 @@ export function saveOnboardingStep(s: OnboardingStep): void {
 export function loadMultiSelectIds(): string[] { return loadArray(KEYS.MULTISELECT); }
 export function saveMultiSelectIds(ids: string[]): void { saveArray(KEYS.MULTISELECT, ids); }
 
+// --- Filter Presets ---
+export type FilterPreset = {
+  id: string;
+  name: string;
+  icon: string;
+  sortMode: string;
+  activeGenre: string;
+  activeStore: string;
+  activeType: string;
+  activeLicense: string;
+  showFavoritesOnly: boolean;
+  searchTerm: string;
+};
+
+const PRESETS_KEY = 'fgh_filter_presets_v1';
+
+export function loadFilterPresets(): FilterPreset[] {
+  try { return JSON.parse(localStorage.getItem(PRESETS_KEY) || '[]'); }
+  catch { return []; }
+}
+
+export function saveFilterPresets(presets: FilterPreset[]): void {
+  localStorage.setItem(PRESETS_KEY, JSON.stringify(presets));
+}
+
+export function addFilterPreset(preset: FilterPreset): FilterPreset[] {
+  const presets = loadFilterPresets();
+  presets.unshift(preset);
+  if (presets.length > 10) presets.pop(); // max 10 presets
+  saveFilterPresets(presets);
+  return presets;
+}
+
+export function removeFilterPreset(id: string): FilterPreset[] {
+  const presets = loadFilterPresets().filter(p => p.id !== id);
+  saveFilterPresets(presets);
+  return presets;
+}
+
 // --- Perfiles de usuario / Leaderboard ---
 const PROFILES_KEY = 'fgh_profiles_v1';
 const WEEKLY_LEADERBOARD_KEY = 'fgh_weekly_leaderboard_v1';
