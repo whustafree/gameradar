@@ -144,6 +144,81 @@ export function saveOnboardingStep(s: OnboardingStep): void {
 export function loadMultiSelectIds(): string[] { return loadArray(KEYS.MULTISELECT); }
 export function saveMultiSelectIds(ids: string[]): void { saveArray(KEYS.MULTISELECT, ids); }
 
+// --- Perfiles de usuario / Leaderboard ---
+const PROFILES_KEY = 'fgh_profiles_v1';
+const WEEKLY_LEADERBOARD_KEY = 'fgh_weekly_leaderboard_v1';
+
+interface UserProfile {
+  username: string;
+  avatar: string;
+  totalSavings: number;
+  totalClaimed: number;
+  gamesSeen: number;
+  joinedAt: string;
+  weeklyScore: number;
+  weekStart: string;
+}
+
+export function loadProfiles(): Record<string, UserProfile> {
+  try { return JSON.parse(localStorage.getItem(PROFILES_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+export function saveProfiles(profiles: Record<string, UserProfile>): void {
+  localStorage.setItem(PROFILES_KEY, JSON.stringify(profiles));
+}
+
+export function getLeaderboard(): { username: string; avatar: string; score: number }[] {
+  const profiles = loadProfiles();
+  return Object.values(profiles)
+    .filter(p => {
+      // Solo perfiles con actividad esta semana
+      const weekStart = new Date(p.weekStart || p.joinedAt);
+      const now = new Date();
+      const diffDays = Math.floor((now.getTime() - weekStart.getTime()) / 86400000);
+      return diffDays < 7;
+    })
+    .sort((a, b) => b.weeklyScore - a.weeklyScore)
+    .slice(0, 20)
+    .map(p => ({ username: p.username, avatar: p.avatar, score: p.weeklyScore }));
+}
+
+export function updateProfile(username: string, savings: number, claimed: number, gamesSeen: number): void {
+  const profiles = loadProfiles();
+  const existing = profiles[username];
+  const now = new Date();
+  const weekStart = new Date(now);
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+  const weekStartStr = weekStart.toISOString();
+
+  if (existing) {
+    // Si es una nueva semana, reiniciar score semanal
+    const isNewWeek = existing.weekStart !== weekStartStr;
+    const newClaims = Math.max(0, claimed - existing.totalClaimed);
+    profiles[username] = {
+      ...existing,
+      totalSavings: Math.max(existing.totalSavings, savings),
+      totalClaimed: Math.max(existing.totalClaimed, claimed),
+      gamesSeen: Math.max(existing.gamesSeen, gamesSeen),
+      weeklyScore: isNewWeek ? newClaims : existing.weeklyScore + newClaims,
+      weekStart: weekStartStr,
+    };
+  } else {
+    const avatars = ['🎮', '🕹️', '👾', '🎯', '🎲', '🏆', '💎', '🔥', '⭐', '🚀'];
+    profiles[username] = {
+      username,
+      avatar: avatars[Math.floor(Math.random() * avatars.length)],
+      totalSavings: savings,
+      totalClaimed: claimed,
+      gamesSeen,
+      joinedAt: now.toISOString(),
+      weeklyScore: claimed,
+      weekStart: weekStartStr,
+    };
+  }
+  saveProfiles(profiles);
+}
+
 // --- Games Cache (offline) ---
 const CACHE_KEY = 'fgh_games_cache_v1';
 const CACHE_META_KEY = 'fgh_games_cache_meta_v1';

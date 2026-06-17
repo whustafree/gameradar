@@ -7,6 +7,7 @@ const mmobombService = require('./mmobomb');
 const notengoSueltoService = require('./notengosuelto');
 const googlePlayDealsService = require('./googleplaydeals');
 const fdroidService = require('./fdroid');
+const steamService = require('./steam');
 const telegramService = require('./telegram');
 const instagramService = require('./instagram');
 const cacheManager = require('../utils/cache');
@@ -41,7 +42,7 @@ class GamesService {
     const sourceNames = [
       'gamerpower', 'reddit', 'epicgames', 'freetogame',
       'androidfeeds', 'mmobomb', 'notengosuelto',
-      'googleplaydeals', 'fdroid'
+      'googleplaydeals', 'fdroid', 'steam'
     ];
 
     try {
@@ -55,7 +56,8 @@ class GamesService {
         mmobombService.fetchAll(),
         notengoSueltoService.fetchAll(),
         googlePlayDealsService.fetchAll(),
-        fdroidService.fetchAll()
+        fdroidService.fetchAll(),
+        steamService.fetchAll()
       ]);
 
       // Combinar todos los resultados con monitoreo de fuentes
