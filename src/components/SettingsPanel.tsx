@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Language, UserCollection, UserStats, ActivityEntry, Achievement } from '../types';
+import { Language, UserCollection, UserStats, ActivityEntry, Achievement, Theme, AccentColor } from '../types';
 import { t } from '../i18n';
 import { urlBase64ToUint8Array } from '../utils/format';
 import { showToast } from './Toast';
@@ -11,10 +11,14 @@ interface SettingsPanelProps {
   achievements: Achievement[];
   userStats: UserStats;
   games: Record<string, string>;
+  currentTheme: Theme;
+  accentColor: AccentColor;
   onClose: () => void;
   onCreateCollection: (name: string, desc: string, emoji: string) => void;
   onDeleteCollection: (id: string) => void;
   onOpenCollectionGames: (collection: UserCollection) => void;
+  onChangeTheme?: (theme: Theme) => void;
+  onChangeAccent?: (color: AccentColor) => void;
 }
 
 type Tab = 'collections' | 'activity' | 'achievements';
@@ -64,10 +68,26 @@ function groupActivityByDate(log: ActivityEntry[], lang: Language): { label: str
   return groups;
 }
 
+const THEMES: { value: Theme; icon: string; labelKey: string }[] = [
+  { value: 'dark', icon: '🌙', labelKey: 'themeDark' },
+  { value: 'amoled', icon: '🕶️', labelKey: 'themeAmoled' },
+  { value: 'light', icon: '☀️', labelKey: 'themeLight' },
+];
+
+const ACCENTS: { value: AccentColor; label: string }[] = [
+  { value: 'green', label: 'Green' },
+  { value: 'red', label: 'Red' },
+  { value: 'blue', label: 'Blue' },
+  { value: 'purple', label: 'Purple' },
+  { value: 'amber', label: 'Amber' },
+  { value: 'cyan', label: 'Cyan' },
+];
+
 export default function SettingsPanel({
   language, collections, activityLog, achievements, userStats,
-  games, onClose,
+  games, currentTheme, accentColor, onClose,
   onCreateCollection, onDeleteCollection, onOpenCollectionGames,
+  onChangeTheme, onChangeAccent,
 }: SettingsPanelProps) {
   const [tab, setTab] = useState<Tab>('collections');
   const [showNewCollection, setShowNewCollection] = useState(false);
@@ -112,6 +132,53 @@ export default function SettingsPanel({
         </div>
 
         <div className="filter-body">
+          {/* 🎨 Theme Selector */}
+          <div style={{ padding: '0.35rem', background: 'var(--bg-hover)', borderRadius: 'var(--radius)', border: '0.5px solid var(--card-border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
+              <span style={{ fontSize: '0.85rem' }}>🎨</span>
+              <span style={{ fontSize: '0.7rem', fontWeight: 600 }}>{t('theme', language)}</span>
+            </div>
+            {/* Theme selector */}
+            <div className="filter-chips" style={{ marginBottom: '0.35rem' }}>
+              {THEMES.map(th => (
+                <button
+                  key={th.value}
+                  className={`filter-chip ${currentTheme === th.value ? 'active' : ''}`}
+                  onClick={() => onChangeTheme?.(th.value)}
+                >
+                  {th.icon} {t(th.labelKey as any, language)}
+                </button>
+              ))}
+            </div>
+            {/* Accent color selector */}
+            <span style={{ fontSize: '0.5rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.6px', fontWeight: 600, display: 'block', marginBottom: '0.25rem' }}>
+              {t('accentColor', language)}
+            </span>
+            <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap' }}>
+              {ACCENTS.map(ac => (
+                <button
+                  key={ac.value}
+                  onClick={() => onChangeAccent?.(ac.value)}
+                  style={{
+                    width: '32px', height: '32px', borderRadius: '50%',
+                    border: accentColor === ac.value ? '2px solid var(--text)' : '2px solid transparent',
+                    background: `hsl(${
+                      ac.value === 'green' ? 120 : ac.value === 'red' ? 0 :
+                      ac.value === 'blue' ? 215 : ac.value === 'purple' ? 270 :
+                      ac.value === 'amber' ? 40 : 180
+                    }, 70%, 40%)`,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s var(--ease)',
+                    boxShadow: accentColor === ac.value ? '0 0 8px hsla(0,0%,100%,0.3)' : 'none',
+                    outline: 'none',
+                  }}
+                  title={ac.label}
+                  aria-label={ac.label}
+                />
+              ))}
+            </div>
+          </div>
+
           {/* Stats summary visible in all tabs */}
           {tab !== 'achievements' && (
             <div className="stats-grid" style={{ marginBottom: '0.25rem' }}>

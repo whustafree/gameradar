@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Mode, ViewMode, Language, StoreFilter } from '../types';
 import { t } from '../i18n';
 import { vibrate } from '../utils/format';

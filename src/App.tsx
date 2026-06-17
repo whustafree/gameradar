@@ -1068,10 +1068,14 @@ export default function App() {
           achievements={achievements}
           userStats={userStats}
           games={games.reduce((acc, g) => ({ ...acc, [g.id]: g.title }), {} as Record<string, string>)}
+          currentTheme={currentTheme}
+          accentColor={accentColor}
           onClose={handleCloseSettings}
           onCreateCollection={createCollection}
           onDeleteCollection={deleteCollection}
           onOpenCollectionGames={handleOpenCollectionGames}
+          onChangeTheme={setCurrentTheme}
+          onChangeAccent={setAccentColor}
         />
       )}
 

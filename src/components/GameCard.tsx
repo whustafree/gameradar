@@ -1,8 +1,10 @@
 import { useRef, useCallback, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Game, ViewMode, Language } from '../types';
-import { getTimeInfo, parsePrice } from '../utils/format';
+import { getTimeInfo, parsePrice, vibrate } from '../utils/format';
 import { t } from '../i18n';
+import { useSwipeGesture, createRipple } from '../hooks/useSwipeGesture';
+import { showToast } from './Toast';
 
 interface GameCardProps {
   game: Game;
@@ -63,14 +65,63 @@ export default function GameCard({
     ? parsePrice(game.worth)
     : 0;
 
-  const handleClick = useCallback(() => {
+  // Swipe & Long press gestures
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  
+  const handleSwipeLeft = useCallback(() => {
+    // Swipe left = add to favorites
+    if (!isFavorite) {
+      onToggleFavorite(game.id);
+      showToast(`❤️ ${t('addFav', language)}`, 'success');
+    }
+  }, [game.id, isFavorite, onToggleFavorite, language]);
+
+  const handleSwipeRight = useCallback(() => {
+    // Swipe right = mark as claimed
+    showToast(`🎮 ${t('reclaim', language)}`, 'info');
+    window.open(game.url, '_blank');
+  }, [game.url, language]);
+
+  const handleLongPress = useCallback(() => {
+    if (!multiSelectActive) {
+      setContextMenu({ x: 0, y: 0 });
+      vibrate(20);
+    }
+  }, [multiSelectActive]);
+
+  const handleDoubleTap = useCallback(() => {
+    // Double tap = toggle favorite
+    onToggleFavorite(game.id);
+    setFavoritePulse(true);
+    setTimeout(() => setFavoritePulse(false), 400);
+    vibrate(10);
+    showToast(isFavorite ? `💔 ${t('removeFav', language)}` : `❤️ ${t('addFav', language)}`, 'info');
+  }, [game.id, onToggleFavorite, isFavorite, language]);
+
+  const { handlers: swipeHandlers } = useSwipeGesture({
+    onSwipeLeft: handleSwipeLeft,
+    onSwipeRight: handleSwipeRight,
+    onLongPress: handleLongPress,
+    onDoubleTap: handleDoubleTap,
+  }, { elementRef: cardRef });
+
+  const handleClick = useCallback((e: React.MouseEvent) => {
     if (multiSelectActive) {
       if (onToggleMultiSelectGame) onToggleMultiSelectGame(game.id);
       return;
     }
+    createRipple(e);
     onOpenDetail(game);
     onMarkAsViewed(game.id);
   }, [multiSelectActive, onToggleMultiSelectGame, game, onOpenDetail, onMarkAsViewed]);
+
+  // Close context menu
+  useEffect(() => {
+    if (!contextMenu) return;
+    const close = () => setContextMenu(null);
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [contextMenu]);
 
   const handleFavoriteClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -108,6 +159,9 @@ export default function GameCard({
       onClick={handleClick}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onTouchStart={swipeHandlers.onTouchStart}
+      onTouchMove={swipeHandlers.onTouchMove}
+      onTouchEnd={swipeHandlers.onTouchEnd}
       tabIndex={0}
       role="button"
       aria-label={game.title}
@@ -167,6 +221,49 @@ export default function GameCard({
 
       {/* Glow overlay on hover */}
       <div className="card-glow-overlay" />
+
+      {/* Context menu (long press) */}
+      {contextMenu && (
+        <div style={{
+          position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+          zIndex: 999, background: 'var(--glass-bg)', backdropFilter: 'blur(30px)',
+          border: '0.5px solid var(--glass-border)', borderRadius: 'var(--radius-lg)',
+          padding: '0.5rem', boxShadow: 'var(--shadow-xl)',
+          minWidth: '160px', animation: 'overflowIn 0.2s var(--ease-spring)',
+        }} onClick={e => e.stopPropagation()}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+            <button className="nav-overflow-item" onClick={e => { e.stopPropagation(); onToggleFavorite(game.id); setContextMenu(null); vibrate(8); }}>
+              {isFavorite ? '💔' : '❤️'} {isFavorite ? t('removeFav', language) : t('addFav', language)}
+            </button>
+            <button className="nav-overflow-item" onClick={e => { e.stopPropagation(); window.open(game.url, '_blank'); setContextMenu(null); }}>
+              🎮 {t('reclaim', language)}
+            </button>
+            <button className="nav-overflow-item" onClick={e => { e.stopPropagation(); setContextMenu(null); if (onToggleMultiSelectGame) onToggleMultiSelectGame(game.id); }}>
+              ☑️ {t('multiSelect', language)}
+            </button>
+            <div className="nav-overflow-divider" />
+            <button className="nav-overflow-item" style={{ fontSize: '0.6rem', color: 'var(--text-muted)', cursor: 'default' }}>
+              👆 {language === 'es' ? 'Desliza izq: fav • Der: reclamar' : 'Swipe L: fav • R: claim'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Favorite burst particles */}
+      {favParticles.map(p => (
+        <span
+          key={p.id}
+          className="fav-particle"
+          style={{
+            position: 'absolute', top: '50%', left: '80%', zIndex: 10,
+            transform: `translate(${p.x}px, ${p.y}px)`,
+            fontSize: '0.7rem',
+            pointerEvents: 'none',
+          }}
+        >
+          {p.emoji}
+        </span>
+      ))}
 
       {/* Body */}
       <div className="card-body">
