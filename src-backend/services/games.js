@@ -38,6 +38,12 @@ class GamesService {
     
     logger.info('Iniciando actualización de juegos...');
 
+    const sourceNames = [
+      'gamerpower', 'reddit', 'epicgames', 'freetogame',
+      'androidfeeds', 'mmobomb', 'notengosuelto',
+      'googleplaydeals', 'fdroid'
+    ];
+
     try {
       // Obtener juegos de todas las fuentes en paralelo
       const results = await Promise.allSettled([
@@ -52,13 +58,18 @@ class GamesService {
         fdroidService.fetchAll()
       ]);
 
-      // Combinar todos los resultados
+      // Combinar todos los resultados con monitoreo de fuentes
       let allGames = [];
       results.forEach((result, index) => {
+        const sourceName = sourceNames[index] || `source_${index}`;
         if (result.status === 'fulfilled') {
           allGames = [...allGames, ...result.value];
+          statsManager.resetSourceErrors(sourceName);
+          logger.success(`${sourceName}: ${result.value.length} juegos`);
         } else {
-          logger.error(`Error en servicio ${index}:`, result.reason);
+          const errMsg = result.reason?.message || result.reason || 'Unknown error';
+          logger.error(`Error en ${sourceName}:`, errMsg);
+          statsManager.recordSourceError(sourceName, errMsg);
         }
       });
 

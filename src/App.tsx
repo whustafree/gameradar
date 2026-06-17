@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
-import { Mode, SortMode, Genre, TypeFilter, StoreFilter, ViewMode, Language, Game } from './types';
+import { Mode, SortMode, Genre, TypeFilter, StoreFilter, ViewMode, Language, Game, LicenseFilter } from './types';
+import { t } from './i18n';
 import { parsePrice, vibrate } from './utils/format';
 import { loadViewMode, saveViewMode, loadLanguage, saveLanguage, loadLastVisit, saveLastVisit, loadNewGameIds, saveNewGameIds } from './utils/storage';
 
@@ -21,7 +22,6 @@ import Onboarding from './components/Onboarding';
 import SettingsPanel from './components/SettingsPanel';
 import TrendingSection from './components/TrendingSection';
 import FilterPanel from './components/FilterPanel';
-import { t } from './i18n';
 
 const ITEMS_PER_PAGE = 30;
 
@@ -87,6 +87,7 @@ export default function App() {
   const [activeGenre, setActiveGenre] = useState<Genre>('all');
   const [activeStore, setActiveStore] = useState<StoreFilter>('all');
   const [activeType, setActiveType] = useState<TypeFilter>('all');
+  const [activeLicense, setActiveLicense] = useState<LicenseFilter>('all');
   const [activeYear, setActiveYear] = useState('all');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -207,7 +208,7 @@ export default function App() {
   const filteredGames = useFilters({
     games, favorites, showFavoritesOnly,
     currentMode, searchTerm: debouncedSearch, sortMode,
-    activeGenre, activeStore, activeType, activeYear
+    activeGenre, activeStore, activeType, activeLicense, activeYear
   });
 
   // Sort by popularity (votes)
@@ -380,6 +381,7 @@ export default function App() {
     setActiveGenre('all');
     setActiveStore('all');
     setActiveType('all');
+    setActiveLicense('all');
     setShowFavoritesOnly(false);
     setActiveCollectionFilter(null);
     showToast(t('filtersReset', language), 'info');
@@ -765,32 +767,91 @@ export default function App() {
 
 
 
-            {/* Main Game Grid */}
-            <GameGrid
-              games={collectionFilteredGames}
-              favorites={favorites}
-              viewedGames={viewedGames}
-              newGameIds={newGameIds}
-              viewMode={viewMode}
-              language={language}
-              multiSelectActive={multiSelectActive}
-              multiSelectedIds={multiSelectedIds}
-              onToggleFavorite={toggleFavorite}
-              onMarkAsViewed={handleMarkAsViewed}
-              onOpenDetail={handleOpenDetail}
-              onToggleMultiSelectGame={handleToggleMultiSelectGame}
-            />
-
-            {/* Empty state when collection has no games */}
-            {activeCollectionFilter && collectionFilteredGames.length === 0 && displayedGames.length > 0 && (
-              <div className="empty-state" style={{ padding: '2rem' }}>
-                <div className="empty-icon">📁</div>
-                <h3>{t('noGames', language)}</h3>
-                <button className="btn-primary" onClick={() => setActiveCollectionFilter(null)}>
-                  {t('clearFilters', language)}
+            {/* Desktop Sidebar + Main Grid */}
+            <div className="desktop-layout">
+              {/* Desktop sidebar filters - hidden on mobile via CSS */}
+              <div className="desktop-sidebar">
+                <div className="sidebar-title">🔍 {t('filters', language)}</div>
+                <div className="filter-group">
+                  <span className="filter-label">{t('sortBy', language)}</span>
+                  <div className="filter-chips">
+                    {[['default', '📅', 'sortRecent'], ['price-desc', '💰', 'sortPrice'], ['ending-soon', '⏰', 'sortEnding'], ['title', '🔤', 'sortAZ'], ['popular', '🔥', 'sortPopular']].map(([v, icon, k]) => (
+                      <button key={v} className={`filter-chip ${sortMode === v ? 'active' : ''}`} onClick={() => setSortMode(v as SortMode)}>
+                        {icon} {t(k as any, language)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="filter-group">
+                  <span className="filter-label">{t('genre', language)}</span>
+                  <div className="filter-chips">
+                    {[['all', '🎮'], ['action', '⚔️'], ['rpg', '🗡️'], ['shooter', '🔫'], ['strategy', '🧠'], ['puzzle', '🧩'], ['racing', '🏎️'], ['sports', '⚽'], ['indie', '🎨']].map(([v, icon]) => (
+                      <button key={v} className={`filter-chip ${activeGenre === v ? 'active' : ''}`} onClick={() => setActiveGenre(v as Genre)}>
+                        {icon} {v === 'all' ? t('all', language) : v.charAt(0).toUpperCase() + v.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="filter-group">
+                  <span className="filter-label">{t('type', language)}</span>
+                  <div className="filter-chips">
+                    {[['all', '📋', 'all'], ['game', '🎮', 'games'], ['app', '📱', 'apps']].map(([v, icon, k]) => (
+                      <button key={v} className={`filter-chip ${activeType === v ? 'active' : ''}`} onClick={() => setActiveType(v as TypeFilter)}>
+                        {icon} {t(k as any, language)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="filter-group">
+                  <span className="filter-label">{t('licenseFilter', language)}</span>
+                  <div className="filter-chips">
+                    {[['all', '📋', 'all'], ['open-source', '🔓', 'openSource'], ['proprietary', '🔒', 'proprietary']].map(([v, icon, k]) => (
+                      <button key={v} className={`filter-chip ${activeLicense === v ? 'active' : ''}`} onClick={() => setActiveLicense(v as LicenseFilter)}>
+                        {icon} {t(k as any, language)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="filter-group">
+                  <span className="filter-label">{t('specials', language)}</span>
+                  <div className="filter-chips">
+                    <button className={`filter-chip ${showFavoritesOnly ? 'active' : ''}`} onClick={() => setShowFavoritesOnly(p => !p)}>
+                      ❤️ {t('favOnly', language)}
+                    </button>
+                  </div>
+                </div>
+                <button className="filter-btn secondary" onClick={handleResetFilters} style={{ width: '100%', marginTop: '0.35rem' }}>
+                  🔄 {t('reset', language)}
                 </button>
               </div>
-            )}
+              {/* Main Grid column */}
+              <div>
+                <GameGrid
+                  games={collectionFilteredGames}
+                  favorites={favorites}
+                  viewedGames={viewedGames}
+                  newGameIds={newGameIds}
+                  viewMode={viewMode}
+                  language={language}
+                  multiSelectActive={multiSelectActive}
+                  multiSelectedIds={multiSelectedIds}
+                  onToggleFavorite={toggleFavorite}
+                  onMarkAsViewed={handleMarkAsViewed}
+                  onOpenDetail={handleOpenDetail}
+                  onToggleMultiSelectGame={handleToggleMultiSelectGame}
+                />
+                {/* Empty state when collection has no games */}
+                {activeCollectionFilter && collectionFilteredGames.length === 0 && displayedGames.length > 0 && (
+                  <div className="empty-state" style={{ padding: '2rem' }}>
+                    <div className="empty-icon">📁</div>
+                    <h3>{t('noGames', language)}</h3>
+                    <button className="btn-primary" onClick={() => setActiveCollectionFilter(null)}>
+                      {t('clearFilters', language)}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </>
         )}
 
@@ -897,6 +958,7 @@ export default function App() {
         activeGenre={activeGenre}
         activeStore={activeStore}
         activeType={activeType}
+        activeLicense={activeLicense}
         activeYear={activeYear}
         sortMode={sortMode}
         showFavoritesOnly={showFavoritesOnly}
@@ -905,6 +967,7 @@ export default function App() {
         onGenreChange={setActiveGenre}
         onStoreChange={setActiveStore}
         onTypeChange={setActiveType}
+        onLicenseChange={setActiveLicense}
         onYearChange={setActiveYear}
         onSortChange={setSortMode}
         onToggleFavorites={handleToggleFavorites}

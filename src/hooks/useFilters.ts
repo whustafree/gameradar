@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Game, Mode, SortMode, Genre, TypeFilter, StoreFilter } from '../types';
+import { Game, Mode, SortMode, Genre, TypeFilter, StoreFilter, LicenseFilter } from '../types';
 import { GENRE_KEYWORDS, parsePrice } from '../utils/format';
 
 interface UseFiltersProps {
@@ -12,12 +12,13 @@ interface UseFiltersProps {
   activeGenre: Genre;
   activeStore: StoreFilter;
   activeType: TypeFilter;
+  activeLicense: LicenseFilter;
   activeYear?: string;
 }
 
 export function useFilters({
   games, favorites, showFavoritesOnly,
-  currentMode, searchTerm, sortMode, activeGenre, activeStore, activeType, activeYear
+  currentMode, searchTerm, sortMode, activeGenre, activeStore, activeType, activeLicense, activeYear
 }: UseFiltersProps) {
   return useMemo(() => {
     let filtered = games.filter(game => {
@@ -32,6 +33,8 @@ export function useFilters({
         if (activeType === 'dlc' && !type.includes('dlc')) return false;
         if (activeType === 'app' && !type.includes('app')) return false;
       }
+      if (activeLicense === 'open-source' && !game.license) return false;
+      if (activeLicense === 'proprietary' && game.license) return false;
       if (activeGenre !== 'all') {
         const keywords = GENRE_KEYWORDS[activeGenre] || [];
         const text = `${game.title} ${game.description}`.toLowerCase();
@@ -83,5 +86,5 @@ export function useFilters({
     }
 
     return filtered;
-  }, [games, favorites, showFavoritesOnly, currentMode, searchTerm, sortMode, activeGenre, activeStore, activeType]);
+  }, [games, favorites, showFavoritesOnly, currentMode, searchTerm, sortMode, activeGenre, activeStore, activeType, activeLicense]);
 }

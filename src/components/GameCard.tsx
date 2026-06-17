@@ -107,6 +107,22 @@ export default function GameCard({
             </span>
             <div className="card-img-badges">
               {isNew && <span className="card-img-badge new-badge">{t('newBadge', language)}</span>}
+              {/* Badge: Siempre gratis vs Pasa a gratis */}
+              {!game.endDate && game.source === 'fdroid' && (
+                <span className="card-img-badge" style={{ background: 'rgba(76,175,80,0.9)', color: 'white', fontSize: '0.45rem' }}>
+                  {t('alwaysFreeBadge', language)}
+                </span>
+              )}
+              {game.worth && game.worth !== 'N/A' && game.worth !== 'Pago' && game.endDate && (
+                <span className="card-img-badge" style={{ background: 'rgba(255,152,0,0.9)', color: 'white', fontSize: '0.45rem' }}>
+                  ⏳ {t('paidToFreeBadge', language)}
+                </span>
+              )}
+              {game.license && (
+                <span className="card-img-badge" style={{ background: 'rgba(76,175,80,0.15)', color: 'var(--green)', fontSize: '0.4rem', border: '1px solid rgba(76,175,80,0.2)' }}>
+                  📜 {game.license?.split('-')[0] || 'OS'}
+                </span>
+              )}
               {worth}
             </div>
           </>
@@ -122,9 +138,16 @@ export default function GameCard({
 
         {/* In list view, show platform name as subtitle */}
         {isListView && (
-          <span style={{ fontSize: '.58rem', color: 'var(--text-muted)', lineHeight: 1 }}>
-            {game.platformName || game.platform}
-          </span>
+          <>
+            <span style={{ fontSize: '.58rem', color: 'var(--text-muted)', lineHeight: 1 }}>
+              {game.platformName || game.platform}
+            </span>
+            {game.license && (
+              <span style={{ fontSize: '.48rem', color: 'var(--green)', lineHeight: 1, marginTop: '0.1rem' }}>
+                📜 {game.license}
+              </span>
+            )}
+          </>
         )}
         {showPlayStoreMeta && (
           <div className="card-ps-meta">

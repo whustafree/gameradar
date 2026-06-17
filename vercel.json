@@ -8,9 +8,19 @@
       "maxDuration": 30
     }
   },
+  "crons": [
+    {
+      "path": "/api/update",
+      "schedule": "0 */4 * * *"
+    }
+  ],
   "routes": [
     {
       "src": "/api/(.*)",
+      "dest": "api/index.js"
+    },
+    {
+      "src": "/api/update",
       "dest": "api/index.js"
     },
     {

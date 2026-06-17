@@ -128,6 +128,15 @@ export const translations = {
     dlcs: 'DLCs',
     allStores: 'Todas',
 
+    // Open Source filter
+    licenseFilter: 'Licencia',
+    openSource: 'Código abierto',
+    proprietary: 'Propietario',
+
+    // Free vs Paid-to-Free labels
+    alwaysFreeBadge: 'Siempre gratis',
+    paidToFreeBadge: 'Pasa a gratis',
+
     // Offline
     offline: 'Sin conexión — mostrando datos guardados 📡',
 
@@ -448,6 +457,15 @@ export const translations = {
     apps: 'Apps',
     dlcs: 'DLCs',
     allStores: 'All stores',
+
+    // Open Source filter
+    licenseFilter: 'License',
+    openSource: 'Open Source',
+    proprietary: 'Proprietary',
+
+    // Free vs Paid-to-Free labels
+    alwaysFreeBadge: 'Always free',
+    paidToFreeBadge: 'Goes free',
 
     // Offline
     offline: 'Offline — showing cached data 📡',

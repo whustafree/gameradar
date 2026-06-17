@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Language, Genre, StoreFilter, TypeFilter, SortMode } from '../types';
+import { Language, Genre, StoreFilter, TypeFilter, SortMode, LicenseFilter } from '../types';
 import { t, TranslationKeys } from '../i18n';
 
 interface FilterPanelProps {
@@ -10,6 +10,7 @@ interface FilterPanelProps {
   activeGenre: Genre;
   activeStore: StoreFilter;
   activeType: TypeFilter;
+  activeLicense: LicenseFilter;
   sortMode: SortMode;
   showFavoritesOnly: boolean;
   activeYear: string;
@@ -19,6 +20,7 @@ interface FilterPanelProps {
   onGenreChange: (genre: Genre) => void;
   onStoreChange: (store: StoreFilter) => void;
   onTypeChange: (type: TypeFilter) => void;
+  onLicenseChange: (license: LicenseFilter) => void;
   onSortChange: (mode: SortMode) => void;
   onToggleFavorites: () => void;
   onReset: () => void;
@@ -89,9 +91,9 @@ const sheetVariants = {
 
 export default function FilterPanel({
   language, isOpen, searchTerm,
-  activeGenre, activeStore, activeType, sortMode, showFavoritesOnly,
+  activeGenre, activeStore, activeType, activeLicense, sortMode, showFavoritesOnly,
   onClose, onSearchChange,
-  onGenreChange, onStoreChange, onTypeChange, onSortChange,
+  onGenreChange, onStoreChange, onTypeChange, onLicenseChange, onSortChange,
   onToggleFavorites, onReset,
   activeYear, onYearChange,
 }: FilterPanelProps) {
@@ -194,6 +196,14 @@ export default function FilterPanel({
                   {YEARS.map(y => (
                     <button key={y.value} className={`filter-chip ${activeYear === y.value ? 'active' : ''}`} onClick={() => onYearChange(y.value)}>{y.label}</button>
                   ))}
+                </div>
+              </div>
+              <div className="filter-group">
+                <span className="filter-label">{t('licenseFilter', language)}</span>
+                <div className="filter-chips">
+                  <button className={`filter-chip ${activeLicense === 'all' ? 'active' : ''}`} onClick={() => onLicenseChange('all')}>📋 {t('all', language)}</button>
+                  <button className={`filter-chip ${activeLicense === 'open-source' ? 'active' : ''}`} onClick={() => onLicenseChange('open-source')}>🔓 {t('openSource', language)}</button>
+                  <button className={`filter-chip ${activeLicense === 'proprietary' ? 'active' : ''}`} onClick={() => onLicenseChange('proprietary')}>🔒 {t('proprietary', language)}</button>
                 </div>
               </div>
               <div className="filter-group">

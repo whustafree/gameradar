@@ -58,6 +58,9 @@ export type SortMode = 'default' | 'price-desc' | 'ending-soon' | 'title' | 'pop
 export type Genre = 'all' | 'action' | 'rpg' | 'indie' | 'shooter' | 'strategy' | 'puzzle' | 'racing' | 'sports';
 export type TypeFilter = 'all' | 'game' | 'dlc' | 'app';
 export type StoreFilter = 'all' | 'steam' | 'epic' | 'gog' | 'itch' | 'battlenet' | 'origin' | 'drm' | 'pc';
+
+// --- Open Source filter ---
+export type LicenseFilter = 'all' | 'open-source' | 'proprietary';
 export type ViewMode = 'grid' | 'list';
 
 // --- Voting ---
@@ -152,6 +155,7 @@ export interface AppState {
   activeGenre: Genre;
   activeStore: StoreFilter;
   activeType: TypeFilter;
+  activeLicense: LicenseFilter;
   showFavoritesOnly: boolean;
   showHiddenOnly: boolean;
   isFilterOpen: boolean;
