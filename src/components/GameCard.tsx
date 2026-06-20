@@ -261,12 +261,12 @@ export default function GameCard({
 
       {/* Context menu (long press) */}
       {contextMenu && (
-        <div style={{
+        <div className="safe-dropdown" style={{
           position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
           zIndex: 999, background: 'var(--glass-bg)', backdropFilter: 'blur(30px)',
           border: '0.5px solid var(--glass-border)', borderRadius: 'var(--radius-lg)',
           padding: '0.5rem', boxShadow: 'var(--shadow-xl)',
-          minWidth: '160px', animation: 'overflowIn 0.2s var(--ease-spring)',
+          minWidth: '160px', maxWidth: 'calc(100vw - 2rem)', animation: 'overflowIn 0.2s var(--ease-spring)',
         }} onClick={e => e.stopPropagation()}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
             <button className="nav-overflow-item" onClick={e => { e.stopPropagation(); onToggleFavorite(game.id); setContextMenu(null); vibrate(8); }}>

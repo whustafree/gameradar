@@ -1586,6 +1586,19 @@ input, textarea, [contenteditable] { user-select: text; -webkit-user-select: tex
   animation: fadeIn .2s var(--ease);
 }
 
+/* Prevent dropdown horizontal overflow on small screens */
+@media (max-width: 380px) {
+  .nav-overflow-menu {
+    right: 0;
+    left: auto;
+    min-width: 140px;
+  }
+  .platform-dropdown-item {
+    font-size: 0.6rem;
+    padding: 0.35rem 0.4rem;
+  }
+}
+
 /* === BOTTOM NAV === */
 .bottom-nav {
   position: fixed;
@@ -1671,6 +1684,8 @@ input, textarea, [contenteditable] { user-select: text; -webkit-user-select: tex
   bottom: calc(100% + .5rem);
   right: 0;
   min-width: 170px;
+  max-width: calc(100vw - 1rem);
+  width: max-content;
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
@@ -2596,6 +2611,13 @@ main {
   z-index: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+/* === OVERFLOW SAFE GUARD === */
+.safe-dropdown {
+  max-width: calc(100vw - 1.5rem);
+  overflow-x: hidden;
+  word-wrap: break-word;
 }
 
 /* === RESPONSIVE === */
