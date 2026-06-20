@@ -38,7 +38,8 @@ jobs:
         run: |
           npx vercel deploy \
             --token="${{ secrets.VERCEL_TOKEN }}" \
-            --scope="${{ secrets.VERCEL_ORG_ID }}" \
+            --scope="prestafamilis-projects" \
+            --project=gameradar \
             --prod \
             --yes \
             --archive=tgz \
