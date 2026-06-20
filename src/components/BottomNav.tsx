@@ -120,37 +120,13 @@ export default function BottomNav({
             )}
           </button>
 
-          {/* Platform dropdown via Portal - centrado seguro sin overflow */}
+          {/* Platform dropdown via Portal */}
           {mode === 'pc' && showPlatformPicker && currentMode === 'pc' && createPortal(
             <>
               <div className="platform-dropdown-backdrop" onClick={() => setShowPlatformPicker(false)} />
-              <div style={{
-                position: 'fixed',
-                left: '0.75rem',
-                right: '0.75rem',
-                bottom: 'calc(var(--nav-h) + 0.75rem)',
-                display: 'flex',
-                justifyContent: 'center',
-                zIndex: 250,
-                pointerEvents: 'none',
-              }}>
-                <div className="safe-dropdown" style={{
-                  width: '100%',
-                  maxWidth: '320px',
-                  maxHeight: 'min(60vh, calc(100vh - var(--nav-h) - 2rem))',
-                  overflowY: 'auto',
-                  overscrollBehavior: 'contain',
-                  WebkitOverflowScrolling: 'touch',
-                  background: 'var(--glass-bg)',
-                  backdropFilter: 'blur(var(--glass-blur))',
-                  border: '0.5px solid var(--glass-border)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '0.35rem 0.35rem 0.6rem',
-                  boxShadow: 'var(--shadow-xl)',
-                  animation: 'fadeIn 0.2s var(--ease-spring)',
-                  pointerEvents: 'all',
-                }}>
-                  <div style={{ fontSize: '0.55rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, padding: '0.25rem 0.5rem 0.2rem', borderBottom: '0.5px solid var(--card-border)', marginBottom: '0.15rem' }}>
+              <div className="platform-dropdown-portal">
+                <div className="platform-dropdown-inner">
+                  <div className="platform-dropdown-header">
                     {language === 'es' ? 'Seleccionar tienda' : 'Select store'}
                   </div>
                   {PLATFORM_OPTIONS.map(p => {
@@ -164,7 +140,7 @@ export default function BottomNav({
                       >
                         <span>{p.icon}</span>
                         <span>{p.label}</span>
-                        {isActive && <span style={{ marginLeft: 'auto', fontSize: '0.55rem' }}>✓</span>}
+                        {isActive && <span className="platform-dropdown-check">✓</span>}
                       </button>
                     );
                   })}

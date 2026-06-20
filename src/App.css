@@ -1586,6 +1586,54 @@ input, textarea, [contenteditable] { user-select: text; -webkit-user-select: tex
   animation: fadeIn .2s var(--ease);
 }
 
+/* Platform dropdown portal - wrapper that stays within viewport */
+.platform-dropdown-portal {
+  position: fixed;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: calc(var(--nav-h) + 0.75rem);
+  z-index: 250;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+}
+
+/* Inner dropdown - visible, clickable card */
+.platform-dropdown-inner {
+  width: 100%;
+  max-width: 320px;
+  pointer-events: all;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 0.5px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 0.35rem 0.35rem 0.6rem;
+  box-shadow: var(--shadow-xl);
+  animation: fadeIn 0.2s var(--ease-spring);
+  max-height: min(60vh, calc(100vh - var(--nav-h) - 2rem));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Dropdown header */
+.platform-dropdown-header {
+  font-size: 0.55rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem 0.2rem;
+  border-bottom: 0.5px solid var(--card-border);
+  margin-bottom: 0.15rem;
+}
+
+/* Checkmark next to active platform */
+.platform-dropdown-check {
+  margin-left: auto;
+  font-size: 0.55rem;
+}
+
 /* Prevent dropdown horizontal overflow on small screens */
 @media (max-width: 380px) {
   .nav-overflow-menu {
