@@ -51,7 +51,14 @@ app.use(errorHandler);
 // Iniciar carga de juegos inmediatamente en background (no bloqueante)
 // En Vercel serverless la cache comienza vacia en cada cold start
 logger.info('Iniciando carga inicial de juegos (Vercel serverless)...');
-gamesService.updateAll();
+gamesService.updateAll().catch(err => {
+  logger.error('Error en carga inicial de juegos', err);
+});
+
+// Protección contra promesas rechazadas sin manejar (Node 24 las crashea)
+process.on('unhandledRejection', (reason, promise) => {
+  logger.warn('Unhandled Rejection:', reason);
+});
 
 // Exportar para Vercel serverless
 module.exports = app;
