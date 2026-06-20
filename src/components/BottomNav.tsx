@@ -120,24 +120,23 @@ export default function BottomNav({
             )}
           </button>
 
-          {/* Platform dropdown via Portal - centering wrapper + fade only animation */}
+          {/* Platform dropdown via Portal - centrado seguro sin overflow */}
           {mode === 'pc' && showPlatformPicker && currentMode === 'pc' && createPortal(
             <>
               <div className="platform-dropdown-backdrop" onClick={() => setShowPlatformPicker(false)} />
-              {/* Outer wrapper: handles centering via transform - NO animation that overrides transform */}
               <div style={{
                 position: 'fixed',
-                left: '50%',
+                left: '0.75rem',
+                right: '0.75rem',
                 bottom: 'calc(var(--nav-h) + 0.75rem)',
-                transform: 'translateX(-50%)',
+                display: 'flex',
+                justifyContent: 'center',
                 zIndex: 250,
                 pointerEvents: 'none',
               }}>
-                {/* Inner div: animated with opacity only - no transform conflict */}
-                <div style={{
-                  minWidth: '200px',
-                  maxWidth: 'calc(100vw - 1.5rem)',
-                  width: 'max-content',
+                <div className="safe-dropdown" style={{
+                  width: '100%',
+                  maxWidth: '320px',
                   maxHeight: 'min(60vh, calc(100vh - var(--nav-h) - 2rem))',
                   overflowY: 'auto',
                   overscrollBehavior: 'contain',
