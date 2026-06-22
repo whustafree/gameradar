@@ -57,16 +57,16 @@ export default function GameCard({
   const imgRef = useRef<HTMLImageElement>(null);
   const [imgLoaded, setImgLoaded] = useState(false);
   
-  // 3D Tilt effect on desktop (only on devices with fine pointer, throttled for scroll perf)
+  // 3D Tilt effect on desktop ONLY (disabled on touch devices for performance)
+  const isTouchDevice = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
   const tiltRAF = useRef<number | null>(null);
   
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (isTouchDevice) return;
     const card = cardRef.current;
-    if (!card || window.matchMedia('(hover: none)').matches || window.matchMedia('(pointer: coarse)').matches) return;
-    // Extract event values BEFORE rAF (React pooliza SyntheticEvents)
+    if (!card) return;
     const clientX = e.clientX;
     const clientY = e.clientY;
-    // Cancel pending frame (throttle via rAF)
     if (tiltRAF.current) cancelAnimationFrame(tiltRAF.current);
     tiltRAF.current = requestAnimationFrame(() => {
       const rect = card.getBoundingClientRect();
@@ -75,9 +75,10 @@ export default function GameCard({
       card.style.transform = `perspective(600px) rotateX(${-y * 6}deg) rotateY(${x * 6}deg) translateY(-3px)`;
       tiltRAF.current = null;
     });
-  }, []);
+  }, [isTouchDevice]);
   
   const handleMouseLeave = useCallback(() => {
+    if (isTouchDevice) return;
     const card = cardRef.current;
     if (!card) return;
     if (tiltRAF.current) {
@@ -85,7 +86,7 @@ export default function GameCard({
       tiltRAF.current = null;
     }
     card.style.transform = '';
-  }, []);
+  }, [isTouchDevice]);
 
   const showPlayStoreMeta = game.rating && game.installs;
   const worth = game.worth && game.worth !== 'N/A' && game.worth !== 'Pago'

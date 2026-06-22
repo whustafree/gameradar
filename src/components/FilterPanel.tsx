@@ -80,12 +80,12 @@ const YEARS = [
 
 const overlayVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.25 } },
+  visible: { opacity: 1, transition: { duration: 0.2 } },
 } as const;
 
 const sheetVariants = {
-  hidden: { y: '100%', transition: { type: 'spring', stiffness: 400, damping: 40 } },
-  visible: { y: 0, transition: { type: 'spring', stiffness: 400, damping: 40 } },
+  hidden: { y: '100%', transition: { type: 'tween', duration: 0.3, ease: 'easeOut' } },
+  visible: { y: 0, transition: { type: 'tween', duration: 0.3, ease: 'easeOut' } },
 } as const;
 
 export default function FilterPanel({

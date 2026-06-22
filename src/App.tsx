@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
 import { Mode, SortMode, Genre, TypeFilter, StoreFilter, ViewMode, Language, Game, LicenseFilter, Theme, AccentColor } from './types';
 import { t } from './i18n';
@@ -19,7 +19,7 @@ import BottomNav from './components/BottomNav';
 import GameCard from './components/GameCard';
 import GameDetail from './components/GameDetail';
 import Onboarding from './components/Onboarding';
-import SettingsPanel from './components/SettingsPanel';
+const SettingsPanel = lazy(() => import('./components/SettingsPanel'));
 import TrendingSection from './components/TrendingSection';
 import FilterPanel from './components/FilterPanel';
 import ActiveFiltersBar from './components/ActiveFiltersBar';
@@ -1290,24 +1290,30 @@ export default function App() {
         />
       )}
 
-      {/* Settings Panel (Theme, Collections, Activity, Achievements) */}
+      {/* Settings Panel (Theme, Collections, Activity, Achievements) — Code Splitting */}
       {showSettings && (
-        <SettingsPanel
-          language={language}
-          collections={collections}
-          activityLog={activityLog}
-          achievements={achievements}
-          userStats={userStats}
-          games={games.reduce((acc, g) => ({ ...acc, [g.id]: g.title }), {} as Record<string, string>)}
-          currentTheme={currentTheme}
-          accentColor={accentColor}
-          onClose={handleCloseSettings}
-          onCreateCollection={createCollection}
-          onDeleteCollection={deleteCollection}
-          onOpenCollectionGames={handleOpenCollectionGames}
-          onChangeTheme={setCurrentTheme}
-          onChangeAccent={setAccentColor}
-        />
+        <Suspense fallback={
+          <div className="filter-overlay open" style={{ zIndex: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="spinner" />
+          </div>
+        }>
+          <SettingsPanel
+            language={language}
+            collections={collections}
+            activityLog={activityLog}
+            achievements={achievements}
+            userStats={userStats}
+            games={games.reduce((acc, g) => ({ ...acc, [g.id]: g.title }), {} as Record<string, string>)}
+            currentTheme={currentTheme}
+            accentColor={accentColor}
+            onClose={handleCloseSettings}
+            onCreateCollection={createCollection}
+            onDeleteCollection={deleteCollection}
+            onOpenCollectionGames={handleOpenCollectionGames}
+            onChangeTheme={setCurrentTheme}
+            onChangeAccent={setAccentColor}
+          />
+        </Suspense>
       )}
 
       {/* Filter Panel */}
