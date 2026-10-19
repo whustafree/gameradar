@@ -14,16 +14,15 @@ router.get('/free-games', async (req, res) => {
     const data = await gamesService.getGames();
     
     // Si cache vacío (cold start), iniciar update en background
-    // y esperar hasta 4s por si las APIs rápidas responden
+    // y esperar hasta 5.5s por si las fuentes rápidas responden
     if (data.games.length === 0) {
-      logger.info('Cache vacío (cold start), iniciando carga con timeout 4s...');
-      
+      logger.info('Cache vacío (cold start), iniciando carga con timeout 5.5s...');
+
       gamesService.updateAll().catch(err => {
         logger.error('Error en updateAll background', err);
       });
-      
-      // Esperar hasta 4s para dar chance a servicios rápidos
-      const waited = await gamesService.getGames(4000);
+
+      const waited = await gamesService.getGames(5500);
       if (waited.games.length > 0) {
         data.games = waited.games;
         data.lastUpdated = waited.lastUpdated;
@@ -109,7 +108,8 @@ router.get('/stats', async (req, res) => {
 router.get('/update', requireAdmin, async (req, res) => {
   try {
     logger.info('Actualización por cron solicitada');
-    await gamesService.updateAll();
+    // El cron sí intenta el barrido completo (incluye FDroid/Steam)
+    await gamesService.updateAll({ full: true });
     const { games, lastUpdated } = await gamesService.getGames();
     res.json({
       success: true,
@@ -127,7 +127,7 @@ router.get('/update', requireAdmin, async (req, res) => {
 router.post('/refresh', requireAdmin, async (req, res) => {
   try {
     logger.info('Actualización manual solicitada');
-    await gamesService.updateAll();
+    await gamesService.updateAll({ full: true });
     const { games, lastUpdated } = await gamesService.getGames();
     res.json({
       success: true,

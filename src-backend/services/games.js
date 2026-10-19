@@ -14,56 +14,85 @@ const cacheManager = require('../utils/cache');
 const statsManager = require('../utils/stats');
 const logger = require('../utils/logger');
 
+// En serverless la función tiene un presupuesto de tiempo muy corto y el FS
+// es efímero: las fuentes lentas (FDroid descarga ~50 MB, Steam hace N+1 con
+// 5 s por juego, Instagram hace polling con sleeps) impiden que la caché se
+// llene antes de que Vercel congele la instancia.
+const IS_SERVERLESS = !!(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const SOURCE_TIMEOUT = IS_SERVERLESS ? 4500 : 30000;
+
+/** Corta una fuente que tarde demasiado para que no bloquee al resto. */
+function withTimeout(promise, ms, name) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(
+      () => reject(new Error(`${name}: timeout de ${ms}ms`)),
+      ms
+    );
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
 class GamesService {
   constructor() {
     this._pendingUpdate = null;
   }
 
-  async updateAll() {
+  async updateAll(options = {}) {
     // Si ya hay una actualizacion en curso, reusar la promesa
     if (this._pendingUpdate) {
       logger.info('Actualizacion ya en curso, esperando...');
       return this._pendingUpdate;
     }
 
-    this._pendingUpdate = this._doUpdate().finally(() => {
+    this._pendingUpdate = this._doUpdate(options).finally(() => {
       this._pendingUpdate = null;
     });
     
     return this._pendingUpdate;
   }
 
-  async _doUpdate() {
+  /**
+   * Fuentes ordenadas por coste.
+   * En serverless sólo corren las rápidas, salvo que se pida `full` (cron),
+   * que intenta también FDroid/Steam con un presupuesto mayor.
+   */
+  _sources(options = {}) {
+    const sources = [
+      { name: 'gamerpower', fast: true, run: () => gamerPowerService.fetchAll() },
+      { name: 'epicgames', fast: true, run: () => epicGamesService.fetchFreeGames() },
+      { name: 'freetogame', fast: true, run: () => freeToGameService.fetchAll() },
+      { name: 'mmobomb', fast: true, run: () => mmobombService.fetchAll() },
+      { name: 'androidfeeds', fast: true, run: () => androidFeedsService.fetchAll() },
+      { name: 'reddit', fast: true, run: () => redditService.fetchDeals() },
+      { name: 'googleplaydeals', fast: true, run: () => googlePlayDealsService.fetchAll() },
+      { name: 'notengosuelto', fast: false, run: () => notengoSueltoService.fetchAll() },
+      { name: 'fdroid', fast: false, run: () => fdroidService.fetchAll() },
+      { name: 'steam', fast: false, run: () => steamService.fetchAll() },
+    ];
+    if (!IS_SERVERLESS) return sources;
+    return options.full ? sources : sources.filter(s => s.fast);
+  }
+
+  async _doUpdate(options = {}) {
     const startTime = Date.now();
     statsManager.incrementScans();
     
-    logger.info('Iniciando actualización de juegos...');
+    logger.info(`Iniciando actualización de juegos...${IS_SERVERLESS ? ' (modo serverless)' : ''}`);
 
-    const sourceNames = [
-      'gamerpower', 'reddit', 'epicgames', 'freetogame',
-      'androidfeeds', 'mmobomb', 'notengosuelto',
-      'googleplaydeals', 'fdroid', 'steam'
-    ];
+    const sources = this._sources(options);
+    const sourceTimeout = options.full ? 25000 : SOURCE_TIMEOUT;
 
     try {
-      // Obtener juegos de todas las fuentes en paralelo
-      const results = await Promise.allSettled([
-        gamerPowerService.fetchAll(),
-        redditService.fetchDeals(),
-        epicGamesService.fetchFreeGames(),
-        freeToGameService.fetchAll(),
-        androidFeedsService.fetchAll(),
-        mmobombService.fetchAll(),
-        notengoSueltoService.fetchAll(),
-        googlePlayDealsService.fetchAll(),
-        fdroidService.fetchAll(),
-        steamService.fetchAll()
-      ]);
+      // Obtener juegos de todas las fuentes en paralelo, con timeout por fuente
+      const results = await Promise.allSettled(
+        sources.map(s => withTimeout(s.run(), sourceTimeout, s.name))
+      );
 
       // Combinar todos los resultados con monitoreo de fuentes
       let allGames = [];
       results.forEach((result, index) => {
-        const sourceName = sourceNames[index] || `source_${index}`;
+        const sourceName = sources[index]?.name || `source_${index}`;
         if (result.status === 'fulfilled') {
           allGames = [...allGames, ...result.value];
           statsManager.resetSourceErrors(sourceName);
@@ -79,29 +108,32 @@ class GamesService {
       const uniqueGames = this.removeDuplicates(allGames);
 
       if (uniqueGames.length > 0) {
-        // Detectar juegos nuevos
+        // Detectar juegos nuevos ANTES de sobrescribir la caché
         const newGames = cacheManager.findNewGames(uniqueGames);
-        
-        if (newGames.length > 0) {
-          logger.success(`${newGames.length} juegos nuevos detectados`);
-          
-          // Telegram
-          const alertSent = await telegramService.sendAlert(newGames);
-          if (alertSent) statsManager.incrementAlerts();
-          
-          // Instagram (no bloquea si falla)
-          const instagramPosted = await instagramService.sendAlert(newGames).catch(err => {
-            logger.error('Instagram: error en sendAlert', err);
-            return 0;
-          });
-          if (instagramPosted > 0) statsManager.incrementAlerts();
-        }
 
-        // Actualizar caché
+        // La caché se escribe primero: si el proceso muere durante las
+        // notificaciones (o Vercel congela la instancia), los datos ya están.
         cacheManager.setGames(uniqueGames);
         cacheManager.cleanupExpired();
-        
         statsManager.setGamesFound(uniqueGames.length);
+
+        if (newGames.length > 0) {
+          logger.success(`${newGames.length} juegos nuevos detectados`);
+
+          // En serverless no notificamos: Telegram/Instagram pueden tardar
+          // décadas y hacer perder la actualización. Lo hace el cron.
+          if (!IS_SERVERLESS) {
+            const alertSent = await telegramService.sendAlert(newGames);
+            if (alertSent) statsManager.incrementAlerts();
+
+            const instagramPosted = await instagramService.sendAlert(newGames).catch(err => {
+              logger.error('Instagram: error en sendAlert', err);
+              return 0;
+            });
+            if (instagramPosted > 0) statsManager.incrementAlerts();
+          }
+        }
+
         logger.success(`Actualización completada: ${uniqueGames.length} juegos totales`);
       } else {
         logger.warn('No se obtuvieron juegos de ninguna fuente');
