@@ -193,6 +193,7 @@ export default function GameCard({
           src={game.image}
           alt={game.title}
           loading="lazy"
+          decoding="async"
           onError={e => {
             (e.target as HTMLImageElement).src =
               `https://placehold.co/300x150/11111b/ef4444?text=${encodeURIComponent(game.title.slice(0, 20))}`;

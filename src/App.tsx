@@ -1,5 +1,7 @@
 import { useState, useCallback, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import { Mode, SortMode, Genre, TypeFilter, StoreFilter, ViewMode, Language, Game, LicenseFilter, Theme, AccentColor } from './types';
 import { t } from './i18n';
 import { parsePrice, vibrate, getSeasonalTheme, playSound } from './utils/format';
@@ -223,6 +225,14 @@ export default function App() {
       if (currentTheme === 'amoled') metaTheme.setAttribute('content', '#000000');
       else if (currentTheme === 'light') metaTheme.setAttribute('content', '#f5f5f7');
       else metaTheme.setAttribute('content', '#0a0a0a');
+    }
+
+    // En Android la status bar debe acompañar al tema (estaba fija en oscuro)
+    if (Capacitor.isNativePlatform()) {
+      const isLight = currentTheme === 'light';
+      const bg = isLight ? '#f5f5f7' : currentTheme === 'amoled' ? '#000000' : '#0a0a0a';
+      StatusBar.setStyle({ style: isLight ? Style.Light : Style.Dark }).catch(() => {});
+      StatusBar.setBackgroundColor({ color: bg }).catch(() => {});
     }
   }, [currentTheme, accentColor]);
 

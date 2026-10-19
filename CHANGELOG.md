@@ -1,5 +1,49 @@
 # Changelog - GameRadar
 
+## Sin publicar
+
+### 🔒 Seguridad
+- **Endpoints administrativos protegidos**: nuevo middleware `requireAdmin`
+  (`Authorization: Bearer <ADMIN_TOKEN>`) en `/refresh`, `/test-telegram`,
+  `/test-instagram`, `/send-push`, `/push-subscriptions` y `/update`.
+  Fail-closed: sin token configurado en producción responde 503.
+- **Anti-SSRF en push**: los endpoints se validan contra una allowlist de
+  hosts oficiales (FCM, Mozilla, WNS, Apple) y se exigen las claves
+  `p256dh`/`auth`.
+- **Secretos fuera del repositorio**: `data/vapid-keys.json` y
+  `gameradar-keystore-base64.txt` dejan de estar versionados. El patrón
+  `*.base64.txt` no casaba con el nombre real del keystore.
+- **`/api/stats`** deja de exponer `errors`, `sourceErrors`, `priceHistory`
+  y `memoryUsage`.
+- **VAPID**: las claves se leen de entorno; se avisa si faltan en producción.
+
+### 🐛 Correcciones
+- **El cron de Vercel apuntaba a `/api/update`, una ruta inexistente**: la
+  caché nunca se refrescaba en producción.
+- `getGames()` es async y se usaba sin `await` en `/stats` y `/refresh`.
+- `notengosuelto` lanzaba `ReferenceError` (`gplay` fuera de alcance) y
+  aportaba 0 apps siempre.
+- Bucle de re-render en la detección de juegos nuevos (`lastVisit` estaba en
+  las dependencias del efecto que lo reescribía).
+- Confetti: la opacidad se construía como string inválido.
+- `handleMarkClaimed` disparaba efectos secundarios dentro de un updater de
+  `setState` (duplicaba logros en StrictMode).
+
+### ✨ Mejoras
+- **Filtros con borrador**: los chips ya no aplican al instante; "Aplicar"
+  confirma y cerrar descarta.
+- **Accesibilidad**: `Escape`, foco atrapado, `aria-modal` y devolución del
+  foco en filtros, detalle, ajustes y modales; toasts con `aria-live`;
+  `prefers-reduced-motion` también para framer-motion; zoom desbloqueado.
+- **Contraste**: `--text-muted` pasa de 2.36:1 a 5.58:1; nuevo token
+  `--on-accent` (ámbar pasaba de 2.05:1 a 8.31:1).
+- **Escala tipográfica** en tokens (`--fs-*`), sin textos por debajo de 10px.
+- **Rendimiento**: chunks separados para React y framer-motion, tarjetas sin
+  animación duplicada ni `backdrop-filter` por elemento, `content-visibility`
+  en las vistas verticales.
+- **API**: `/api/free-games` acepta `platform`, `q`, `limit` y `offset`, y
+  `/api/docs` documenta lo que realmente hace.
+
 ## v2.0.0 (2026-01-30)
 
 ### 🎉 Nuevas Características

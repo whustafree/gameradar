@@ -152,33 +152,40 @@ export default function Header({
           )}
         </div>
 
-        {/* Stats widget */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: '0.3rem',
-          fontSize: '0.55rem', color: 'var(--text-muted)',
-          marginLeft: '0.25rem', flexShrink: 0,
-        }}>
+        {/* Stats widget: se oculta bajo 480px (ver App.css) */}
+        <div className="header-stats">
           <span title={language === 'es' ? 'Juegos totales' : 'Total games'}>
             🎮
             <span style={{ fontWeight: 700, marginLeft: '0.08rem' }}>{totalGames}</span>
           </span>
-          <span style={{ width: '1px', height: '10px', background: 'var(--card-border)', display: 'inline-block' }} />
+          <span className="header-stats-divider" aria-hidden="true" />
           <span title={language === 'es' ? 'Valor total' : 'Total value'}>
             💰
             <span style={{ fontWeight: 700, marginLeft: '0.08rem' }}>
               {totalSavings >= 1000 ? `$${(totalSavings / 1000).toFixed(1)}k` : `$${totalSavings.toFixed(0)}`}
             </span>
           </span>
-          {/* Favorites count removed */}
         </div>
 
         <div className="header-actions">
           {onToggleTheme && (
-            <button className="theme-toggle-btn" onClick={onToggleTheme} title={currentTheme === 'light' ? (language === 'es' ? 'Modo oscuro' : 'Dark mode') : (language === 'es' ? 'Cambiar tema' : 'Switch theme')}>
+            <button
+              type="button"
+              className="theme-toggle-btn"
+              onClick={onToggleTheme}
+              title={currentTheme === 'light' ? (language === 'es' ? 'Modo oscuro' : 'Dark mode') : (language === 'es' ? 'Cambiar tema' : 'Switch theme')}
+              aria-label={currentTheme === 'light' ? (language === 'es' ? 'Modo oscuro' : 'Dark mode') : (language === 'es' ? 'Cambiar tema' : 'Switch theme')}
+            >
               {currentTheme === 'light' ? '🌙' : currentTheme === 'amoled' ? '🕶️' : '🌗'}
             </button>
           )}
-          <button className="header-action lang-btn" onClick={onToggleLang} title={language === 'es' ? 'English' : 'Español'}>
+          <button
+            type="button"
+            className="header-action lang-btn"
+            onClick={onToggleLang}
+            title={language === 'es' ? 'English' : 'Español'}
+            aria-label={language === 'es' ? 'Switch to English' : 'Cambiar a español'}
+          >
             {language === 'es' ? 'EN' : 'ES'}
           </button>
         </div>

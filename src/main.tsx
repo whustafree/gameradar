@@ -2,17 +2,13 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { MotionConfig } from 'framer-motion';
 import { Capacitor } from '@capacitor/core';
-import { StatusBar, Style } from '@capacitor/status-bar';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import App from './App';
 import './App.css';
 
-// Capacitor native platform setup
+// El StatusBar lo gestiona App.tsx según el tema activo (antes estaba fijo
+// en oscuro y desentonaba en tema claro).
 if (Capacitor.isNativePlatform()) {
-  // Configurar StatusBar
-  StatusBar.setStyle({ style: Style.Dark });
-  StatusBar.setBackgroundColor({ color: '#1a1a2e' });
-  
   // Haptic feedback on touch
   document.addEventListener('touchstart', () => {
     Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});

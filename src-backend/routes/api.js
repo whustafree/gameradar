@@ -30,14 +30,47 @@ router.get('/free-games', async (req, res) => {
       }
     }
     
+    // Filtros y paginación opcionales: /api/docs los anunciaba desde hacía
+    // tiempo pero el handler nunca leía req.query.
+    const platform = typeof req.query.platform === 'string' && req.query.platform !== 'all'
+      ? req.query.platform.toLowerCase()
+      : '';
+    const q = typeof req.query.q === 'string' ? req.query.q.trim().toLowerCase() : '';
+    const limitRaw = parseInt(req.query.limit, 10);
+    const offsetRaw = parseInt(req.query.offset, 10);
+
+    let games = data.games;
+
+    if (platform) {
+      games = games.filter(g =>
+        String(g.category || '').toLowerCase() === platform ||
+        String(g.platform || '').toLowerCase() === platform
+      );
+    }
+
+    if (q) {
+      games = games.filter(g =>
+        `${g.title || ''} ${g.description || ''}`.toLowerCase().includes(q)
+      );
+    }
+
+    const total = games.length;
+    const offset = Number.isFinite(offsetRaw) && offsetRaw > 0 ? offsetRaw : 0;
+    if (offset) games = games.slice(offset);
+    if (Number.isFinite(limitRaw) && limitRaw > 0) {
+      games = games.slice(0, Math.min(limitRaw, 500));
+    }
+
     // Caché de borde: los datos cambian cada pocas horas, no hace falta
     // golpear la función serverless (y su cold start) en cada visita.
     res.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=3600');
     res.json({
       success: true,
-      games: data.games,
+      games,
       lastUpdated: data.lastUpdated,
-      count: data.games.length
+      count: games.length,
+      total,
+      offset
     });
   } catch (err) {
     logger.error('Error en /api/free-games', err);
@@ -151,29 +184,44 @@ router.get('/docs', (req, res) => {
     success: true,
     api: {
       name: 'GameRadar API',
-      version: '2.1.0',
+      version: '2.2.0',
       description: 'API pública de GameRadar - Descubre juegos gratis de Steam, Epic, GOG, Android y más',
-      documentation: 'https://github.com/whustafree/freegamehub',
+      documentation: 'https://github.com/whustafree/gameradar',
+      authentication: 'Los endpoints de escritura requieren Authorization: Bearer <ADMIN_TOKEN>',
       endpoints: [
         {
           path: '/api/free-games',
           method: 'GET',
           description: 'Obtener todos los juegos gratis disponibles',
-          params: [],
+          params: [
+            { name: 'platform', type: 'string', required: false, options: ['pc', 'android', 'all'], description: 'Filtra por categoría/plataforma' },
+            { name: 'q', type: 'string', required: false, description: 'Búsqueda de texto en título y descripción' },
+            { name: 'limit', type: 'number', required: false, description: 'Máximo de resultados (máx. 500)' },
+            { name: 'offset', type: 'number', required: false, description: 'Desplazamiento para paginar' },
+          ],
           response: {
             success: 'boolean',
             games: 'Game[]',
-            count: 'number',
+            count: 'number (en esta página)',
+            total: 'number (antes de paginar)',
+            offset: 'number',
             lastUpdated: 'string (ISO 8601)'
           },
-          example: 'curl https://gameradar-iota.vercel.app/api/free-games'
+          example: 'curl "https://gameradar-iota.vercel.app/api/free-games?platform=android&limit=20"'
         },
         {
           path: '/api/free-games?platform=android',
           method: 'GET',
           description: 'Filtrar juegos por plataforma (android o pc)',
           params: [{ name: 'platform', type: 'string', options: ['android', 'pc'] }],
-          example: 'curl https://gameradar-iota.vercel.app/api/free-games?platform=android'
+          example: 'curl "https://gameradar-iota.vercel.app/api/free-games?platform=android"'
+        },
+        {
+          path: '/api/update',
+          method: 'GET',
+          description: 'Fuerza una actualización de la caché (cron de Vercel). Requiere token.',
+          auth: true,
+          example: 'curl -H "Authorization: Bearer $CRON_SECRET" https://gameradar-iota.vercel.app/api/update'
         },
         {
           path: '/api/stats',
@@ -220,7 +268,7 @@ router.get('/docs', (req, res) => {
         license: 'string (opcional - solo F-Droid)',
       },
       rateLimiting: '60 requests per minute por IP',
-      caching: 'Los datos se actualizan cada 4 horas via cron job',
+      caching: 'La caché se refresca a diario con el cron de Vercel (/api/update) y las respuestas usan Cache-Control s-maxage=300',
     },
     generatedAt: new Date().toISOString(),
   });

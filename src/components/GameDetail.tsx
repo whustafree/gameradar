@@ -3,6 +3,7 @@ import { Game, Vote, Language, WishlistStatus, GameReactions, EmojiReaction } fr
 import { t } from '../i18n';
 import { getTimeInfo, playSound } from '../utils/format';
 import { showToast } from './Toast';
+import { useDialogA11y } from '../hooks/useDialogA11y';
 
 interface GameDetailProps {
   game: Game;
@@ -33,6 +34,9 @@ export default function GameDetail({
   const swipeStartX = useRef(0);
   const swipeOffset = useRef(0);
   const sheetRef = useRef<HTMLDivElement>(null);
+
+  // Escape, foco atrapado y devolución del foco al disparador
+  useDialogA11y<HTMLDivElement>(isOpen, onClose, sheetRef);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     swipeStartX.current = e.touches[0].clientX;
@@ -84,7 +88,15 @@ export default function GameDetail({
     if (navigator.vibrate) navigator.vibrate(20);
     // window.location.href sustituía la app dentro del WebView de Capacitor
     // (se perdían scroll y filtros). Abrimos en pestaña/navegador externo.
-    window.open(game.url, '_blank', 'noopener,noreferrer');
+    const opened = window.open(game.url, '_blank', 'noopener,noreferrer');
+    if (!opened) {
+      showToast(
+        language === 'es'
+          ? 'Permite las ventanas emergentes para abrir la tienda'
+          : 'Allow pop-ups to open the store',
+        'error'
+      );
+    }
   };
 
   const handleWishlist = () => {
@@ -123,7 +135,14 @@ export default function GameDetail({
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      <div ref={sheetRef} className="detail-sheet" onClick={e => e.stopPropagation()}>
+      <div
+        ref={sheetRef}
+        className="detail-sheet"
+        onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label={game.title}
+      >
         <div className="detail-handle" />
 
         {/* Header Image */}
