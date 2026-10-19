@@ -31,6 +31,8 @@ import DesktopSidebar from './components/DesktopSidebar';
 import FilterPanel from './components/FilterPanel';
 import ActiveFiltersBar from './components/ActiveFiltersBar';
 import SplashScreen from './components/SplashScreen';
+import UpdatePrompt from './components/UpdatePrompt';
+import { useAppUpdate } from './hooks/useAppUpdate';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -88,6 +90,14 @@ export default function App() {
     createCollection, deleteCollection, addToCollection, removeFromCollection,
     completeOnboarding, skipOnboarding,
   } = useGames();
+
+  // Actualizaciones del APK distribuidas por GitHub Releases
+  const {
+    update: appUpdate,
+    dismissed: updateDismissed,
+    dismiss: dismissUpdate,
+    openDownload: openUpdateDownload,
+  } = useAppUpdate();
 
   // --- State ---
   const [currentMode, setCurrentMode] = useState<Mode>('pc');
@@ -844,6 +854,15 @@ export default function App() {
   return (
     <>
       <SplashScreen />
+      <UpdatePrompt
+        isOpen={!!appUpdate && !updateDismissed}
+        language={language}
+        currentVersion={appUpdate?.currentVersion || ''}
+        latestVersion={appUpdate?.latestVersion || ''}
+        notes={appUpdate?.notes}
+        onUpdate={openUpdateDownload}
+        onLater={dismissUpdate}
+      />
       <div className="bg-glow" />        <Header
         searchTerm={searchTerm}
         language={language}

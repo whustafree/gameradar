@@ -3869,3 +3869,95 @@ h1, h2, h3,
   line-height: 1.35;
   color: var(--text-muted);
 }
+
+/* =====================================================================
+   AVISO DE ACTUALIZACIÓN DEL APK
+   ===================================================================== */
+.update-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(4, 4, 8, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.update-card {
+  width: min(360px, 100%);
+  padding: 1.35rem 1.25rem 1.15rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  box-shadow: 0 24px 60px -18px rgba(0, 0, 0, 0.7);
+  text-align: center;
+}
+
+.update-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto .75rem;
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+  border-radius: 16px;
+  background: var(--accent-bg);
+}
+
+.update-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.update-text {
+  margin-top: .4rem;
+  font-size: var(--fs-base);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.update-notes {
+  margin-top: .5rem;
+  font-size: var(--fs-2xs);
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.update-hint {
+  margin-top: .6rem;
+  padding: .55rem .7rem;
+  font-size: var(--fs-2xs);
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+  border-radius: 10px;
+  line-height: 1.35;
+}
+
+.update-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: .6rem;
+  margin-top: 1rem;
+}
+
+.update-btn {
+  min-height: 46px;
+  border-radius: var(--radius-full);
+  font-size: var(--fs-base);
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+}
+.update-btn.primary { background: var(--accent); color: var(--on-accent); }
+.update-btn.secondary {
+  background: transparent;
+  border: 1px solid var(--card-border);
+  color: var(--text-secondary);
+}
