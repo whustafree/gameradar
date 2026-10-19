@@ -26,13 +26,27 @@ const REACTION_EMOJIS: Record<EmojiReaction, string> = {
   fire: '🔥', heart: '❤️', star: '⭐', laugh: '😂', cool: '😎', sad: '😢',
 };
 
+/** ¿El elemento está dentro de un contenedor con scroll horizontal activo? */
+function isInsideHorizontalScroller(el: HTMLElement | null): boolean {
+  let node: HTMLElement | null = el;
+  while (node && node !== document.body) {
+    const style = window.getComputedStyle(node);
+    const scrollable = style.overflowX === 'auto' || style.overflowX === 'scroll';
+    if (scrollable && node.scrollWidth > node.clientWidth + 8) return true;
+    node = node.parentElement;
+  }
+  return false;
+}
+
 export default function GameDetail({
   game, games = [], votes, reactions, wishlist, language, isOpen,
   onClose, onVote, onReaction, onToggleWishlist, onMarkClaimed, onOpenGame
 }: GameDetailProps) {
   // Swipe to close
   const swipeStartX = useRef(0);
+  const swipeStartY = useRef(0);
   const swipeOffset = useRef(0);
+  const swipeIgnored = useRef(false);
   const sheetRef = useRef<HTMLDivElement>(null);
 
   // Escape, foco atrapado y devolución del foco al disparador
@@ -40,14 +54,20 @@ export default function GameDetail({
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     swipeStartX.current = e.touches[0].clientX;
+    swipeStartY.current = e.touches[0].clientY;
     swipeOffset.current = 0;
+    // Si el gesto nace dentro de un carrusel horizontal, no cerramos la hoja
+    swipeIgnored.current = isInsideHorizontalScroller(e.target as HTMLElement);
   }, []);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    const diff = e.touches[0].clientX - swipeStartX.current;
-    if (diff > 0 && sheetRef.current) {
-      swipeOffset.current = diff;
-      sheetRef.current.style.transform = `translateX(${diff * 0.3}px)`;
+    if (swipeIgnored.current) return;
+    const diffX = e.touches[0].clientX - swipeStartX.current;
+    const diffY = e.touches[0].clientY - swipeStartY.current;
+    // Bloqueo de eje: sólo cuenta como arrastre horizontal si domina claramente
+    if (diffX > 0 && Math.abs(diffX) > Math.abs(diffY) * 1.5 && sheetRef.current) {
+      swipeOffset.current = diffX;
+      sheetRef.current.style.transform = `translateX(${diffX * 0.3}px)`;
       sheetRef.current.style.transition = 'none';
     }
   }, []);
@@ -57,8 +77,9 @@ export default function GameDetail({
       sheetRef.current.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
       sheetRef.current.style.transform = '';
     }
-    if (swipeOffset.current > 80) onClose();
+    if (!swipeIgnored.current && swipeOffset.current > 100) onClose();
     swipeOffset.current = 0;
+    swipeIgnored.current = false;
   }, [onClose]);
 
   const timeInfo = getTimeInfo(game.endDate, game.type);

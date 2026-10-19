@@ -30,6 +30,11 @@
   `setState` (duplicaba logros en StrictMode).
 
 ### ✨ Mejoras
+- **Gestos con bloqueo de eje**: deslizar un carrusel ya no abre la tienda ni
+  comparte el juego; la hoja de detalle tampoco se cierra al arrastrar sus
+  juegos similares.
+- **Splash**: de 1,5 s fijos a 0,8 s, y se salta en visitas de la misma
+  sesión o con `prefers-reduced-motion`.
 - **Filtros con borrador**: los chips ya no aplican al instante; "Aplicar"
   confirma y cerrar descarta.
 - **Accesibilidad**: `Escape`, foco atrapado, `aria-modal` y devolución del
