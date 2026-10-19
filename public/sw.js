@@ -4,7 +4,7 @@
  * Offline total para assets estáticos + API en caché
  */
 
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v6';
 const CACHE_NAMES = {
   static: `grd-static-${CACHE_VERSION}`,
   api: `grd-api-${CACHE_VERSION}`,
@@ -91,9 +91,34 @@ async function fetchAndCache(request, cache) {
   } catch {}
 }
 
+/**
+ * Navegaciones (HTML): red primero, caché solo como respaldo offline.
+ * Con cache-first el shell quedaba congelado hasta que el usuario borrara
+ * los datos del sitio.
+ */
+async function navigationHandler(request) {
+  const cache = await caches.open(CACHE_NAMES.shell);
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      cache.put('/', response.clone());
+      cache.put('/index.html', response.clone());
+    }
+    return response;
+  } catch {
+    const cached = (await cache.match('/')) || (await cache.match('/index.html'));
+    if (cached) return cached;
+    return new Response(
+      '<!DOCTYPE html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+        '<body style="font-family:system-ui;background:#0a0a0a;color:#e8e8ee;padding:2rem;text-align:center">' +
+        '<h1>Sin conexión</h1><p>GameRadar necesita conexión para cargar la primera vez.</p></body>',
+      { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+    );
+  }
+}
+
 // Network First con timeout
-async function networkFirstTimeout(request, cacheName, timeout = 3000) {
-  const cache = await caches.open(cacheName);
+async function networkFirstTimeout(request, cacheName, timeout = 3000) {  const cache = await caches.open(cacheName);
 
   try {
     const fetchPromise = fetch(request);
@@ -121,7 +146,8 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
 
   const url = new URL(request.url);
-  if (url.protocol === 'chrome-extension:' || url.protocol === 'chrome-extension:') return;
+  // Ignorar peticiones de extensiones
+  if (url.protocol === 'chrome-extension:' || url.protocol === 'moz-extension:') return;
 
   // Solo manejar requests del mismo origen o CDNs conocidos
   const isSameOrigin = url.origin === self.location.origin;
@@ -132,6 +158,15 @@ self.addEventListener('fetch', (event) => {
   // API: Network First con timeout de 15s (Vercel cold start puede tardar)
   if (isSameOrigin && url.pathname.startsWith('/api/')) {
     event.respondWith(networkFirstTimeout(request, CACHE_NAMES.api, 15000));
+    return;
+  }
+
+  // Navegaciones: Network First.
+  // Antes caían en cacheFirstRefresh sin maxAge, así que el index.html se
+  // servía desde caché PARA SIEMPRE y la app se quedaba clavada en una
+  // versión vieja (imposible recibir un arreglo sin borrar datos).
+  if (request.mode === 'navigate') {
+    event.respondWith(navigationHandler(request));
     return;
   }
 

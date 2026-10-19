@@ -1,5 +1,23 @@
 # Changelog - GameRadar
 
+## v2.3.1 (2026-10-19)
+
+### 🐛 Correcciones
+- **La API devolvía 500 en todas las rutas**: al dejar de versionar
+  `data/vapid-keys.json`, el directorio `data/` desapareció del bundle de
+  Vercel y los `fs.mkdirSync()` de `vapid.js`/`push.js` fallaban con `EROFS`
+  al importar el módulo. Ahora están protegidos con `try/catch`.
+- **Arranque en frío devolvía 0 juegos**: `updateAll()` esperaba a las 10
+  fuentes y guardaba la caché después de las notificaciones. Ahora usa sólo
+  fuentes rápidas en serverless, aplica timeout por fuente y escribe la caché
+  antes de notificar (473 juegos en ~1 s).
+- **Service Worker servía el HTML en cache-first sin caducidad**, dejando la
+  app clavada en una versión antigua. Las navegaciones pasan a network-first.
+- **Reintento de red**: `loadGames` hace dos intentos con 12 s de timeout
+  antes de caer a la caché local.
+- `/api/vapid-public-key` responde 503 explícito si faltan las claves, en vez
+  de devolver una clave efímera distinta en cada instancia.
+
 ## v2.3.0 (2026-10-19)
 
 ### 🔒 Seguridad

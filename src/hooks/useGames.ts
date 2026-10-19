@@ -110,34 +110,55 @@ export function useGames() {
   const loadGames = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    try {
-      const isNative = Capacitor.isNativePlatform();
-      const apiBase = isNative ? 'https://gameradar-iota.vercel.app' : '';
+
+    const isNative = Capacitor.isNativePlatform();
+    const apiBase = isNative ? 'https://gameradar-iota.vercel.app' : '';
+    const url = `${apiBase}/api/free-games`;
+
+    // Dos intentos: en móvil un fallo puntual de red (cambio de wifi a datos,
+    // WebView dormido) producía "failed to fetch" sin reintentar.
+    let lastError: Error | null = null;
+
+    for (let attempt = 1; attempt <= 2; attempt++) {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
-      const res = await fetch(`${apiBase}/api/free-games`, { signal: controller.signal });
-      clearTimeout(timeoutId);
-      if (!res.ok) throw new Error('Error en la API');
-      const data: GamesResponse = await res.json();
-      setGames(data.games || []);
-      setLastUpdated(data.lastUpdated || null);
-      // Save to cache
-      if (data.games && data.games.length > 0) {
-        saveGamesCache(data.games);
+      // 12s: el arranque en frío del backend puede tardar ~1-2s y en redes
+      // lentas el límite anterior de 8s se quedaba corto.
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+      try {
+        const res = await fetch(url, { signal: controller.signal, cache: 'no-cache' });
+        clearTimeout(timeoutId);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data: GamesResponse = await res.json();
+        setGames(data.games || []);
+        setLastUpdated(data.lastUpdated || null);
+        if (data.games && data.games.length > 0) {
+          saveGamesCache(data.games);
+        }
+        setIsLoading(false);
+        return;
+      } catch (err) {
+        clearTimeout(timeoutId);
+        lastError = err instanceof Error ? err : new Error(String(err));
+        if (attempt === 1) {
+          await new Promise(resolve => setTimeout(resolve, 800));
+        }
       }
-    } catch (err) {
-      // Try loading from cache on error
-      const cached = loadGamesCache();
-      if (cached && cached.games.length > 0) {
-        setGames(cached.games);
-        setLastUpdated(cached.timestamp);
-        setError(null);
-      } else {
-        setError(err instanceof Error ? err.message : 'Error desconocido');
-      }
-    } finally {
-      setIsLoading(false);
     }
+
+    // Ambos intentos fallaron: usar caché local si existe
+    const cached = loadGamesCache();
+    if (cached && cached.games.length > 0) {
+      setGames(cached.games);
+      setLastUpdated(cached.timestamp);
+      setError(null);
+    } else {
+      const detail = lastError?.name === 'AbortError'
+        ? (navigator.language.startsWith('es') ? 'tiempo de espera agotado' : 'request timed out')
+        : (lastError?.message || 'unknown');
+      setError(detail);
+    }
+    setIsLoading(false);
   }, []);
 
   useEffect(() => { loadGames(); }, [loadGames]);
