@@ -1,6 +1,5 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import { Mode, ViewMode, Language, StoreFilter } from '../types';
+import { useState, useRef, useEffect } from 'react';
+import { Mode, ViewMode, Language } from '../types';
 import { t } from '../i18n';
 import { vibrate } from '../utils/format';
 
@@ -12,9 +11,7 @@ interface BottomNavProps {
   language: Language;
   multiSelectActive?: boolean;
   visible?: boolean;
-  activeStore?: StoreFilter;
   onModeChange: (mode: Mode) => void;
-  onStoreChange?: (store: StoreFilter) => void;
   onToggleRecent?: () => void;
   onResetFilters: () => void;
   onToggleViewMode: () => void;
@@ -28,28 +25,14 @@ const MODES: { mode: Mode; icon: string; labelKey: 'navPC' | 'navAndroid' }[] = 
   { mode: 'android', icon: '📱', labelKey: 'navAndroid' },
 ];
 
-const PLATFORM_OPTIONS: { store: StoreFilter; icon: string; label: string }[] = [
-  { store: 'all', icon: '📋', label: 'Todas' },
-  { store: 'steam', icon: '🟦', label: 'Steam' },
-  { store: 'epic', icon: '🎯', label: 'Epic Games' },
-  { store: 'gog', icon: '🟣', label: 'GOG' },
-  { store: 'itch', icon: '🎨', label: 'Itch.io' },
-  { store: 'battlenet', icon: '⚔️', label: 'Battle.net' },
-  { store: 'origin', icon: '💠', label: 'Origin' },
-  { store: 'drm', icon: '🔓', label: 'DRM-Free' },
-  { store: 'pc', icon: '🖥️', label: 'PC' },
-];
-
 export default function BottomNav({
   currentMode, viewMode, showRecentOnly, recentCount = 0, language,
-  multiSelectActive, visible = true, activeStore = 'all',
-  onModeChange, onStoreChange, onToggleRecent, onResetFilters, onToggleViewMode,
+  multiSelectActive, visible = true,
+  onModeChange, onToggleRecent, onResetFilters, onToggleViewMode,
   onOpenSettings, onToggleMultiSelect, onToggleFilter
 }: BottomNavProps) {
   const [showOverflow, setShowOverflow] = useState(false);
-  const [showPlatformPicker, setShowPlatformPicker] = useState(false);
   const overflowRef = useRef<HTMLDivElement>(null);
-  const platformRef = useRef<HTMLDivElement>(null);
 
   // Close overflow on outside click
   useEffect(() => {
@@ -63,83 +46,38 @@ export default function BottomNav({
     return () => document.removeEventListener('mousedown', handleClick);
   }, [showOverflow]);
 
-  // No need for outside-click handler on platform picker;
-  // the backdrop already covers the screen and closes on click.
-
   const handleOverflowAction = (action: () => void) => {
     setShowOverflow(false);
     action();
   };
 
-  const handleModeWithPlatform = (mode: Mode) => {
+  /**
+   * Cambiar de pestaña ya no abre el selector de tienda: el filtro vive en
+   * una franja discreta bajo la cabecera (StoreFilterBar).
+   */
+  const handleMode = (mode: Mode) => {
     onModeChange(mode);
-    if (mode === 'pc') {
-      setShowPlatformPicker(true);
-    }
     vibrate(8);
   };
-
-  const handlePlatformSelect = (store: StoreFilter) => {
-    if (onStoreChange) onStoreChange(store);
-    setShowPlatformPicker(false);
-    vibrate(6);
-  };
-
-  const currentPlatform = PLATFORM_OPTIONS.find(p => p.store === activeStore);
 
   return (
     <nav className={`bottom-nav ${!visible ? 'hidden' : ''}`}>
       {MODES.map(({ mode, icon, labelKey }) => (
-        <div key={mode} className="nav-btn-wrapper" ref={mode === 'pc' ? platformRef : undefined}>
-          <button
-            className={`nav-btn ${currentMode === mode ? 'active' : ''}`}
-            onClick={() => handleModeWithPlatform(mode)}
-            title={t(labelKey, language)}
-          >
-            <span className="nav-btn-icon">{icon}</span>
-            <span className="nav-btn-label">
-              {mode === 'pc' && currentPlatform && currentPlatform.store !== 'all'
-                ? currentPlatform.icon
-                : t(labelKey, language)}
-            </span>
-            {mode === 'pc' && currentPlatform && currentPlatform.store !== 'all' && (
-              <span className="nav-btn-sub-label">{currentPlatform.label}</span>
-            )}
-          </button>
-
-          {/* Platform dropdown via Portal */}
-          {mode === 'pc' && showPlatformPicker && currentMode === 'pc' && createPortal(
-            <>
-              <div className="platform-dropdown-backdrop" onClick={() => setShowPlatformPicker(false)} />
-              <div className="platform-dropdown-portal">
-                <div className="platform-dropdown-inner">
-                  <div className="platform-dropdown-header">
-                    {language === 'es' ? 'Seleccionar tienda' : 'Select store'}
-                  </div>
-                  {PLATFORM_OPTIONS.map(p => {
-                    const isActive = activeStore === p.store;
-                    return (
-                      <button
-                        key={p.store}
-                        className="platform-dropdown-item"
-                        data-active={isActive}
-                        onClick={() => handlePlatformSelect(p.store)}
-                      >
-                        <span>{p.icon}</span>
-                        <span>{p.label}</span>
-                        {isActive && <span className="platform-dropdown-check">✓</span>}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </>,
-            document.body
-          )}
-        </div>
+        <button
+          key={mode}
+          type="button"
+          className={`nav-btn ${currentMode === mode ? 'active' : ''}`}
+          onClick={() => handleMode(mode)}
+          title={t(labelKey, language)}
+          aria-current={currentMode === mode ? 'page' : undefined}
+        >
+          <span className="nav-btn-icon">{icon}</span>
+          <span className="nav-btn-label">{t(labelKey, language)}</span>
+        </button>
       ))}
 
       <button
+        type="button"
         className={`nav-btn ${showRecentOnly ? 'active' : ''}`}
         onClick={() => { if (onToggleRecent) onToggleRecent(); vibrate(6); }}
         title={t('navRecent', language)}
@@ -152,6 +90,7 @@ export default function BottomNav({
       </button>
 
       <button
+        type="button"
         className="nav-btn"
         onClick={() => { onToggleViewMode(); vibrate(6); }}
         title={viewMode === 'grid' ? t('navList', language) : t('navGrid', language)}
@@ -163,6 +102,7 @@ export default function BottomNav({
       {/* Overflow Menu (•••) */}
       <div className="nav-overflow-wrapper" ref={overflowRef}>
         <button
+          type="button"
           className={`nav-btn ${showOverflow ? 'active' : ''}`}
           onClick={() => setShowOverflow(p => !p)}
           title={language === 'es' ? 'Más opciones' : 'More options'}
@@ -174,6 +114,7 @@ export default function BottomNav({
         {showOverflow && (
           <div className="nav-overflow-menu">
             <button
+              type="button"
               className={`nav-overflow-item ${multiSelectActive ? 'active' : ''}`}
               onClick={() => handleOverflowAction(() => { if (onToggleMultiSelect) onToggleMultiSelect(); })}
             >
@@ -182,6 +123,7 @@ export default function BottomNav({
             </button>
 
             <button
+              type="button"
               className="nav-overflow-item"
               onClick={() => handleOverflowAction(() => { if (onToggleFilter) onToggleFilter(); })}
             >
@@ -190,6 +132,7 @@ export default function BottomNav({
             </button>
 
             <button
+              type="button"
               className="nav-overflow-item"
               onClick={() => handleOverflowAction(() => { if (onOpenSettings) onOpenSettings(); })}
             >
@@ -200,6 +143,7 @@ export default function BottomNav({
             <div className="nav-overflow-divider" />
 
             <button
+              type="button"
               className="nav-overflow-item danger"
               onClick={() => handleOverflowAction(onResetFilters)}
             >

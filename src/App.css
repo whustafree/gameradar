@@ -3961,3 +3961,113 @@ h1, h2, h3,
   border: 1px solid var(--card-border);
   color: var(--text-secondary);
 }
+
+/* =====================================================================
+   FRANJA DE FILTROS POR TIENDA (sustituye al desplegable de la pestaña PC)
+   ===================================================================== */
+.store-filter-bar {
+  margin: 0 -.25rem .55rem;
+  padding: 0 .25rem;
+}
+
+.store-filter-scroll {
+  display: flex;
+  gap: .4rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 2px 0 4px;
+}
+.store-filter-scroll::-webkit-scrollbar { display: none; }
+
+.store-filter-chip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .28rem .6rem;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+  letter-spacing: .01em;
+  cursor: pointer;
+  transition: color .16s var(--ease), background .16s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.store-filter-chip > span { font-size: 11px; opacity: .85; }
+.store-filter-chip:hover { color: var(--text-secondary); }
+.store-filter-chip.active {
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+.store-filter-chip.active > span { opacity: 1; }
+
+/* =====================================================================
+   SAFE AREAS — Android 15/16 fuerza edge-to-edge (targetSdk 36), así que
+   la app se dibuja bajo la barra de estado y la de gestos. Todo lo que
+   toca un borde debe respetar env(safe-area-inset-*).
+   ===================================================================== */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+/* Cabecera */
+.app-header {
+  padding-top: var(--safe-top);
+  height: calc(var(--header-h) + var(--safe-top));
+}
+.header-inner {
+  padding-left: max(.75rem, var(--safe-left));
+  padding-right: max(.75rem, var(--safe-right));
+}
+
+/* Área de scroll */
+main {
+  height: calc(100dvh - var(--header-h) - var(--nav-h) - var(--safe-top) - var(--safe-bottom));
+  max-height: calc(100dvh - var(--header-h) - var(--nav-h) - var(--safe-top) - var(--safe-bottom));
+  padding-left: max(1rem, calc(var(--safe-left) + .5rem));
+  padding-right: max(1rem, calc(var(--safe-right) + .5rem));
+}
+
+/* Barra inferior: alto real + hueco de gestos */
+.bottom-nav {
+  height: calc(var(--nav-h) + var(--safe-bottom));
+  padding-bottom: calc(6px + var(--safe-bottom));
+  padding-left: max(8px, var(--safe-left));
+  padding-right: max(8px, var(--safe-right));
+}
+
+/* Hojas y modales: que el último control no quede bajo la barra de gestos */
+.filter-sheet,
+.detail-sheet {
+  padding-bottom: var(--safe-bottom);
+}
+.detail-body { padding-bottom: calc(1rem + var(--safe-bottom)); }
+.modal-box { margin-bottom: var(--safe-bottom); }
+.filter-actions {
+  padding-bottom: calc(10px + var(--safe-bottom));
+}
+
+/* Elementos flotantes anclados abajo */
+#toast-container { bottom: calc(var(--nav-h) + var(--safe-bottom) + .75rem); }
+.pwa-install-banner { bottom: calc(var(--nav-h) + var(--safe-bottom) + .5rem); }
+.update-overlay,
+.context-menu,
+.filter-overlay,
+.detail-overlay {
+  padding-bottom: var(--safe-bottom);
+  padding-top: var(--safe-top);
+}
+
+/* Paisaje / notch lateral */
+body {
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
+}
