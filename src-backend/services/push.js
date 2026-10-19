@@ -5,10 +5,16 @@ const vapidService = require('./vapid');
 
 const SUBSCRIPTIONS_FILE = path.join(__dirname, '..', '..', 'data', 'push-subscriptions.json');
 
-// Ensure data directory exists
+// Ensure data directory exists.
+// Igual que en vapid.js: en Vercel el FS es de solo lectura y un mkdirSync
+// aquí (a nivel de módulo) tumbaba la función entera con 500.
 const DATA_DIR = path.dirname(SUBSCRIPTIONS_FILE);
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+let dataDirReady = true;
+try {
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+} catch (err) {
+  dataDirReady = false;
+  logger.warn(`Push: sin directorio de datos (FS de solo lectura): ${err.message}`);
 }
 
 /**
@@ -64,6 +70,9 @@ function loadSubscriptions() {
 }
 
 function saveSubscriptions(subscriptions) {
+  // En serverless el FS es de solo lectura: no hay persistencia posible,
+  // así que no intentamos escribir ni ensuciamos los logs en cada alta.
+  if (!dataDirReady) return;
   try {
     fs.writeFileSync(SUBSCRIPTIONS_FILE, JSON.stringify(subscriptions, null, 2), 'utf-8');
   } catch (err) {

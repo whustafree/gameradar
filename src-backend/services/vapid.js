@@ -5,10 +5,17 @@ const logger = require('../utils/logger');
 
 const VAPID_KEYS_FILE = path.join(__dirname, '..', '..', 'data', 'vapid-keys.json');
 
-// Ensure data directory exists
+// Ensure data directory exists.
+// En Vercel el FS es de solo lectura (/var/task): si el directorio no existe,
+// mkdirSync lanza EROFS y al ejecutarse al importar el módulo tumbaba TODA la
+// función (500 en todas las rutas). Nunca debe lanzar.
 const DATA_DIR = path.dirname(VAPID_KEYS_FILE);
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+let dataDirReady = true;
+try {
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+} catch (err) {
+  dataDirReady = false;
+  logger.warn(`VAPID: sin directorio de datos (FS de solo lectura): ${err.message}`);
 }
 
 /**
@@ -54,7 +61,18 @@ function initVapidKeys() {
     logger.warn('Error loading VAPID keys file:', err.message);
   }
 
-  // 3. Generate new keys (first run)
+  // 3. Sin entorno y sin FS escribible (serverless): no generamos claves
+  // efímeras, porque cambiarían en cada cold start e invalidarían todas las
+  // suscripciones. Es preferible fallar de forma explícita.
+  if (!dataDirReady) {
+    logger.error(
+      'VAPID no configurado y sin FS escribible: push deshabilitado hasta ' +
+        'definir VAPID_PUBLIC_KEY y VAPID_PRIVATE_KEY'
+    );
+    return '';
+  }
+
+  // 4. Generate new keys (primer arranque en local)
   logger.info('Generating new VAPID keys...');
   const keys = webPush.generateVAPIDKeys();
   const keyData = {

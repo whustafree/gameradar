@@ -350,6 +350,14 @@ router.get('/push-subscriptions', requireAdmin, (req, res) => {
 router.get('/vapid-public-key', (req, res) => {
   try {
     const key = vapidService.getPublicKey();
+    if (!key) {
+      // Sin VAPID configurado no hay push posible: mejor 503 explícito que
+      // devolver una clave efímera que invalida las suscripciones.
+      return res.status(503).json({
+        success: false,
+        error: 'Push no configurado en el servidor (faltan VAPID_*)'
+      });
+    }
     res.json({ success: true, publicKey: key });
   } catch (err) {
     logger.error('Error en /api/vapid-public-key', err);
