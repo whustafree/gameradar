@@ -267,51 +267,47 @@ export default function GameCard({
         </div>
       )}
 
-      {/* Body */}
+      {/* Body — ficha estilo tienda de apps */}
       <div className="card-body">
-        <h3 className="card-title">{game.title}</h3>
+        <div className="card-store-main">
+          {game.image && (
+            <img
+              className="card-app-icon"
+              src={game.image}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              onError={e => { (e.target as HTMLImageElement).style.visibility = 'hidden'; }}
+            />
+          )}
 
-        {/* In list view, show platform name as subtitle */}
-        {isListView && (
-          <>
-            <span style={{ fontSize: '.58rem', color: 'var(--text-muted)', lineHeight: 1 }}>
-              {game.platformName || game.platform}
-            </span>
-            {game.license && (
-              <span style={{ fontSize: '0.625rem', color: 'var(--green)', lineHeight: 1, marginTop: '0.1rem' }}>
-                📜 {game.license}
-              </span>
-            )}
-          </>
-        )}
-        {showPlayStoreMeta && (
-          <div className="card-ps-meta">
-            <span className="card-rating" title={`${game.rating?.toFixed(1)} ⭐`}>
-              {'⭐'.repeat(Math.round(game.rating || 0))}
-              <small>{game.rating?.toFixed(1)}</small>
-            </span>
-            {game.installs && (
-              <span className="card-installs">{game.installs}</span>
-            )}
-            {game.publisher && (
-              <span className="card-publisher">{game.publisher}</span>
-            )}
+          <div className="card-store-text">
+            <h3 className="card-title">{game.title}</h3>
+            <div className="card-store-sub">
+              <span className="card-store-platform">{game.platformName || game.platform}</span>
+              {game.rating ? (
+                <span className="card-store-rating">★ {game.rating.toFixed(1)}</span>
+              ) : null}
+              {game.license ? (
+                <span className="card-store-license">📜 {game.license}</span>
+              ) : null}
+            </div>
           </div>
-        )}
-        <div className="card-meta">
-          <div className="card-meta-left">
-            <span className={`card-time ${timeInfo.className}`}>{timeInfo.text}</span>
-            {worthValue > 0 && (
-              <span className="card-savings-label">
-                💰{t('reclaim', language)} {game.worth}
-              </span>
-            )}
-          </div>
+
+          <span className={`card-store-price ${worthValue > 0 ? 'was' : 'free'}`}>
+            {worthValue > 0 ? game.worth : (language === 'es' ? 'Gratis' : 'Free')}
+          </span>
+        </div>
+
+        <div className="card-store-foot">
+          <span className={`card-time ${timeInfo.className}`}>{timeInfo.text}</span>
           <div className="card-actions">
             <button
+              type="button"
               className="card-action"
               onClick={e => { e.stopPropagation(); shareGame(game, language); }}
               title={t('shareTitle', language)}
+              aria-label={t('shareTitle', language)}
             >
               📤
             </button>
@@ -322,7 +318,7 @@ export default function GameCard({
               className="claim-btn"
               onClick={e => { e.stopPropagation(); }}
             >
-              🎮 {t('reclaim', language)}
+              {language === 'es' ? 'Obtener' : 'Get'}
             </a>
           </div>
         </div>
