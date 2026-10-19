@@ -187,6 +187,9 @@ export default function GameDetail({
         <div className="detail-body">
           {/* Title + Meta row */}
           <div className="detail-top">
+            {game.image && (
+              <img className="detail-app-icon" src={game.image} alt="" loading="lazy" decoding="async" />
+            )}
             <div className="detail-top-info">
               <h2 className="detail-title">{game.title}</h2>
               <div className="detail-subtitle">

@@ -1,5 +1,27 @@
 # Changelog - GameRadar
 
+## v2.6.0 (2026-10-19) — Rediseño tipo tienda de apps
+
+Se mantiene la paleta (tinta, violeta, lima) pero cambia el lenguaje visual
+a algo más cercano a Play Store / App Store.
+
+### 🎨 Interfaz
+- **Fichas de app**: cada juego pasa de "tarjeta con banner y badges" a una
+  ficha con la imagen insertada, **icono cuadrado, título, plataforma,
+  valoración y precio** en una sola fila.
+- **Precio como píldora**: "Gratis" en lima y el precio original tachado,
+  como en una tienda.
+- **Navegación inferior plana**: sin degradados ni indicador superior; el
+  icono activo se marca con una píldora de acento, como las tabs de la
+  tienda.
+- **Cabeceras editoriales**: títulos de sección sin mayúsculas forzadas y
+  con más aire.
+- **Buscador** con forma de campo de tienda (relleno, sin borde, foco con
+  anillo).
+- **Ficha de producto**: el detalle gana el icono grande junto al título y
+  el precio en píldora.
+- **Rejilla más espaciada** y bordes sustituidos por superficies.
+
 ## v2.5.0 (2026-10-19) — Más contenido Android
 
 ### ✨ Nuevas fuentes
