@@ -27,7 +27,7 @@ export default function ToastContainer() {
         setTimeout(() => {
           setToasts(prev => prev.filter(t => t.id !== toast.id));
         }, 250);
-      }, 3000);
+      }, 5000);
     };
     listeners.push(listener);
     return () => {
@@ -80,18 +80,21 @@ export default function ToastContainer() {
   const icons = { success: '✅', error: '❌', info: 'ℹ️' };
 
   return (
-    <div id="toast-container">
+    // role="status" + aria-live: los toasts son el único feedback de acciones
+    // como votar, copiar o reclamar, y hasta ahora no se anunciaban.
+    <div id="toast-container" role="status" aria-live="polite" aria-atomic="false">
       {toasts.map(t => (
         <div
           key={t.id}
           ref={el => { if (el) toastRefs.current.set(t.id, el); }}
           className={`toast ${t.type} ${t.removing ? 'removing' : ''}`}
+          role="alert"
           onClick={() => dismissToast(t.id)}
           onTouchStart={(e) => handleTouchStart(e, t.id)}
           onTouchMove={(e) => handleTouchMove(e, t.id)}
           onTouchEnd={() => handleTouchEnd(t.id)}
         >
-          <span>{icons[t.type]}</span>
+          <span aria-hidden="true">{icons[t.type]}</span>
           <span>{t.message}</span>
         </div>
       ))}

@@ -1,12 +1,12 @@
 export default function SkeletonGrid() {
   const shimmerStyle: React.CSSProperties = {
-    backgroundImage: 'linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%)',
+    backgroundImage: 'linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-highlight) 50%, var(--skeleton-base) 75%)',
     backgroundSize: '200% 100%',
     animation: 'shimmer 1.8s ease-in-out infinite',
   };
 
   const shimmerStyle2: React.CSSProperties = {
-    backgroundImage: 'linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.10) 50%, rgba(255,255,255,0.04) 75%)',
+    backgroundImage: 'linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-highlight) 50%, var(--skeleton-base) 75%)',
     backgroundSize: '200% 100%',
     animation: 'shimmer 2.2s ease-in-out infinite',
   };
@@ -83,7 +83,7 @@ export default function SkeletonGrid() {
               <div style={{ padding: '.5rem .6rem .6rem', display: 'flex', flexDirection: 'column', gap: '.35rem' }}>
                 <div style={{ height: 9, width: '85%', borderRadius: 3, ...shimmerStyle }} />
                 <div style={{ height: 9, width: '55%', borderRadius: 3, ...shimmerStyle }} />
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '.15rem', paddingTop: '.25rem', borderTop: '0.5px solid rgba(255,255,255,0.04)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '.15rem', paddingTop: '.25rem', borderTop: '0.5px solid var(--skeleton-base)' }}>
                   <div style={{ height: 9, width: '35%', borderRadius: 3, ...shimmerStyle }} />
                   <div style={{ display: 'flex', gap: '.2rem' }}>
                     <div style={{ width: 22, height: 22, borderRadius: '50%', ...shimmerStyle }} />
@@ -130,7 +130,7 @@ export default function SkeletonGrid() {
             <div className="skeleton-body">
               <div className="skeleton-line" style={{ width: '80%', ...shimmerStyle }} />
               <div className="skeleton-line" style={{ width: '55%', ...shimmerStyle }} />
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '.15rem', paddingTop: '.25rem', borderTop: '0.5px solid rgba(255,255,255,0.04)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '.15rem', paddingTop: '.25rem', borderTop: '0.5px solid var(--skeleton-base)' }}>
                 <div className="skeleton-line short" style={{ ...shimmerStyle }} />
                 <div style={{ display: 'flex', gap: '.2rem' }}>
                   <div style={{ width: 22, height: 22, borderRadius: '50%', ...shimmerStyle }} />

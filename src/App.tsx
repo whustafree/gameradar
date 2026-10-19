@@ -373,6 +373,12 @@ export default function App() {
   useEffect(() => { saveViewMode(viewMode); }, [viewMode]);
   useEffect(() => { saveLanguage(language); }, [language]);
 
+  // Sincroniza <html lang>: sin esto el lector de pantalla pronuncia el inglés
+  // con fonética española (index.html fija lang="es").
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
+
   // --- Debounce search ---
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(searchTerm), 300);

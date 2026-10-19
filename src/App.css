@@ -10,16 +10,20 @@
   --accent-s: 78%;
   --accent-l: 27%;
   --accent-hsl: var(--accent-h), var(--accent-s), var(--accent-l);
+  /* Color del texto sobre fondo de acento. El blanco sólo sirve para acentos
+     oscuros: con ámbar daba 2.05:1 y con cian 3.35:1. */
+  --on-accent: #ffffff;
 }
 
-[data-accent="green"]   { --accent-h: 120; --accent-s: 78%; --accent-l: 27%; }
-[data-accent="red"]     { --accent-h: 0;   --accent-s: 78%; --accent-l: 40%; }
-[data-accent="blue"]    { --accent-h: 215; --accent-s: 78%; --accent-l: 40%; }
-[data-accent="purple"]  { --accent-h: 270; --accent-s: 60%; --accent-l: 50%; }
-[data-accent="amber"]   { --accent-h: 40;  --accent-s: 90%; --accent-l: 50%; }
-[data-accent="cyan"]    { --accent-h: 180; --accent-s: 75%; --accent-l: 35%; }
+[data-accent="green"]   { --accent-h: 120; --accent-s: 78%; --accent-l: 27%; --on-accent: #ffffff; }
+[data-accent="red"]     { --accent-h: 0;   --accent-s: 78%; --accent-l: 40%; --on-accent: #ffffff; }
+[data-accent="blue"]    { --accent-h: 215; --accent-s: 78%; --accent-l: 40%; --on-accent: #ffffff; }
+[data-accent="purple"]  { --accent-h: 270; --accent-s: 60%; --accent-l: 50%; --on-accent: #ffffff; }
+[data-accent="amber"]   { --accent-h: 40;  --accent-s: 90%; --accent-l: 50%; --on-accent: #1a1a2e; }
+[data-accent="cyan"]    { --accent-h: 180; --accent-s: 75%; --accent-l: 45%; --on-accent: #08201f; }
 
 [data-theme="dark"] {
+  color-scheme: dark;
   --bg: #0a0a0a;
   --bg-surface: #101014;
   --bg-elevated: #18181d;
@@ -28,15 +32,19 @@
   --card-border: rgba(255,255,255,0.06);
   --overlay-bg: rgba(0,0,0,0.88);
   --text: #e8e8ee;
-  --text-secondary: #8a8a96;
-  --text-muted: #505060;
+  /* Antes: #8a8a96 / #505060 -> 2.36:1 sobre --card-bg (fallaba WCAG AA) */
+  --text-secondary: #a2a2b4;
+  --text-muted: #8b8b9e;
   --glass-bg: rgba(16,16,20,0.75);
   --glass-border: rgba(255,255,255,0.06);
   --glass-blur: 30px;
   --shadow-color: rgba(0,0,0,0.5);
+  --skeleton-base: rgba(255,255,255,0.04);
+  --skeleton-highlight: rgba(255,255,255,0.10);
 }
 
 [data-theme="amoled"] {
+  color-scheme: dark;
   --bg: #000000;
   --bg-surface: #050508;
   --bg-elevated: #0a0a0e;
@@ -45,15 +53,19 @@
   --card-border: rgba(255,255,255,0.04);
   --overlay-bg: rgba(0,0,0,0.92);
   --text: #e0e0e8;
-  --text-secondary: #70707a;
-  --text-muted: #38384a;
+  /* Antes: #70707a / #38384a -> texto de metadatos prácticamente invisible */
+  --text-secondary: #9a9aa8;
+  --text-muted: #82828f;
   --glass-bg: rgba(5,5,8,0.8);
   --glass-border: rgba(255,255,255,0.04);
   --glass-blur: 40px;
   --shadow-color: rgba(0,0,0,0.7);
+  --skeleton-base: rgba(255,255,255,0.03);
+  --skeleton-highlight: rgba(255,255,255,0.08);
 }
 
 [data-theme="light"] {
+  color-scheme: light;
   --bg: #f5f5f7;
   --bg-surface: #ffffff;
   --bg-elevated: #f0f0f2;
@@ -63,11 +75,14 @@
   --overlay-bg: rgba(0,0,0,0.4);
   --text: #1a1a2e;
   --text-secondary: #5a5a6e;
-  --text-muted: #8a8a9e;
+  /* Antes: #8a8a9e -> 3.11:1 sobre --bg (fallaba WCAG AA) */
+  --text-muted: #6f6f83;
   --glass-bg: rgba(255,255,255,0.7);
   --glass-border: rgba(0,0,0,0.06);
   --glass-blur: 30px;
   --shadow-color: rgba(0,0,0,0.1);
+  --skeleton-base: rgba(0,0,0,0.05);
+  --skeleton-highlight: rgba(0,0,0,0.10);
 }
 
 /* Compute derived accent colors from HSL */
@@ -105,6 +120,17 @@
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 
+  /* Escala tipográfica: el CSS tenía 37 tamaños sueltos (varios de 6-7px).
+     Mínimo legible = --fs-2xs (11px). Usar estos tokens en código nuevo. */
+  --fs-2xs: 0.6875rem; /* 11px */
+  --fs-xs: 0.75rem;    /* 12px */
+  --fs-sm: 0.8125rem;  /* 13px */
+  --fs-base: 0.875rem; /* 14px */
+  --fs-md: 1rem;       /* 16px */
+  --fs-lg: 1.25rem;    /* 20px */
+  --fs-xl: 1.5rem;     /* 24px */
+  --fs-2xl: 1.75rem;   /* 28px */
+
   --header-h: 48px;
   --nav-h: 54px;
 }
@@ -120,7 +146,7 @@ html {
   height: -webkit-fill-available;
 }
 body {
-  font-family: 'Inter Variable', 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
@@ -163,8 +189,10 @@ input, textarea, [contenteditable] { user-select: text; -webkit-user-select: tex
   overflow: hidden;
 }
 
-/* === FONT IMPORT (Inter Variable) === */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+/* === FUENTE ===
+   El @import de Google Fonts vivía aquí, después de :root/reset, así que los
+   navegadores lo descartaban (y el build lo avisaba). La fuente ya se carga
+   con <link> en index.html: no hay que duplicarla. */
 
 /* === SCROLLBAR === */
 ::-webkit-scrollbar { width: 2px; height: 2px; }
@@ -335,7 +363,9 @@ input, textarea, [contenteditable] { user-select: text; -webkit-user-select: tex
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border-bottom: 0.5px solid var(--glass-border);
-  height: var(--header-h);
+  /* Sin esto la cabecera queda bajo la status bar en pantallas con recorte */
+  padding-top: env(safe-area-inset-top, 0px);
+  height: calc(var(--header-h) + env(safe-area-inset-top, 0px));
   display: flex;
   align-items: center;
   padding: 0 .5rem 0 .85rem;
@@ -484,7 +514,7 @@ input, textarea, [contenteditable] { user-select: text; -webkit-user-select: tex
   color: var(--text-muted);
   border-bottom: 0.5px solid var(--card-border);
 }
-.search-suggestions-hint { font-size: .48rem; opacity: .5; }
+.search-suggestions-hint { font-size: 0.625rem; opacity: .5; }
 
 .search-suggestion-group { padding: .1rem 0; }
 .search-suggestion-group + .search-suggestion-group {
@@ -503,7 +533,7 @@ input, textarea, [contenteditable] { user-select: text; -webkit-user-select: tex
 }
 .search-suggestion-group-count {
   margin-left: auto;
-  font-size: .45rem;
+  font-size: 0.625rem;
   color: var(--text-muted);
   background: var(--bg-hover);
   padding: .05rem .25rem;
@@ -599,22 +629,31 @@ input, textarea, [contenteditable] { user-select: text; -webkit-user-select: tex
   position: relative;
   cursor: pointer;
   transition: transform .4s var(--ease-spring), border-color .4s var(--ease), box-shadow .4s var(--ease);
-  animation: cardIn .5s var(--ease-spring) backwards;
+  /* Sin animation CSS: la entrada la anima framer-motion (GameCard).
+     Tener ambas escribiendo transform duplicaba trabajo por tarjeta. */
   display: flex;
   flex-direction: column;
   min-height: 150px;
   box-shadow: var(--shadow-xs);
   outline: none;
-  transform-style: preserve-3d;
-  perspective: 600px;
 }
+
+/* El tilt 3D sólo tiene sentido con ratón; en móvil cuesta capas GPU */
+@media (pointer: fine) {
+  .game-card {
+    transform-style: preserve-3d;
+    perspective: 600px;
+  }
+}
+
 .game-card:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
 .game-card:active { transform: scale(.96); }
 .game-card:hover {
   border-color: var(--accent-glow);
   box-shadow: var(--shadow-lg), 0 0 0 1px var(--accent-glow);
 }
-.game-card.new-game { border-color: var(--accent-glow); box-shadow: 0 2px 12px var(--accent-glow); animation: pulseGlow 2s infinite; }
+/* pulseGlow infinito repintaba cada tarjeta nueva; ahora es estático */
+.game-card.new-game { border-color: var(--accent-glow); box-shadow: 0 2px 12px var(--accent-glow); }
 .game-card.viewed { opacity: .35; }
 .game-card.viewed:hover { opacity: .5; }
 .game-card.multi-selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
@@ -653,7 +692,6 @@ input, textarea, [contenteditable] { user-select: text; -webkit-user-select: tex
   padding: .1rem .4rem;
   border-radius: var(--radius-sm);
   background: var(--glass-bg);
-  backdrop-filter: blur(12px);
   border: 0.5px solid var(--glass-border);
   font-size: .52rem;
   font-weight: 700;
@@ -686,8 +724,10 @@ input, textarea, [contenteditable] { user-select: text; -webkit-user-select: tex
   height: 100%;
   object-fit: cover;
   transition: transform .45s var(--ease-spring);
-  will-change: transform;
+  /* will-change permanente reservaba una capa GPU por tarjeta durante todo
+     el scroll; se activa sólo donde se anima. */
 }
+.game-card:hover .card-img img { will-change: transform; }
 .game-card:active .card-img img { transform: scale(1.05); }
 
 /* Image reveal blur-in effect */
@@ -737,7 +777,7 @@ input, textarea, [contenteditable] { user-select: text; -webkit-user-select: tex
 .card-img-badge {
   padding: .1rem .35rem;
   border-radius: var(--radius-sm);
-  font-size: .48rem;
+  font-size: 0.625rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .3px;
@@ -749,7 +789,7 @@ input, textarea, [contenteditable] { user-select: text; -webkit-user-select: tex
 .card-img-badge:nth-child(3) { animation-delay: 0.15s; }
 .card-img-badge.platform { background: rgba(0,0,0,0.65); color: var(--text); }
 .card-img-badge.worth { background: linear-gradient(135deg, hsl(40, 90%, 50%), hsl(40, 90%, 40%)); color: #000; }
-.card-img-badge.new-badge { background: var(--accent); color: white; animation: pulse 1.5s infinite; }
+.card-img-badge.new-badge { background: var(--accent); color: var(--on-accent); animation: pulse 1.5s infinite; }
 .card-img-badge.free-to-play { background: linear-gradient(135deg, hsl(215, 80%, 40%), hsl(215, 80%, 50%)); color: white; }
 .card-img-badge.free-weekend { background: linear-gradient(135deg, hsl(40, 90%, 50%), hsl(40, 90%, 40%)); color: #000; animation: pulse 1.5s infinite; }
 
@@ -791,12 +831,12 @@ input, textarea, [contenteditable] { user-select: text; -webkit-user-select: tex
   display: inline-flex;
   align-items: center;
   gap: .12rem;
-  font-size: .48rem;
+  font-size: 0.625rem;
   color: var(--text-muted);
   white-space: nowrap;
 }
 .card-ps-meta .card-rating small {
-  font-size: .45rem;
+  font-size: 0.625rem;
   font-weight: 600;
   margin-left: .05rem;
 }
@@ -804,10 +844,10 @@ input, textarea, [contenteditable] { user-select: text; -webkit-user-select: tex
   background: var(--bg-hover);
   padding: .05rem .2rem;
   border-radius: 4px;
-  font-size: .45rem;
+  font-size: 0.625rem;
 }
 .card-ps-meta .card-publisher {
-  font-size: .45rem;
+  font-size: 0.625rem;
   max-width: 80px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -881,7 +921,7 @@ input, textarea, [contenteditable] { user-select: text; -webkit-user-select: tex
 
 .claim-btn {
   background: var(--accent);
-  color: white;
+  color: var(--on-accent);
   border: none;
   padding: .25rem .6rem;
   border-radius: var(--radius-full);
@@ -939,7 +979,7 @@ input, textarea, [contenteditable] { user-select: text; -webkit-user-select: tex
   margin-top: 0;
 }
 .game-card.list-view .card-savings-label {
-  font-size: .48rem;
+  font-size: 0.625rem;
 }
 
 /* === SECTION SCROLL === */
@@ -1093,7 +1133,7 @@ input, textarea, [contenteditable] { user-select: text; -webkit-user-select: tex
   background: var(--accent);
   border: none;
   border-radius: var(--radius-full);
-  color: white;
+  color: var(--on-accent);
   font-size: .72rem;
   font-weight: 600;
   cursor: pointer;
@@ -1459,7 +1499,7 @@ input, textarea, [contenteditable] { user-select: text; -webkit-user-select: tex
 }
 .detail-action-btn.primary {
   background: var(--accent);
-  color: white;
+  color: var(--on-accent);
   box-shadow: 0 2px 12px var(--accent-glow);
 }
 .detail-action-btn.primary:active { transform: scale(.97); }
@@ -1582,12 +1622,12 @@ a.detail-action-btn:not(.primary):not(.large) { text-decoration: none; }
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.detail-similar-platform { font-size: .48rem; color: var(--text-muted); margin-top: .05rem; }
+.detail-similar-platform { font-size: 0.625rem; color: var(--text-muted); margin-top: .05rem; }
 
 /* === PLATFORM DROPDOWN === */
 .nav-btn-wrapper { position: relative; }
 .nav-btn-sub-label {
-  font-size: .38rem;
+  font-size: 0.625rem;
   font-weight: 600;
   letter-spacing: -.1px;
   white-space: nowrap;
@@ -1782,7 +1822,7 @@ a.detail-action-btn:not(.primary):not(.large) { text-decoration: none; }
 
 .nav-btn-icon { font-size: 1.1rem; line-height: 1; transition: transform .2s var(--ease); }
 .nav-btn.active .nav-btn-icon { transform: translateY(-1px); }
-.nav-btn-label { font-size: .45rem; font-weight: 500; letter-spacing: -.1px; white-space: nowrap; }
+.nav-btn-label { font-size: 0.625rem; font-weight: 500; letter-spacing: -.1px; white-space: nowrap; }
 
 .nav-badge {
   position: absolute;
@@ -1792,9 +1832,9 @@ a.detail-action-btn:not(.primary):not(.large) { text-decoration: none; }
   height: 14px;
   padding: 0 3px;
   background: var(--accent);
-  color: white;
+  color: var(--on-accent);
   border-radius: 7px;
-  font-size: .4rem;
+  font-size: 0.625rem;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -2072,7 +2112,7 @@ a.detail-action-btn:not(.primary):not(.large) { text-decoration: none; }
 }
 .filter-chip:hover { border-color: var(--accent-glow); color: var(--text); }
 .filter-chip:active { transform: scale(.95); }
-.filter-chip.active { background: var(--accent); border-color: var(--accent); color: white; box-shadow: 0 2px 8px var(--accent-glow); }
+.filter-chip.active { background: var(--accent); border-color: var(--accent); color: var(--on-accent); box-shadow: 0 2px 8px var(--accent-glow); }
 
 .filter-actions {
   display: flex;
@@ -2092,7 +2132,7 @@ a.detail-action-btn:not(.primary):not(.large) { text-decoration: none; }
   text-align: center;
   border: none;
 }
-.filter-btn.primary { background: var(--accent); color: white; box-shadow: 0 2px 8px var(--accent-glow); }
+.filter-btn.primary { background: var(--accent); color: var(--on-accent); box-shadow: 0 2px 8px var(--accent-glow); }
 .filter-btn.primary:hover { filter: brightness(1.1); }
 .filter-btn.primary:active { transform: scale(.97); }
 .filter-btn.secondary {
@@ -2192,7 +2232,7 @@ a.detail-action-btn:not(.primary):not(.large) { text-decoration: none; }
   cursor: pointer;
   border: none;
   background: var(--accent);
-  color: white;
+  color: var(--on-accent);
   font-family: inherit;
   transition: all .2s var(--ease-spring);
   box-shadow: 0 2px 8px var(--accent-glow);
@@ -2442,7 +2482,7 @@ a.detail-action-btn:not(.primary):not(.large) { text-decoration: none; }
   transition: all .2s var(--ease-spring);
   font-family: inherit;
 }
-.onboarding-btn.primary { background: var(--accent); color: white; box-shadow: 0 2px 8px var(--accent-glow); }
+.onboarding-btn.primary { background: var(--accent); color: var(--on-accent); box-shadow: 0 2px 8px var(--accent-glow); }
 .onboarding-btn.primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
 .onboarding-btn.secondary {
   background: transparent;
@@ -2625,7 +2665,7 @@ a.detail-action-btn:not(.primary):not(.large) { text-decoration: none; }
 .achievement-card-name { font-size: .78rem; font-weight: 600; }
 .achievement-card-desc { font-size: .55rem; color: var(--text-muted); }
 .achievement-card-status {
-  font-size: .45rem;
+  font-size: 0.625rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: .3px;
@@ -2680,7 +2720,7 @@ a.detail-action-btn:not(.primary):not(.large) { text-decoration: none; }
   border-radius: var(--radius);
   border: none;
   background: var(--accent);
-  color: white;
+  color: var(--on-accent);
   font-size: .65rem;
   font-weight: 600;
   cursor: pointer;
@@ -2842,19 +2882,19 @@ main {
 .compact-mode .game-card .card-img { padding-bottom: 40%; }
 .compact-mode .game-card .card-body { padding: .3rem .4rem .4rem; gap: .15rem; }
 .compact-mode .game-card .card-title { font-size: .7rem; -webkit-line-clamp: 1; }
-.compact-mode .game-card .card-time { font-size: .45rem; padding: .05rem .2rem; }
-.compact-mode .game-card .card-savings-label { font-size: .45rem; }
+.compact-mode .game-card .card-time { font-size: 0.625rem; padding: .05rem .2rem; }
+.compact-mode .game-card .card-savings-label { font-size: 0.625rem; }
 .compact-mode .game-card .card-actions .card-action { width: 20px; height: 20px; font-size: .5rem; }
 .compact-mode .game-card .claim-btn { font-size: .5rem; padding: .15rem .35rem; }
 .compact-mode .game-card .card-meta { padding-top: .15rem; }
-.compact-mode .game-card .card-platform-tag { font-size: .42rem; padding: .05rem .25rem; }
-.compact-mode .game-card .card-img-badge { font-size: .4rem; padding: .05rem .2rem; }
+.compact-mode .game-card .card-platform-tag { font-size: 0.625rem; padding: .05rem .25rem; }
+.compact-mode .game-card .card-img-badge { font-size: 0.625rem; padding: .05rem .2rem; }
 .compact-mode .game-card .card-ps-meta { display: none; }
 .compact-mode .game-card.list-view { min-height: 56px; max-height: 64px; }
 .compact-mode .game-card.list-view .card-img { width: 72px; }
 .compact-mode .game-card.list-view .card-title { font-size: .65rem; }
 .compact-mode .game-card.list-view .card-body { padding: .25rem .4rem; }
-.compact-mode .card-img-badges .card-img-badge.new-badge { font-size: .35rem; padding: .02rem .15rem; }
+.compact-mode .card-img-badges .card-img-badge.new-badge { font-size: 0.625rem; padding: .02rem .15rem; }
 .compact-mode .section-scroll .game-card { min-width: 140px; max-width: 160px; }
 .compact-mode .games-grid { gap: .45rem; }
 

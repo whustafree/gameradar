@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <!-- viewport-fit=cover activa los env(safe-area-inset-*) del CSS;
+         sin límites de escala para no bloquear el zoom (WCAG 1.4.4). -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
     <meta name="description" content="Descubre los mejores juegos de todas las plataformas. Actualizado diariamente.">
     <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
     <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
@@ -10,6 +12,26 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
     <title>GameRadar - Descubre Juegos Gratis 🎮</title>
+
+    <!-- Aplica tema/acento ANTES del primer paint: sin esto el body pinta
+         blanco hasta que React monta (las variables viven bajo [data-theme]). -->
+    <script>
+      (function () {
+        try {
+          var THEMES = ['dark', 'amoled', 'light'];
+          var theme = localStorage.getItem('fgh_theme_v1');
+          if (THEMES.indexOf(theme) === -1) theme = 'dark';
+          var accent = localStorage.getItem('fgh_accent_v1') || 'red';
+          var root = document.documentElement;
+          root.setAttribute('data-theme', theme);
+          root.setAttribute('data-accent', accent);
+          root.style.colorScheme = theme === 'light' ? 'light' : 'dark';
+        } catch (e) {
+          /* localStorage bloqueado: quedan los valores por defecto del HTML */
+        }
+      })();
+    </script>
+
     <link rel="manifest" href="/manifest.json" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
