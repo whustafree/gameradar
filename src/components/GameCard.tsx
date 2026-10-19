@@ -240,29 +240,25 @@ export default function GameCard({
       </div>
 
       {/* Glow overlay on hover */}
-      <div className="card-glow-overlay" />            {/* Context menu (long press) */}
+      <div className="card-glow-overlay" />
+
+      {/* Context menu (long press) */}
       {contextMenu && (
-        <div className="safe-dropdown" style={{
-          position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-          zIndex: 999, background: 'var(--glass-bg)', backdropFilter: 'blur(30px)',
-          border: '0.5px solid var(--glass-border)', borderRadius: 'var(--radius-lg)',
-          padding: '0.5rem', boxShadow: 'var(--shadow-xl)',
-          minWidth: '160px', maxWidth: 'calc(100vw - 2rem)', animation: 'overflowIn 0.2s var(--ease-spring)',
-        }} onClick={e => e.stopPropagation()}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-            <button className="nav-overflow-item" onClick={e => { e.stopPropagation(); window.open(game.url, '_blank'); setContextMenu(null); }}>
-              🎮 {t('reclaim', language)}
+        <div className="context-menu" onClick={e => e.stopPropagation()}>
+          <div className="context-menu-inner">
+            <button type="button" className="nav-overflow-item" onClick={e => { e.stopPropagation(); window.open(game.url, '_blank'); setContextMenu(null); }}>
+              <span>🎮</span> {t('reclaim', language)}
             </button>
-            <button className="nav-overflow-item" onClick={e => { e.stopPropagation(); shareGame(game, language); setContextMenu(null); }}>
-              📤 {t('shareTitle', language)}
+            <button type="button" className="nav-overflow-item" onClick={e => { e.stopPropagation(); shareGame(game, language); setContextMenu(null); }}>
+              <span>📤</span> {t('shareTitle', language)}
             </button>
-            <button className="nav-overflow-item" onClick={e => { e.stopPropagation(); setContextMenu(null); if (onToggleMultiSelectGame) onToggleMultiSelectGame(game.id); }}>
-              ☑️ {t('multiSelect', language)}
+            <button type="button" className="nav-overflow-item" onClick={e => { e.stopPropagation(); setContextMenu(null); if (onToggleMultiSelectGame) onToggleMultiSelectGame(game.id); }}>
+              <span>☑️</span> {t('multiSelect', language)}
             </button>
             <div className="nav-overflow-divider" />
-            <button className="nav-overflow-item" style={{ fontSize: '0.6rem', color: 'var(--text-muted)', cursor: 'default' }}>
-              👆 {language === 'es' ? 'Desliza izq: compartir • Der: reclamar' : 'Swipe L: share • R: claim'}
-            </button>
+            <div className="context-menu-hint">
+              👆 {language === 'es' ? 'Desliza izq: compartir · Der: reclamar' : 'Swipe L: share · R: claim'}
+            </div>
           </div>
         </div>
       )}

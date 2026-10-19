@@ -1,5 +1,21 @@
 # Changelog - GameRadar
 
+## v2.7.0 (2026-10-19) — Menús estilo Play Store
+
+### 🧭 Navegación y menús
+- **Barra inferior de pestañas**: iconos de 20 px con etiqueta de 11 px, sin
+  degradados ni indicadores; la pestaña activa se marca con una píldora de
+  acento y el texto en color de acento, como en la tienda.
+- **Submenú de plataformas**: pasa a ser un menú emergente de 16 px de radio
+  con filas de 48 px, icono a la izquierda y check en la opción activa.
+- **Menú "Más"**: misma tarjeta y mismas filas; "Restablecer" en color de
+  peligro.
+- **Menú contextual** (pulsación larga en una tarjeta): deja de usar estilos
+  inline con glassmorphism y pasa a diálogo centrado con las mismas filas.
+- **Hojas de filtros y ajustes**: cabecera con asa, título y botón de cierre
+  circular; **barra de acciones pegada al fondo** con "Restablecer" y
+  "Aplicar" (46 px de alto), como el pie de una hoja de la tienda.
+
 ## v2.6.0 (2026-10-19) — Rediseño tipo tienda de apps
 
 Se mantiene la paleta (tinta, violeta, lima) pero cambia el lenguaje visual
