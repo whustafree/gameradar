@@ -54,7 +54,7 @@ export interface StatsResponse {
 // --- Modes & Filters ---
 export type Mode = 'pc' | 'android';
 export type Theme = 'dark' | 'light' | 'amoled';
-export type AccentColor = 'red' | 'blue' | 'green' | 'purple' | 'amber' | 'cyan';
+export type AccentColor = 'violet' | 'red' | 'blue' | 'green' | 'purple' | 'amber' | 'cyan';
 export type SortMode = 'default' | 'recent' | 'price-desc' | 'ending-soon' | 'title' | 'popular';
 export type Genre = 'all' | 'action' | 'rpg' | 'indie' | 'shooter' | 'strategy' | 'puzzle' | 'racing' | 'sports';
 export type TypeFilter = 'all' | 'game' | 'dlc' | 'app';

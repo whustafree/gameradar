@@ -3,86 +3,99 @@
    Multi-Theme • Glassmorphism • Animations
    ============================================= */
 
-/* === ACCENT COLOR THEMES === */
+/* === GAMERADAR v3 — IDENTIDAD VISUAL ===
+   Paleta "radar nocturno": tinta azulada, violeta eléctrico como acento y
+   lima como señal (nuevo, ahorro, cuenta atrás). */
+
 :root {
-  /* Default: Xbox Green */
-  --accent-h: 120;
-  --accent-s: 78%;
-  --accent-l: 27%;
+  /* Default: violeta eléctrico */
+  --accent-h: 263;
+  --accent-s: 90%;
+  --accent-l: 66%;
   --accent-hsl: var(--accent-h), var(--accent-s), var(--accent-l);
   /* Color del texto sobre fondo de acento. El blanco sólo sirve para acentos
-     oscuros: con ámbar daba 2.05:1 y con cian 3.35:1. */
+     oscuros: con ámbar daba 2.05:1. */
   --on-accent: #ffffff;
+
+  /* Tipografía */
+  --font-ui: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Space Grotesk', 'Inter', 'Segoe UI', sans-serif;
+
+  /* Señal: acento secundario para novedades y ahorro */
+  --signal: #c8ff4d;
+  --signal-soft: rgba(200, 255, 77, 0.14);
+  --signal-ink: #10160a;
 }
 
-[data-accent="green"]   { --accent-h: 120; --accent-s: 78%; --accent-l: 27%; --on-accent: #ffffff; }
-[data-accent="red"]     { --accent-h: 0;   --accent-s: 78%; --accent-l: 40%; --on-accent: #ffffff; }
-[data-accent="blue"]    { --accent-h: 215; --accent-s: 78%; --accent-l: 40%; --on-accent: #ffffff; }
-[data-accent="purple"]  { --accent-h: 270; --accent-s: 60%; --accent-l: 50%; --on-accent: #ffffff; }
-[data-accent="amber"]   { --accent-h: 40;  --accent-s: 90%; --accent-l: 50%; --on-accent: #1a1a2e; }
-[data-accent="cyan"]    { --accent-h: 180; --accent-s: 75%; --accent-l: 45%; --on-accent: #08201f; }
+[data-accent="violet"]  { --accent-h: 263; --accent-s: 90%; --accent-l: 66%; --on-accent: #ffffff; }
+[data-accent="green"]   { --accent-h: 160; --accent-s: 70%; --accent-l: 45%; --on-accent: #04120c; }
+[data-accent="red"]     { --accent-h: 4;   --accent-s: 85%; --accent-l: 62%; --on-accent: #1a0505; }
+[data-accent="blue"]    { --accent-h: 214; --accent-s: 90%; --accent-l: 60%; --on-accent: #04101f; }
+[data-accent="purple"]  { --accent-h: 285; --accent-s: 70%; --accent-l: 62%; --on-accent: #12041a; }
+[data-accent="amber"]   { --accent-h: 38;  --accent-s: 95%; --accent-l: 58%; --on-accent: #1a1000; }
+[data-accent="cyan"]    { --accent-h: 187; --accent-s: 85%; --accent-l: 52%; --on-accent: #04161a; }
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg: #0a0a0a;
-  --bg-surface: #101014;
-  --bg-elevated: #18181d;
-  --bg-hover: #1e1e25;
-  --card-bg: #121218;
-  --card-border: rgba(255,255,255,0.06);
-  --overlay-bg: rgba(0,0,0,0.88);
-  --text: #e8e8ee;
+  --bg: #08080c;
+  --bg-surface: #0e0e15;
+  --bg-elevated: #15151f;
+  --bg-hover: #1d1d2a;
+  --card-bg: #10101a;
+  --card-border: rgba(255, 255, 255, 0.07);
+  --overlay-bg: rgba(4, 4, 8, 0.9);
+  --text: #f2f3f7;
   /* Antes: #8a8a96 / #505060 -> 2.36:1 sobre --card-bg (fallaba WCAG AA) */
-  --text-secondary: #a2a2b4;
-  --text-muted: #8b8b9e;
-  --glass-bg: rgba(16,16,20,0.75);
-  --glass-border: rgba(255,255,255,0.06);
-  --glass-blur: 30px;
-  --shadow-color: rgba(0,0,0,0.5);
-  --skeleton-base: rgba(255,255,255,0.04);
-  --skeleton-highlight: rgba(255,255,255,0.10);
+  --text-secondary: #a8aab8;
+  --text-muted: #7e8194;
+  --glass-bg: rgba(10, 10, 16, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.07);
+  --glass-blur: 28px;
+  --shadow-color: rgba(0, 0, 0, 0.55);
+  --skeleton-base: rgba(255, 255, 255, 0.04);
+  --skeleton-highlight: rgba(255, 255, 255, 0.10);
 }
 
 [data-theme="amoled"] {
   color-scheme: dark;
   --bg: #000000;
   --bg-surface: #050508;
-  --bg-elevated: #0a0a0e;
-  --bg-hover: #111115;
-  --card-bg: #08080c;
-  --card-border: rgba(255,255,255,0.04);
-  --overlay-bg: rgba(0,0,0,0.92);
-  --text: #e0e0e8;
+  --bg-elevated: #0b0b12;
+  --bg-hover: #12121b;
+  --card-bg: #07070c;
+  --card-border: rgba(255, 255, 255, 0.05);
+  --overlay-bg: rgba(0, 0, 0, 0.94);
+  --text: #eef0f6;
   /* Antes: #70707a / #38384a -> texto de metadatos prácticamente invisible */
-  --text-secondary: #9a9aa8;
-  --text-muted: #82828f;
-  --glass-bg: rgba(5,5,8,0.8);
-  --glass-border: rgba(255,255,255,0.04);
-  --glass-blur: 40px;
-  --shadow-color: rgba(0,0,0,0.7);
-  --skeleton-base: rgba(255,255,255,0.03);
-  --skeleton-highlight: rgba(255,255,255,0.08);
+  --text-secondary: #9fa1b2;
+  --text-muted: #787b8e;
+  --glass-bg: rgba(4, 4, 8, 0.82);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass-blur: 36px;
+  --shadow-color: rgba(0, 0, 0, 0.75);
+  --skeleton-base: rgba(255, 255, 255, 0.03);
+  --skeleton-highlight: rgba(255, 255, 255, 0.08);
 }
 
 [data-theme="light"] {
   color-scheme: light;
-  --bg: #f5f5f7;
+  --bg: #f6f6f9;
   --bg-surface: #ffffff;
-  --bg-elevated: #f0f0f2;
-  --bg-hover: #e8e8ee;
+  --bg-elevated: #f0f0f4;
+  --bg-hover: #e7e7ee;
   --card-bg: #ffffff;
-  --card-border: rgba(0,0,0,0.08);
-  --overlay-bg: rgba(0,0,0,0.4);
-  --text: #1a1a2e;
-  --text-secondary: #5a5a6e;
+  --card-border: rgba(12, 12, 26, 0.08);
+  --overlay-bg: rgba(12, 12, 20, 0.45);
+  --text: #0e0e15;
+  --text-secondary: #4d5063;
   /* Antes: #8a8a9e -> 3.11:1 sobre --bg (fallaba WCAG AA) */
-  --text-muted: #6f6f83;
-  --glass-bg: rgba(255,255,255,0.7);
-  --glass-border: rgba(0,0,0,0.06);
-  --glass-blur: 30px;
-  --shadow-color: rgba(0,0,0,0.1);
-  --skeleton-base: rgba(0,0,0,0.05);
-  --skeleton-highlight: rgba(0,0,0,0.10);
+  --text-muted: #63667a;
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(12, 12, 26, 0.07);
+  --glass-blur: 28px;
+  --shadow-color: rgba(16, 16, 32, 0.12);
+  --skeleton-base: rgba(0, 0, 0, 0.05);
+  --skeleton-highlight: rgba(0, 0, 0, 0.10);
 }
 
 /* Compute derived accent colors from HSL */
@@ -94,11 +107,12 @@
   --accent-glow-strong: hsla(var(--accent-hsl), 0.3);
   --accent-bg: hsla(var(--accent-hsl), 0.08);
 
-  --radius-xs: 4px;
-  --radius-sm: 8px;
-  --radius: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
+  /* Geometría: esquinas más contenidas que antes (era 4/8/12/16/24) */
+  --radius-xs: 3px;
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
   --radius-full: 9999px;
 
   --shadow-xs: 0 1px 2px var(--shadow-color);
@@ -158,7 +172,7 @@ html {
   height: -webkit-fill-available;
 }
 body {
-  font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-ui);
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
@@ -3077,3 +3091,321 @@ main {
   font-weight: 700;
 }
 .new-games-banner .notification-banner-close { background: rgba(255, 255, 255, .15); }
+
+/* =====================================================================
+   GAMERADAR v3 — CAPA DE MARCA
+   Se aplica al final para que gane a las reglas base por cascada.
+   Identidad: tinta azulada + violeta eléctrico + lima de "señal".
+   ===================================================================== */
+
+/* --- Tipografía --- */
+body, button, input, select, textarea { font-family: var(--font-ui); }
+
+h1, h2, h3,
+.filter-title,
+.sidebar-title,
+.game-of-day-title,
+.timeline-title,
+.trending-title,
+.modal-box h3,
+.onboarding-title,
+.empty-state h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
+}
+
+/* Micro-etiquetas: el gesto tipográfico que da carácter al rediseño */
+.filter-label,
+.trending-subtitle,
+.section-label,
+.empty-state p {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: var(--fs-2xs);
+  font-weight: 600;
+}
+
+::selection { background: var(--accent); color: var(--on-accent); }
+
+/* --- Cabecera --- */
+.app-header {
+  background: var(--glass-bg);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  border-bottom: 1px solid var(--card-border);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+
+.header-inner { gap: .55rem; }
+
+.header-brand { gap: .45rem; }
+.header-brand-icon { display: none; }
+
+.header-brand-mark {
+  width: 22px;
+  height: 22px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.header-brand-text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-base);
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.header-brand-text .brand-accent { color: var(--accent); }
+
+.header-search { background: none; border: none; }
+.header-search input {
+  background: var(--bg-elevated);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-full);
+  color: var(--text);
+  transition: border-color .18s var(--ease), box-shadow .18s var(--ease);
+}
+.header-search input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  outline: none;
+}
+
+.header-action,
+.theme-toggle-btn {
+  border-radius: var(--radius-full);
+  border: 1px solid var(--card-border);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+}
+.header-action:hover,
+.theme-toggle-btn:hover { color: var(--text); border-color: var(--accent); }
+
+/* --- Navegación inferior --- */
+.bottom-nav {
+  background: var(--glass-bg);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border-top: 1px solid var(--card-border);
+}
+
+.nav-btn { position: relative; border-radius: var(--radius); }
+.nav-btn.active { color: var(--accent); }
+.nav-btn.active .nav-btn-icon { transform: translateY(-1px); }
+.nav-btn-label {
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-weight: 600;
+}
+.nav-btn.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+  background: var(--accent);
+}
+
+/* --- Tarjetas --- */
+.game-card {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  box-shadow: none;
+  transition: transform .22s var(--ease), border-color .22s var(--ease), box-shadow .22s var(--ease);
+}
+.game-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 10px 30px -12px var(--accent-glow-strong), 0 0 0 1px var(--accent-glow);
+}
+.game-card.viewed { opacity: .45; }
+.game-card.multi-selected { box-shadow: 0 0 0 2px var(--accent); }
+
+.card-img { border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+.card-img img { border-radius: inherit; }
+
+/* La "señal": nuevo y ahorro en lima, no en acento */
+.card-img-badge.new-badge,
+.card-img-badge.signal {
+  background: var(--signal);
+  color: var(--signal-ink);
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  animation: none;
+}
+
+.card-platform-tag {
+  background: var(--glass-bg);
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  font-weight: 600;
+}
+
+/* --- Chips y botones --- */
+.filter-chip {
+  border-radius: var(--radius-full);
+  border: 1px solid var(--card-border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 600;
+  letter-spacing: .01em;
+  transition: border-color .16s var(--ease), color .16s var(--ease), background .16s var(--ease);
+}
+.filter-chip:hover { color: var(--text); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+.filter-chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  box-shadow: none;
+}
+
+.btn-primary,
+.filter-btn.primary,
+.game-of-day-btn,
+.detail-action-btn.primary,
+.onboarding-btn.primary,
+.claim-btn,
+.pwa-install-btn {
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  font-size: var(--fs-2xs);
+}
+
+.filter-btn.secondary {
+  border-radius: var(--radius-full);
+  border: 1px solid var(--card-border);
+  background: transparent;
+  color: var(--text-secondary);
+}
+.filter-btn.secondary:hover { color: var(--text); border-color: var(--accent); }
+
+/* --- Secciones --- */
+.trending-section,
+.timeline-section {
+  border-bottom: 1px solid var(--card-border);
+}
+
+.trending-title,
+.timeline-title,
+.game-of-day-title {
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  font-weight: 700;
+}
+
+.game-of-day {
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--card-border);
+  overflow: hidden;
+}
+.game-of-day-label {
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-weight: 700;
+  color: var(--signal);
+}
+
+.surprise-btn {
+  border-radius: var(--radius-full);
+  border: 1px dashed color-mix(in srgb, var(--accent) 55%, transparent);
+  background: var(--accent-bg);
+  font-weight: 600;
+}
+
+/* --- Estados vacíos y avisos --- */
+.empty-state h3 { text-transform: uppercase; letter-spacing: .02em; }
+.empty-state .empty-icon { filter: saturate(1.1); }
+
+.offline-banner {
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--warning) 40%, transparent);
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+  color: var(--text);
+}
+
+/* --- Hojas y modales --- */
+.filter-sheet,
+.detail-sheet,
+.modal-box {
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  border: 1px solid var(--card-border);
+  border-bottom: none;
+}
+.modal-box { border-radius: var(--radius-xl); border-bottom: 1px solid var(--card-border); }
+
+.filter-handle,
+.detail-handle {
+  background: color-mix(in srgb, var(--text-muted) 60%, transparent);
+}
+
+/* --- Splash: radar en lugar de cuatro puntos --- */
+.xbox-boot {
+  background: var(--bg);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.xbox-boot::before {
+  content: '';
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0deg, var(--accent-glow) 70deg, transparent 150deg);
+  animation: radarSweep 1.6s linear infinite;
+}
+.xbox-boot::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--signal);
+  box-shadow: 0 0 16px var(--signal);
+}
+.xbox-boot-dot {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border: 1.5px solid var(--accent);
+  border-radius: 50%;
+  opacity: 0;
+  animation: radarRing 2.4s ease-out infinite;
+}
+.xbox-boot-dot:nth-child(2) { animation-delay: .6s; }
+.xbox-boot-dot:nth-child(3) { animation-delay: 1.2s; }
+.xbox-boot-dot:nth-child(4) { animation-delay: 1.8s; }
+
+@keyframes radarSweep { to { transform: rotate(360deg); } }
+@keyframes radarRing {
+  0%   { transform: scale(.25); opacity: .7; }
+  100% { transform: scale(1);   opacity: 0; }
+}
+
+/* --- Detalle fino --- */
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
+  border-radius: var(--radius-full);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xbox-boot::before,
+  .xbox-boot-dot { animation: none; }
+}

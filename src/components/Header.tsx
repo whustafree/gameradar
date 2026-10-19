@@ -87,8 +87,14 @@ export default function Header({
     <header className={`app-header ${!visible ? 'header-hidden' : ''}`}>
       <div className="header-inner">
         <div className="header-brand">
-          <div className="header-brand-icon">🎮</div>
-          <span className="header-brand-text">GameRadar</span>
+          <svg className="header-brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+            <circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" strokeOpacity=".28" strokeWidth="2" />
+            <circle cx="16" cy="16" r="7.5" fill="none" stroke="currentColor" strokeOpacity=".55" strokeWidth="2" />
+            <line x1="16" y1="16" x2="25.5" y2="8.5" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+            <circle cx="16" cy="16" r="2.8" fill="currentColor" />
+            <circle cx="26" cy="8" r="2.1" fill="var(--signal)" />
+          </svg>
+          <span className="header-brand-text">Game<span className="brand-accent">Radar</span></span>
         </div>
 
         <div className="header-search">

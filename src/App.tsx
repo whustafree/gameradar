@@ -228,14 +228,14 @@ export default function App() {
     const metaTheme = document.querySelector('meta[name="theme-color"]');
     if (metaTheme) {
       if (currentTheme === 'amoled') metaTheme.setAttribute('content', '#000000');
-      else if (currentTheme === 'light') metaTheme.setAttribute('content', '#f5f5f7');
-      else metaTheme.setAttribute('content', '#0a0a0a');
+      else if (currentTheme === 'light') metaTheme.setAttribute('content', '#f6f6f9');
+      else metaTheme.setAttribute('content', '#08080c');
     }
 
     // En Android la status bar debe acompañar al tema (estaba fija en oscuro)
     if (Capacitor.isNativePlatform()) {
       const isLight = currentTheme === 'light';
-      const bg = isLight ? '#f5f5f7' : currentTheme === 'amoled' ? '#000000' : '#0a0a0a';
+      const bg = isLight ? '#f6f6f9' : currentTheme === 'amoled' ? '#000000' : '#08080c';
       StatusBar.setStyle({ style: isLight ? Style.Light : Style.Dark }).catch(() => {});
       StatusBar.setBackgroundColor({ color: bg }).catch(() => {});
     }
