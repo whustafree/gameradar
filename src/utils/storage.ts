@@ -64,7 +64,7 @@ export function saveTheme(theme: Theme): void { localStorage.setItem(KEYS.THEME,
 
 // --- Accent Color ---
 export function loadAccentColor(): AccentColor {
-  return (localStorage.getItem(KEYS.ACCENT) as AccentColor) || 'red';
+  return (localStorage.getItem(KEYS.ACCENT) as AccentColor) || 'violet';
 }
 export function saveAccentColor(c: AccentColor): void { localStorage.setItem(KEYS.ACCENT, c); }
 

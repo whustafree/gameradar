@@ -77,12 +77,13 @@ const THEMES: { value: Theme; icon: string; labelKey: string }[] = [
 ];
 
 const ACCENTS: { value: AccentColor; label: string }[] = [
-  { value: 'green', label: 'Green' },
-  { value: 'red', label: 'Red' },
-  { value: 'blue', label: 'Blue' },
-  { value: 'purple', label: 'Purple' },
-  { value: 'amber', label: 'Amber' },
-  { value: 'cyan', label: 'Cyan' },
+  { value: 'violet', label: 'Violeta' },
+  { value: 'green', label: 'Menta' },
+  { value: 'red', label: 'Coral' },
+  { value: 'blue', label: 'Azul' },
+  { value: 'purple', label: 'Púrpura' },
+  { value: 'amber', label: 'Ámbar' },
+  { value: 'cyan', label: 'Aqua' },
 ];
 
 const TAG_COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899'];

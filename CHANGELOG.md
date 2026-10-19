@@ -1,5 +1,34 @@
 # Changelog - GameRadar
 
+## v2.4.0 (2026-10-19) — Rebrand visual
+
+### 🎨 Nueva identidad
+- **Paleta "radar nocturno"**: tinta azulada (`#08080c`), violeta eléctrico
+  como acento primario y lima como color de *señal* (novedades, ahorro,
+  cuenta atrás).
+- **Acento violeta por defecto**, con el resto de acentos reajustados
+  (menta, coral, azul, púrpura, ámbar, aqua) y `--on-accent` por acento.
+- **Tipografía con carácter**: Space Grotesk para títulos y wordmark, Inter
+  para interfaz, micro-etiquetas en mayúsculas con tracking.
+- **Geometría más contenida**: radios 3/6/10/14/20 y bordes de 1px.
+- **Logo propio**: glifo de radar (anillos + haz) y wordmark GAME·RADAR con
+  la segunda mitad en lima.
+
+### 🖼️ Assets
+- Iconos generados y versionados: PWA 192/512, maskable, favicon, 96,
+  apple-touch-icon; **ya no se usa el icono de un CDN de Flaticon**.
+- Iconos de Android por densidad (legacy, round y adaptive foreground),
+  splash en las 11 variantes y fondo del icono adaptativo a `#08080C`.
+- `feature-graphic.png` y `play-store-icon.png` regenerados con wordmark.
+- `scripts/brand-icons.py` añadido: reproducible con `python scripts/brand-icons.py`.
+
+### 🧩 Interfaz
+- Cabecera con wordmark y buscador tipo píldora con anillo de foco.
+- Navegación inferior con indicador activo; tarjetas con borde fino, hover
+  elevado y badges de novedad en lima.
+- Splash convertido en barrido de radar (anillos + haz animado).
+- Barra de estado y de navegación de Android alineadas con la tinta.
+
 ## v2.3.1 (2026-10-19)
 
 ### 🐛 Correcciones
