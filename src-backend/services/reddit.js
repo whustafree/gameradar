@@ -8,6 +8,12 @@ class RedditService {
     this.clientSecret = process.env.REDDIT_CLIENT_SECRET;
     this.accessToken = null;
     this.tokenExpiresAt = 0;
+
+    // Reddit responde 429 si se le golpea en ráfaga: cacheamos el resultado
+    // y, si nos limita, dejamos de pedir durante un rato.
+    this.rssCache = { at: 0, deals: [] };
+    this.cacheTtl = 15 * 60 * 1000;
+    this.blockedUntil = 0;
   }
 
   async getAccessToken() {
@@ -34,38 +40,120 @@ class RedditService {
     return axios.get(url, { timeout: this.timeout, headers });
   }
 
+  /**
+   * Reddit bloquea los endpoints .json a IPs de datacenter (403), pero los
+   * feeds .rss sí responden. Se usan como fuente principal y se normalizan
+   * al mismo formato que devolvía la API JSON.
+   */
+  async fetchRedditRss(subreddit, limit = 25) {
+    const url = `https://www.reddit.com/r/${subreddit}/new/.rss`;
+    const response = await axios.get(url, {
+      timeout: this.timeout,
+      responseType: 'text',
+      headers: {
+        'User-Agent': 'GameRadar/2.1 (by /u/whustafree)',
+        'Accept': 'application/atom+xml, application/xml, text/xml',
+      },
+    });
+    return this.parseAtom(response.data, subreddit).slice(0, limit);
+  }
+
+  /** Extrae entradas de un feed Atom de Reddit. */
+  parseAtom(xml, subreddit) {
+    const decode = (s) => String(s || '')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&#x27;/g, "'")
+      .replace(/&amp;/g, '&');
+
+    const posts = [];
+    const entryRe = /<entry>([\s\S]*?)<\/entry>/g;
+    let match;
+
+    while ((match = entryRe.exec(xml)) !== null) {
+      const raw = match[1];
+      const title = decode((raw.match(/<title[^>]*>([\s\S]*?)<\/title>/) || [])[1]).trim();
+      const link = (raw.match(/<link[^>]*href="([^"]+)"/) || [])[1] || '';
+      const updated = (raw.match(/<updated>([\s\S]*?)<\/updated>/) || [])[1] || '';
+      const content = decode((raw.match(/<content[^>]*>([\s\S]*?)<\/content>/) || [])[1] || '');
+
+      const image = (content.match(/<img[^>]*src="([^"]+)"/) || [])[1] || '';
+      const playLink = (content.match(/href="(https:\/\/(?:play\.google\.com|apps\.apple\.com|store\.steampowered\.com)[^"]+)"/) || [])[1] || '';
+      const text = content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+
+      if (!title) continue;
+
+      // id estable a partir del enlace (o del título si no hay enlace)
+      const idSource = link || `${subreddit}:${title}`;
+      let hash = 0;
+      for (let i = 0; i < idSource.length; i++) {
+        hash = ((hash << 5) - hash + idSource.charCodeAt(i)) | 0;
+      }
+
+      const createdUtc = Date.parse(updated);
+      posts.push({
+        id: `${subreddit}_${Math.abs(hash).toString(36)}`,
+        title,
+        selftext: text.slice(0, 600),
+        url: playLink || link,
+        thumbnail: image,
+        created_utc: Number.isNaN(createdUtc) ? null : Math.floor(createdUtc / 1000),
+        over_18: false,
+      });
+    }
+
+    return posts;
+  }
+
   async fetchDeals(limit = 25) {
+    const now = Date.now();
+
+    // Backoff activo: devolvemos lo último bueno que tengamos
+    if (now < this.blockedUntil) {
+      logger.warn('Reddit: en espera por rate limit (429), usando caché');
+      return this.rssCache.deals;
+    }
+
+    // Caché fresca
+    if (this.rssCache.deals.length > 0 && now - this.rssCache.at < this.cacheTtl) {
+      return this.rssCache.deals;
+    }
+
     try {
-      logger.info('Obteniendo ofertas Android desde Reddit...');
+      logger.info('Obteniendo ofertas Android desde Reddit (RSS)...');
       const startTime = Date.now();
 
-      // Fetch multiple subreddits for Android deals (solo 'new' para ofertas activas)
-      const subreddits = [
-        `https://www.reddit.com/r/googleplaydeals/new.json?limit=${limit}&raw_json=1`,
-        `https://www.reddit.com/r/FreeGameFindings/new.json?limit=${limit}&raw_json=1`,
-        `https://www.reddit.com/r/AndroidGaming/new.json?limit=${Math.min(limit, 15)}&raw_json=1`,
-        `https://www.reddit.com/r/AppHookup/new.json?limit=${limit}&raw_json=1`,
-        `https://www.reddit.com/r/efreebies/new.json?limit=${limit}&raw_json=1`,
-        `https://www.reddit.com/r/AndroidApps/new.json?limit=${Math.min(limit, 15)}&raw_json=1`,
-        `https://www.reddit.com/r/AppSales/new.json?limit=${limit}&raw_json=1`,
-        `https://www.reddit.com/r/GameDeals/new.json?limit=${limit}&raw_json=1`,
-        `https://www.reddit.com/r/GameDealsFree/new.json?limit=${limit}&raw_json=1`,
-      ];
-
-      const results = await Promise.allSettled(
-        subreddits.map(url => this.fetchReddit(url))
-      );
+      // Feed .rss: la API .json devuelve 403 desde IPs de servidor.
+      // Se piden de a uno y con pausa: en paralelo Reddit responde 429.
+      const subreddits = ['googleplaydeals', 'AndroidGameDeals', 'AppSales'];
 
       const allDeals = [];
-      results.forEach((result, idx) => {
-        if (result.status === 'fulfilled' && result.value?.data?.data?.children) {
-          const subName = subreddits[idx].split('/r/')[1].split('/')[0];
-          const posts = result.value.data.data.children
-            .filter(post => this.isValidDeal(post.data, subName))
-            .map(post => this.formatDeal(post.data));
-          allDeals.push(...posts);
+      let rateLimited = false;
+
+      for (const name of subreddits) {
+        try {
+          const posts = await this.fetchRedditRss(name, limit);
+          const valid = posts
+            .filter(post => this.isValidDeal(post, name.toLowerCase()))
+            .map(post => this.formatDeal(post));
+          allDeals.push(...valid);
+        } catch (err) {
+          const status = err?.response?.status;
+          if (status === 429) {
+            rateLimited = true;
+            logger.warn('Reddit: 429, se detiene la consulta y se aplica backoff');
+            break;
+          }
+          logger.warn(`Reddit r/${name}: ${err?.message || err}`);
         }
-      });
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+
+      if (rateLimited) {
+        this.blockedUntil = Date.now() + 5 * 60 * 1000;
+      }
 
       // Deduplicate by title
       const seen = new Set();
@@ -76,12 +164,16 @@ class RedditService {
         return true;
       });
 
+      if (unique.length > 0) {
+        this.rssCache = { at: Date.now(), deals: unique };
+      }
+
       logger.success(`Reddit: ${unique.length} ofertas Android obtenidas de ${subreddits.length} subreddits (${Date.now() - startTime}ms)`);
       return unique;
 
     } catch (err) {
       logger.error('Error fetching Reddit deals', err?.message || err);
-      return [];
+      return this.rssCache.deals;
     }
   }
 

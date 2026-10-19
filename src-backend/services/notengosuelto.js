@@ -29,7 +29,9 @@ class NotengoSueltoService {
     let puppeteer, gplay;
     try {
       puppeteer = require('puppeteer');
-      gplay = require('google-play-scraper');
+      // google-play-scraper v10 exporta la API dentro de `default`
+      const scraper = require('google-play-scraper');
+      gplay = scraper.default || scraper;
     } catch (e) {
       logger.warn(`NotengoSuelto: no se pudieron cargar dependencias (${e?.message || e})`);
       return [];
