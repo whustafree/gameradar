@@ -31,6 +31,14 @@ function initVapidKeys() {
   }
 
   // 2. Try to load from file (development)
+  if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+    logger.error(
+      'VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY no están configuradas: cada instancia ' +
+        'generará claves nuevas y las suscripciones push dejarán de funcionar. ' +
+        'Configura ambas variables en el entorno de producción.'
+    );
+  }
+
   try {
     if (fs.existsSync(VAPID_KEYS_FILE)) {
       const keys = JSON.parse(fs.readFileSync(VAPID_KEYS_FILE, 'utf-8'));

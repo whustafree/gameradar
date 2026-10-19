@@ -47,7 +47,7 @@ function createConfetti() {
     el.style.fontSize = (12 + Math.random() * 20) + 'px';
     el.style.animation = `confettiFall ${1.5 + Math.random() * 2}s ease-in forwards`;
     el.style.animationDelay = Math.random() * 0.5 + 's';
-    el.style.opacity = '0.8 + ' + (Math.random() * 0.2);
+    el.style.opacity = String(0.8 + Math.random() * 0.2);
     container.appendChild(el);
   }
 
@@ -334,26 +334,40 @@ export default function App() {
   }, [deepLinkedGame, clearDeepLinked]);
 
   // --- New game detection ---
+  // Se evalúa una sola vez por carga de datos. Antes dependía de `lastVisit`
+  // y a la vez lo reescribía, así que el efecto se re-disparaba en bucle
+  // (re-render + escritura en localStorage por iteración).
+  const lastVisitRef = useRef(lastVisit);
+  const newGamesCheckedRef = useRef(false);
+
   useEffect(() => {
-    if (!isLoading && !error && games.length > 0) {
-      const now = new Date().toISOString();
-      if (lastVisit) {
-        const knownIds = loadNewGameIds();
-        const currentIds = games.map(g => g.id);
-        const trulyNew = currentIds.filter(id => !knownIds.includes(id));
-        if (trulyNew.length > 0) {
-          setNewGameIds(prev => [...new Set([...prev, ...trulyNew])]);
-          saveNewGameIds([...new Set([...knownIds, ...trulyNew])]);
-        }
-      } else {
-        const ids = games.map(g => g.id);
-        setNewGameIds([]);
-        saveNewGameIds(ids);
-      }
-      saveLastVisit(now);
-      setLastVisit(now);
+    if (isLoading || error || games.length === 0) {
+      // Permite reevaluar cuando termine una recarga
+      if (!isLoading) newGamesCheckedRef.current = false;
+      return;
     }
-  }, [isLoading, error, games, lastVisit]);
+    if (newGamesCheckedRef.current) return;
+    newGamesCheckedRef.current = true;
+
+    const knownIds = loadNewGameIds();
+    const currentIds = games.map(g => g.id);
+
+    if (lastVisitRef.current) {
+      const trulyNew = currentIds.filter(id => !knownIds.includes(id));
+      if (trulyNew.length > 0) {
+        setNewGameIds(prev => [...new Set([...prev, ...trulyNew])]);
+      }
+    } else {
+      setNewGameIds([]);
+    }
+
+    saveNewGameIds([...new Set([...knownIds, ...currentIds])]);
+
+    const now = new Date().toISOString();
+    saveLastVisit(now);
+    lastVisitRef.current = now;
+    setLastVisit(now);
+  }, [isLoading, error, games]);
 
   // --- Persist ---
   useEffect(() => { saveViewMode(viewMode); }, [viewMode]);
@@ -422,6 +436,12 @@ export default function App() {
       .sort((a, b) => new Date(a.endDate!).getTime() - new Date(b.endDate!).getTime())
       .slice(0, 8);
   }, [sortedFiltered]);
+
+  // Títulos por id para el panel de ajustes (evita el reduce O(n²) en cada render)
+  const gameTitlesById = useMemo(
+    () => Object.fromEntries(games.map(g => [g.id, g.title])),
+    [games]
+  );
 
   // --- Surprise me ---
   const handleSurpriseMe = useCallback(() => {
@@ -1303,7 +1323,7 @@ export default function App() {
             activityLog={activityLog}
             achievements={achievements}
             userStats={userStats}
-            games={games.reduce((acc, g) => ({ ...acc, [g.id]: g.title }), {} as Record<string, string>)}
+            games={gameTitlesById}
             currentTheme={currentTheme}
             accentColor={accentColor}
             onClose={handleCloseSettings}

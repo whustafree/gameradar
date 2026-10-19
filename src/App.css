@@ -93,6 +93,13 @@
   --shadow-xl: 0 12px 48px var(--shadow-color);
   --shadow-2xl: 0 20px 64px var(--shadow-color);
 
+  /* Semánticos (--green se usaba en 4 sitios sin estar definido) */
+  --green: #4ade80;
+  --green-soft: rgba(74, 222, 128, 0.15);
+  --danger: #ff6961;
+  --warning: hsl(40, 90%, 50%);
+  --gold: hsl(40, 90%, 50%);
+
   --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
@@ -2889,3 +2896,12 @@ main {
 /* Seasonal theme decorators */
 [data-seasonal="christmas"] .app-header { border-bottom-color: rgba(255, 50, 50, 0.2); }
 [data-seasonal="halloween"] .app-header { border-bottom-color: rgba(255, 100, 0, 0.2); }
+
+/* Faltaba: .stat-card se usa en SettingsPanel (progreso de logros) */
+.stat-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: .75rem 1rem;
+  color: var(--text);
+}

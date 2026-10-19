@@ -82,7 +82,9 @@ export default function GameDetail({
     playSound('success');
     showToast(t('gameClaimed', language), 'success');
     if (navigator.vibrate) navigator.vibrate(20);
-    window.location.href = game.url;
+    // window.location.href sustituía la app dentro del WebView de Capacitor
+    // (se perdían scroll y filtros). Abrimos en pestaña/navegador externo.
+    window.open(game.url, '_blank', 'noopener,noreferrer');
   };
 
   const handleWishlist = () => {

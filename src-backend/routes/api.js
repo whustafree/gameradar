@@ -6,6 +6,7 @@ const instagramService = require('../services/instagram');
 const pushService = require('../services/push');
 const vapidService = require('../services/vapid');
 const logger = require('../utils/logger');
+const requireAdmin = require('../middleware/requireAdmin');
 
 // GET /api/free-games
 router.get('/free-games', async (req, res) => {
@@ -29,6 +30,9 @@ router.get('/free-games', async (req, res) => {
       }
     }
     
+    // Caché de borde: los datos cambian cada pocas horas, no hace falta
+    // golpear la función serverless (y su cold start) en cada visita.
+    res.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=3600');
     res.json({
       success: true,
       games: data.games,
@@ -44,15 +48,20 @@ router.get('/free-games', async (req, res) => {
   }
 });
 
-// GET /api/stats
-router.get('/stats', (req, res) => {
+// GET /api/stats — solo agregados públicos (el detalle vive en /api/admin/stats)
+router.get('/stats', async (req, res) => {
   try {
     const stats = gamesService.getStats();
-    const gamesData = gamesService.getGames();
+    const gamesData = await gamesService.getGames();
     res.json({
       success: true,
-      ...stats,
-      lastUpdated: gamesData.lastUpdated
+      currentGames: stats.currentGames,
+      totalScans: stats.totalScans,
+      alertsSent: stats.alertsSent,
+      lastScanDuration: stats.lastScanDuration,
+      sourcesFailing: Object.keys(stats.sourceErrors || {}).length,
+      uptimeFormatted: stats.uptimeFormatted,
+      lastUpdated: gamesData.lastUpdated,
     });
   } catch (err) {
     logger.error('Error en /api/stats', err);
@@ -63,15 +72,35 @@ router.get('/stats', (req, res) => {
   }
 });
 
-// POST /api/refresh (forzar actualización manual)
-router.post('/refresh', async (req, res) => {
+// GET /api/update — endpoint que consume el cron de Vercel (vercel.json)
+router.get('/update', requireAdmin, async (req, res) => {
   try {
-    logger.info('Actualización manual solicitada');
+    logger.info('Actualización por cron solicitada');
     await gamesService.updateAll();
+    const { games, lastUpdated } = await gamesService.getGames();
     res.json({
       success: true,
       message: 'Actualización completada',
-      ...gamesService.getGames()
+      count: games.length,
+      lastUpdated,
+    });
+  } catch (err) {
+    logger.error('Error en /api/update', err);
+    res.status(500).json({ success: false, error: 'Error en actualización' });
+  }
+});
+
+// POST /api/refresh (forzar actualización manual)
+router.post('/refresh', requireAdmin, async (req, res) => {
+  try {
+    logger.info('Actualización manual solicitada');
+    await gamesService.updateAll();
+    const { games, lastUpdated } = await gamesService.getGames();
+    res.json({
+      success: true,
+      message: 'Actualización completada',
+      count: games.length,
+      lastUpdated,
     });
   } catch (err) {
     logger.error('Error en /api/refresh', err);
@@ -83,7 +112,7 @@ router.post('/refresh', async (req, res) => {
 });
 
 // POST /api/test-telegram
-router.post('/test-telegram', async (req, res) => {
+router.post('/test-telegram', requireAdmin, async (req, res) => {
   try {
     const result = await telegramService.sendTestMessage();
     res.json({
@@ -100,7 +129,7 @@ router.post('/test-telegram', async (req, res) => {
 });
 
 // POST /api/test-instagram
-router.post('/test-instagram', async (req, res) => {
+router.post('/test-instagram', requireAdmin, async (req, res) => {
   try {
     const result = await instagramService.sendTestMessage();
     res.json({
@@ -204,8 +233,15 @@ router.post('/subscribe-push', (req, res) => {
     if (!subscription || !subscription.endpoint) {
       return res.status(400).json({ success: false, error: 'Suscripción inválida' });
     }
-    
+
     const total = pushService.addSubscription(subscription, platforms);
+    if (total === null) {
+      return res.status(400).json({
+        success: false,
+        error: 'Endpoint push no permitido o claves de suscripción inválidas',
+      });
+    }
+
     logger.info(`Push subscription registrada. Total: ${total}`);
     res.json({ success: true, message: 'Suscripción registrada', total });
   } catch (err) {
@@ -230,7 +266,7 @@ router.post('/unsubscribe-push', (req, res) => {
 });
 
 // POST /api/send-push — Enviar notificación a todas las suscripciones
-router.post('/send-push', async (req, res) => {
+router.post('/send-push', requireAdmin, async (req, res) => {
   try {
     const { title, body, icon, platform } = req.body;
     if (!title || !body) {
@@ -245,7 +281,7 @@ router.post('/send-push', async (req, res) => {
 });
 
 // GET /api/push-subscriptions — Ver suscripciones activas (admin)
-router.get('/push-subscriptions', (req, res) => {
+router.get('/push-subscriptions', requireAdmin, (req, res) => {
   try {
     const subs = pushService.getSubscriptions();
     // No exponer las claves completas por seguridad

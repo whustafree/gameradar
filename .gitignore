@@ -17,7 +17,15 @@ nul
 *.jks
 
 # Base64 keystore (sensitive - do not commit)
-*.base64.txt
+# Ojo: "*.base64.txt" NO casa con "gameradar-keystore-base64.txt";
+# por eso se usa un patrón que sí lo cubre.
+*base64*.txt
+*.b64
+
+# Secretos de runtime (nunca commitear)
+data/vapid-keys.json
+data/push-subscriptions.json
+data/*.json
 
 # Screenshots
 screenshot-*.png
