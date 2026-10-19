@@ -1,10 +1,10 @@
-const scraperModule = require('google-play-scraper');
+const { getGplay } = require('../utils/gplay');
 const logger = require('../utils/logger');
 
-// google-play-scraper v10 exporta la API dentro de `default`.
-// (notengosuelto.js usaba el módulo directo y por eso fallaba con
-// "reading 'TOP_FREE'" / "gplay.app is not a function").
-const gplay = scraperModule.default || scraperModule;
+// google-play-scraper NO se importa en el top-level a propósito: v10 es ESM y
+// Vercel ejecuta Node 22, donde require() de ESM lanza ERR_REQUIRE_ESM y eso
+// tumbaba la función completa (500 en /api/health incluido). Se carga de forma
+// perezosa con import() dentro de fetchAll().
 
 const PRIORITY_CATEGORIES = ['GAME', 'GAME_ACTION', 'GAME_PUZZLE', 'GAME_CASUAL'];
 
@@ -23,6 +23,14 @@ class PlayStoreService {
 
   async fetchAll(limitPerCategory = 12) {
     const startTime = Date.now();
+
+    let gplay;
+    try {
+      gplay = await getGplay();
+    } catch (err) {
+      logger.warn(`PlayStore: no se pudo cargar el scraper (${err?.message || err})`);
+      return [];
+    }
 
     const categories = PRIORITY_CATEGORIES
       .map(key => gplay.category?.[key])

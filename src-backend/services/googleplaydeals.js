@@ -1,5 +1,6 @@
 const axios = require('axios');
 const logger = require('../utils/logger');
+const { getGplay } = require('../utils/gplay');
 
 /**
  * GooglePlayDealsService - Obtiene ofertas Android desde múltiples fuentes
@@ -51,8 +52,7 @@ class GooglePlayDealsService {
     // Fuente 1.5: Enriquecer deals de Reddit con google-play-scraper
     if (deals.length > 0) {
       try {
-        const scraper = require('google-play-scraper');
-      const gplay = scraper.default || scraper;
+        const gplay = await getGplay();
         for (const deal of deals) {
           if (deal.url?.includes('id=')) {
             const idMatch = deal.url.match(/[?&]id=([^&]+)/);
@@ -87,8 +87,7 @@ class GooglePlayDealsService {
     // Fuente 2: google-play-scraper (fallback) - Top juegos gratis
     if (deals.length < 5) {
       try {
-        const scraper = require('google-play-scraper');
-      const gplay = scraper.default || scraper;
+        const gplay = await getGplay();
         
         // Obtener top juegos gratuitos de Google Play
         const topGames = await gplay.list({

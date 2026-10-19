@@ -12,15 +12,20 @@
   de 15 min, peticiones secuenciales y backoff si Reddit responde 429.
 
 ### 🐛 Correcciones
+- `google-play-scraper` v10 es **ESM** y Vercel ejecuta Node 22, donde
+  `require()` de ESM lanza `ERR_REQUIRE_ESM`: al importarlo en el top-level de
+  `playstore.js` tumbaba la función completa (500 en `/api/health` incluido).
+  Ahora se carga con `import()` dinámico y perezoso (`utils/gplay.js`) y el
+  fallo queda contenido a esa fuente.
 - `google-play-scraper` v10 exporta la API dentro de `default`: `googleplaydeals`
   y `notengosuelto` la importaban mal, por lo que la primera devolvía 0
   ofertas y la segunda lanzaba `ReferenceError`.
 - `googleplaydeals` vuelve a aportar ~30 juegos de Play Store.
 
 ### 📊 Resultado
-- La categoría Android pasa de ~6 a **~70 elementos** (40 Play Store + 30
-  GooglePlayDeals + feeds RSS + los giveaways de GamerPower), sin depender de
-  F-Droid ni de Puppeteer, que siguen desactivados en serverless.
+- La categoría Android pasa de ~6 a **~99 elementos** (40 Play Store + 30
+  GooglePlayDeals + Reddit RSS + feeds + giveaways de GamerPower), sin
+  depender de F-Droid ni de Puppeteer, que siguen desactivados en serverless.
 
 ## v2.4.0 (2026-10-19) — Rebrand visual
 

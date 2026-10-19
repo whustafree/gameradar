@@ -1,4 +1,5 @@
 const logger = require('../utils/logger');
+const { getGplay } = require('../utils/gplay');
 
 /**
  * NotengoSueltoService - Obtiene apps de pago GRATIS para Android
@@ -29,9 +30,8 @@ class NotengoSueltoService {
     let puppeteer, gplay;
     try {
       puppeteer = require('puppeteer');
-      // google-play-scraper v10 exporta la API dentro de `default`
-      const scraper = require('google-play-scraper');
-      gplay = scraper.default || scraper;
+      // ESM: se carga con import() dinámico (ver utils/gplay.js)
+      gplay = await getGplay();
     } catch (e) {
       logger.warn(`NotengoSuelto: no se pudieron cargar dependencias (${e?.message || e})`);
       return [];
