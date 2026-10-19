@@ -51,7 +51,8 @@ class GooglePlayDealsService {
     // Fuente 1.5: Enriquecer deals de Reddit con google-play-scraper
     if (deals.length > 0) {
       try {
-        const gplay = require('google-play-scraper');
+        const scraper = require('google-play-scraper');
+      const gplay = scraper.default || scraper;
         for (const deal of deals) {
           if (deal.url?.includes('id=')) {
             const idMatch = deal.url.match(/[?&]id=([^&]+)/);
@@ -86,7 +87,8 @@ class GooglePlayDealsService {
     // Fuente 2: google-play-scraper (fallback) - Top juegos gratis
     if (deals.length < 5) {
       try {
-        const gplay = require('google-play-scraper');
+        const scraper = require('google-play-scraper');
+      const gplay = scraper.default || scraper;
         
         // Obtener top juegos gratuitos de Google Play
         const topGames = await gplay.list({

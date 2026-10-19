@@ -218,7 +218,7 @@ export default function GameCard({
                 return <motion.span className="card-img-badge" style={{ background: 'rgba(100,100,100,0.5)', color: 'var(--text-muted)', fontSize: '0.625rem' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3, delay: 0.15 }}>{t('addedLabel', language)} {language === 'es' ? getRelativeDate(game.startDate) : getRelativeDateEn(game.startDate)}</motion.span>;
               })()}
               {/* Badge: Siempre gratis vs Pasa a gratis */}
-              {!game.endDate && game.source === 'fdroid' && (
+              {!game.endDate && (game.source === 'fdroid' || game.source === 'playstore') && (
                 <span className="card-img-badge" style={{ background: 'rgba(76,175,80,0.9)', color: 'white', fontSize: '0.625rem' }}>
                   {t('alwaysFreeBadge', language)}
                 </span>

@@ -1,5 +1,27 @@
 # Changelog - GameRadar
 
+## v2.5.0 (2026-10-19) — Más contenido Android
+
+### ✨ Nuevas fuentes
+- **Google Play (juegos gratis destacados)**: nuevo servicio `playstore.js` que
+  usa `google-play-scraper` para traer los más descargados de GAME,
+  GAME_ACTION, GAME_PUZZLE y GAME_CASUAL (~40 juegos, 240 ms). Se marcan como
+  "siempre gratis".
+- **Reddit por RSS**: la API `.json` devuelve 403 desde IPs de servidor, así
+  que el servicio pasa a leer los feeds `.rss` (que sí responden), con caché
+  de 15 min, peticiones secuenciales y backoff si Reddit responde 429.
+
+### 🐛 Correcciones
+- `google-play-scraper` v10 exporta la API dentro de `default`: `googleplaydeals`
+  y `notengosuelto` la importaban mal, por lo que la primera devolvía 0
+  ofertas y la segunda lanzaba `ReferenceError`.
+- `googleplaydeals` vuelve a aportar ~30 juegos de Play Store.
+
+### 📊 Resultado
+- La categoría Android pasa de ~6 a **~70 elementos** (40 Play Store + 30
+  GooglePlayDeals + feeds RSS + los giveaways de GamerPower), sin depender de
+  F-Droid ni de Puppeteer, que siguen desactivados en serverless.
+
 ## v2.4.0 (2026-10-19) — Rebrand visual
 
 ### 🎨 Nueva identidad

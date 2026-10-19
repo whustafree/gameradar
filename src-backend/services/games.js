@@ -6,6 +6,7 @@ const androidFeedsService = require('./androidfeeds');
 const mmobombService = require('./mmobomb');
 const notengoSueltoService = require('./notengosuelto');
 const googlePlayDealsService = require('./googleplaydeals');
+const playStoreService = require('./playstore');
 const fdroidService = require('./fdroid');
 const steamService = require('./steam');
 const telegramService = require('./telegram');
@@ -66,6 +67,7 @@ class GamesService {
       { name: 'androidfeeds', fast: true, run: () => androidFeedsService.fetchAll() },
       { name: 'reddit', fast: true, run: () => redditService.fetchDeals() },
       { name: 'googleplaydeals', fast: true, run: () => googlePlayDealsService.fetchAll() },
+      { name: 'playstore', fast: true, run: () => playStoreService.fetchAll() },
       { name: 'notengosuelto', fast: false, run: () => notengoSueltoService.fetchAll() },
       { name: 'fdroid', fast: false, run: () => fdroidService.fetchAll() },
       { name: 'steam', fast: false, run: () => steamService.fetchAll() },
