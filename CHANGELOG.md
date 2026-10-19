@@ -1,5 +1,25 @@
 # Changelog - GameRadar
 
+## v2.9.0 (2026-10-19) — Filtro de tiendas y layout bajo las barras
+
+### 🧭 Navegación
+- **La pestaña PC ya no abre el selector de tienda**: cambiar de pestaña sólo
+  cambia de pestaña.
+- El filtro por tienda pasa a una **franja discreta bajo la cabecera**, sólo
+  en modo PC: chips pequeños (11 px) en una fila con scroll horizontal,
+  activo en color de acento. Sin desplegable ni backdrop.
+- Se elimina el selector flotante de tienda y sus estilos.
+
+### 📐 Safe areas (Android 15/16)
+- Con `targetSdkVersion 36` Android **obliga** a dibujar de borde a borde, así
+  que `overlaysWebView: false` se ignora y el contenido quedaba bajo la barra
+  de estado y la de gestos.
+- Variables `--safe-top/--safe-bottom/--safe-left/--safe-right` aplicadas en
+  cabecera, área de scroll, barra inferior, hojas, modales, toasts, banner
+  PWA y overlays.
+- La barra inferior mide ahora `nav-h + safe-bottom` y las hojas reservan el
+  hueco inferior, para que ningún control quede bajo la barra de gestos.
+
 ## v2.8.0 (2026-10-19) — Aviso de actualización del APK
 
 ### ✨ Aviso de nueva versión

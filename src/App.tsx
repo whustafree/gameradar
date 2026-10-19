@@ -30,6 +30,7 @@ import SurpriseResultCard from './components/SurpriseResultCard';
 import DesktopSidebar from './components/DesktopSidebar';
 import FilterPanel from './components/FilterPanel';
 import ActiveFiltersBar from './components/ActiveFiltersBar';
+import StoreFilterBar from './components/StoreFilterBar';
 import SplashScreen from './components/SplashScreen';
 import UpdatePrompt from './components/UpdatePrompt';
 import { useAppUpdate } from './hooks/useAppUpdate';
@@ -927,6 +928,15 @@ export default function App() {
           </div>
         )}
 
+        {/* Filtro de tiendas: franja discreta bajo la cabecera (sólo PC) */}
+        {currentMode === 'pc' && !multiSelectActive && (
+          <StoreFilterBar
+            language={language}
+            activeStore={activeStore}
+            onChange={setActiveStore}
+          />
+        )}
+
         {/* Active filters bar */}
         {isLoaded && !multiSelectActive && (
           <ActiveFiltersBar
@@ -1146,9 +1156,7 @@ export default function App() {
         recentCount={recentCount}
         language={language}
         visible={navVisible}
-        activeStore={activeStore}
         onModeChange={handleModeChange}
-        onStoreChange={setActiveStore}
         onToggleRecent={handleToggleRecent}
         onResetFilters={handleResetFilters}
         onToggleViewMode={handleToggleViewMode}
