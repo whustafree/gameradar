@@ -25,7 +25,8 @@ interface UseSwipeGestureReturn {
   resetSwipe: () => void;
 }
 
-const SWIPE_THRESHOLD = 60; // px to trigger action
+const SWIPE_THRESHOLD = 90; // px to trigger action (60 disparaba al hacer scroll)
+const AXIS_LOCK_RATIO = 1.6; // el eje dominante debe superar al otro por este factor
 const LONG_PRESS_DURATION = 500; // ms
 const DOUBLE_TAP_DELAY = 300; // ms
 
@@ -139,11 +140,17 @@ export function useSwipeGesture(
       el.style.opacity = '';
     }
 
-    // Trigger action based on swipe
-    if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(diffX) > Math.abs(diffY)) {
+    // Trigger action based on swipe.
+    // Bloqueo de eje: hace falta que el movimiento dominante duplique al otro,
+    // si no un scroll diagonal (o deslizar un carrusel) abría la tienda o
+    // compartía el juego sin querer.
+    const horizontal = Math.abs(diffX) >= Math.abs(diffY) * AXIS_LOCK_RATIO;
+    const vertical = Math.abs(diffY) >= Math.abs(diffX) * AXIS_LOCK_RATIO;
+
+    if (Math.abs(diffX) > SWIPE_THRESHOLD && horizontal) {
       if (diffX > 0) handlers.onSwipeRight?.();
       else handlers.onSwipeLeft?.();
-    } else if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(diffY) > Math.abs(diffX)) {
+    } else if (Math.abs(diffY) > SWIPE_THRESHOLD && vertical) {
       if (diffY > 0) handlers.onSwipeDown?.();
       else handlers.onSwipeUp?.();
     }

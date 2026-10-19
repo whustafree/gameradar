@@ -9,6 +9,19 @@ export default defineConfig({
       '/api': 'http://localhost:3000'
     }
   },
+  build: {
+    // React y framer-motion cambian mucho menos que el código de la app:
+    // separarlos permite cachearlos de forma independiente entre despliegues.
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom'],
+          motion: ['framer-motion'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 400,
+  },
   test: {
     globals: true,
     environment: 'jsdom',

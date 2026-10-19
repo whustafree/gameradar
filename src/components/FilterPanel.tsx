@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Language, Genre, StoreFilter, TypeFilter, SortMode, LicenseFilter } from '../types';
 import { t, TranslationKeys } from '../i18n';
+import { useDialogA11y } from '../hooks/useDialogA11y';
 
 interface FilterPanelProps {
   language: Language;
@@ -29,6 +30,16 @@ interface StoreOption { value: StoreFilter; icon: string; label: string; }
 interface TypeOption { value: TypeFilter; icon: string; labelKey: TranslationKeys; }
 interface SortOption { value: SortMode; icon: string; labelKey: TranslationKeys; }
 
+/** Estado de filtros mientras el panel está abierto (borrador). */
+interface FilterDraft {
+  sortMode: SortMode;
+  activeGenre: Genre;
+  activeStore: StoreFilter;
+  activeType: TypeFilter;
+  activeLicense: LicenseFilter;
+  activeYear: string;
+}
+
 const GENRES: GenreOption[] = [
   { value: 'all', icon: '🎮' },
   { value: 'action', icon: '⚔️' },
@@ -44,7 +55,7 @@ const GENRES: GenreOption[] = [
 const STORES: StoreOption[] = [
   { value: 'all', icon: '📋', label: 'storeAll' },
   { value: 'steam', icon: '🟦', label: 'Steam' },
-  { value: 'epic', icon: '🎯', label: 'Epic' },
+  { value: 'epic', icon: '🎯', label: 'Epic Games' },
   { value: 'gog', icon: '🟣', label: 'GOG' },
   { value: 'itch', icon: '🎨', label: 'Itch.io' },
   { value: 'battlenet', icon: '⚔️', label: 'Battle.net' },
@@ -67,15 +78,15 @@ const SORT_OPTIONS: SortOption[] = [
   { value: 'popular', icon: '🔥', labelKey: 'sortPopular' },
 ];
 
-const YEARS = [
-  { value: 'all', label: 'Todos' },
-  { value: '2026', label: '2026' },
-  { value: '2025', label: '2025' },
-  { value: '2024', label: '2024' },
-  { value: '2023', label: '2023' },
-  { value: '2022', label: '2022' },
-  { value: '2021', label: '2021' },
-  { value: 'older', label: '2020 o antes' },
+const YEARS: { value: string; labelKey?: TranslationKeys; label?: string }[] = [
+  { value: 'all', labelKey: 'all' },
+  { value: '2026' },
+  { value: '2025' },
+  { value: '2024' },
+  { value: '2023' },
+  { value: '2022' },
+  { value: '2021' },
+  { value: 'older', labelKey: 'yearOlder' },
 ];
 
 const overlayVariants = {
@@ -98,16 +109,56 @@ export default function FilterPanel({
 }: FilterPanelProps) {
   const [localSearch, setLocalSearch] = useState(searchTerm);
 
-  useEffect(() => { setLocalSearch(searchTerm); }, [searchTerm, isOpen]);
+  // Borrador: cambiar chips ya no altera la lista al instante.
+  const [draft, setDraft] = useState<FilterDraft>({
+    sortMode, activeGenre, activeStore, activeType, activeLicense, activeYear,
+  });
+
+  // Al abrir, el borrador parte del estado real (descartando cambios no aplicados)
+  useEffect(() => {
+    if (!isOpen) return;
+    setLocalSearch(searchTerm);
+    setDraft({ sortMode, activeGenre, activeStore, activeType, activeLicense, activeYear });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  const sheetRef = useDialogA11y<HTMLDivElement>(isOpen, onClose);
+
+  const commit = useCallback((next: FilterDraft) => {
+    onSortChange(next.sortMode);
+    onGenreChange(next.activeGenre);
+    onStoreChange(next.activeStore);
+    onTypeChange(next.activeType);
+    onLicenseChange(next.activeLicense);
+    onYearChange(next.activeYear);
+  }, [onSortChange, onGenreChange, onStoreChange, onTypeChange, onLicenseChange, onYearChange]);
+
+  const handleApply = useCallback(() => {
+    commit(draft);
+    onClose();
+  }, [commit, draft, onClose]);
+
+  const handleReset = useCallback(() => {
+    const cleared: FilterDraft = {
+      sortMode: 'default',
+      activeGenre: 'all',
+      activeStore: 'all',
+      activeType: 'all',
+      activeLicense: 'all',
+      activeYear: 'all',
+    };
+    setDraft(cleared);
+    setLocalSearch('');
+    onSearchChange('');
+    commit(cleared);
+    onReset();
+  }, [commit, onReset, onSearchChange]);
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) onClose();
   };
 
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [isOpen]);
+  const chip = (active: boolean) => `filter-chip ${active ? 'active' : ''}`;
 
   return (
     <AnimatePresence>
@@ -123,6 +174,7 @@ export default function FilterPanel({
             onClick={handleOverlayClick}
           />
           <motion.div
+            ref={sheetRef}
             className="filter-sheet open"
             key="filter-sheet"
             variants={sheetVariants}
@@ -130,85 +182,136 @@ export default function FilterPanel({
             animate="visible"
             exit="hidden"
             role="dialog"
+            aria-modal="true"
             aria-label={t('filters', language)}
           >
-            <div className="filter-handle" />
+            <div className="filter-handle" aria-hidden="true" />
             <div className="filter-head">
               <h2 className="filter-title">🔍 {t('filters', language)}</h2>
-              <button className="filter-close" onClick={onClose}>✕</button>
+              <button type="button" className="filter-close" onClick={onClose} aria-label={t('close', language)}>✕</button>
             </div>
             <div className="filter-body">
               <div className="filter-group">
                 <span className="filter-label">{t('searchPlaceholder', language)}</span>
                 <div className="filter-search-wrapper">
-                  <span className="filter-search-icon">🔍</span>
-                  <input type="text" className="filter-search-input" placeholder={t('searchPlaceholder', language)}
+                  <span className="filter-search-icon" aria-hidden="true">🔍</span>
+                  <input
+                    type="search"
+                    className="filter-search-input"
+                    placeholder={t('searchPlaceholder', language)}
+                    aria-label={t('searchPlaceholder', language)}
                     value={localSearch}
                     onChange={e => { setLocalSearch(e.target.value); onSearchChange(e.target.value); }}
-                    autoComplete="off" />
-                  {localSearch && <button className="filter-search-clear" onClick={() => { setLocalSearch(''); onSearchChange(''); }}>✕</button>}
+                    autoComplete="off"
+                  />
+                  {localSearch && (
+                    <button
+                      type="button"
+                      className="filter-search-clear"
+                      onClick={() => { setLocalSearch(''); onSearchChange(''); }}
+                      aria-label={language === 'es' ? 'Limpiar búsqueda' : 'Clear search'}
+                    >✕</button>
+                  )}
                 </div>
               </div>
+
               <div className="filter-group">
                 <span className="filter-label">{t('sortBy', language)}</span>
                 <div className="filter-chips">
                   {SORT_OPTIONS.map(opt => (
-                    <button key={opt.value} className={`filter-chip ${sortMode === opt.value ? 'active' : ''}`} onClick={() => onSortChange(opt.value)}>
+                    <button
+                      type="button"
+                      key={opt.value}
+                      className={chip(draft.sortMode === opt.value)}
+                      aria-pressed={draft.sortMode === opt.value}
+                      onClick={() => setDraft(d => ({ ...d, sortMode: opt.value }))}
+                    >
                       {opt.icon} {t(opt.labelKey, language)}
                     </button>
                   ))}
                 </div>
               </div>
+
               <div className="filter-group">
                 <span className="filter-label">{t('genre', language)}</span>
                 <div className="filter-chips">
                   {GENRES.map(g => (
-                    <button key={g.value} className={`filter-chip ${activeGenre === g.value ? 'active' : ''}`} onClick={() => onGenreChange(g.value)}>
+                    <button
+                      type="button"
+                      key={g.value}
+                      className={chip(draft.activeGenre === g.value)}
+                      aria-pressed={draft.activeGenre === g.value}
+                      onClick={() => setDraft(d => ({ ...d, activeGenre: g.value }))}
+                    >
                       {g.icon} {g.value === 'all' ? t('all', language) : g.value.charAt(0).toUpperCase() + g.value.slice(1)}
                     </button>
                   ))}
                 </div>
               </div>
+
               <div className="filter-group">
                 <span className="filter-label">{t('storeFilter', language)}</span>
                 <div className="filter-chips">
                   {STORES.map(s => (
-                    <button key={s.value} className={`filter-chip ${activeStore === s.value ? 'active' : ''}`} onClick={() => onStoreChange(s.value)}>
+                    <button
+                      type="button"
+                      key={s.value}
+                      className={chip(draft.activeStore === s.value)}
+                      aria-pressed={draft.activeStore === s.value}
+                      onClick={() => setDraft(d => ({ ...d, activeStore: s.value }))}
+                    >
                       {s.icon} {s.label === 'storeAll' ? t('storeAll', language) : s.label}
                     </button>
                   ))}
                 </div>
               </div>
+
               <div className="filter-group">
                 <span className="filter-label">{t('type', language)}</span>
                 <div className="filter-chips">
                   {TYPES.map(tp => (
-                    <button key={tp.value} className={`filter-chip ${activeType === tp.value ? 'active' : ''}`} onClick={() => onTypeChange(tp.value)}>
+                    <button
+                      type="button"
+                      key={tp.value}
+                      className={chip(draft.activeType === tp.value)}
+                      aria-pressed={draft.activeType === tp.value}
+                      onClick={() => setDraft(d => ({ ...d, activeType: tp.value }))}
+                    >
                       {tp.icon} {t(tp.labelKey, language)}
                     </button>
                   ))}
                 </div>
               </div>
+
               <div className="filter-group">
-                <span className="filter-label">Año</span>
+                <span className="filter-label">{t('year', language)}</span>
                 <div className="filter-chips">
                   {YEARS.map(y => (
-                    <button key={y.value} className={`filter-chip ${activeYear === y.value ? 'active' : ''}`} onClick={() => onYearChange(y.value)}>{y.label}</button>
+                    <button
+                      type="button"
+                      key={y.value}
+                      className={chip(draft.activeYear === y.value)}
+                      aria-pressed={draft.activeYear === y.value}
+                      onClick={() => setDraft(d => ({ ...d, activeYear: y.value }))}
+                    >
+                      {y.labelKey ? t(y.labelKey, language) : y.value}
+                    </button>
                   ))}
                 </div>
               </div>
+
               <div className="filter-group">
                 <span className="filter-label">{t('licenseFilter', language)}</span>
                 <div className="filter-chips">
-                  <button className={`filter-chip ${activeLicense === 'all' ? 'active' : ''}`} onClick={() => onLicenseChange('all')}>📋 {t('all', language)}</button>
-                  <button className={`filter-chip ${activeLicense === 'open-source' ? 'active' : ''}`} onClick={() => onLicenseChange('open-source')}>🔓 {t('openSource', language)}</button>
-                  <button className={`filter-chip ${activeLicense === 'proprietary' ? 'active' : ''}`} onClick={() => onLicenseChange('proprietary')}>🔒 {t('proprietary', language)}</button>
+                  <button type="button" className={chip(draft.activeLicense === 'all')} aria-pressed={draft.activeLicense === 'all'} onClick={() => setDraft(d => ({ ...d, activeLicense: 'all' }))}>📋 {t('all', language)}</button>
+                  <button type="button" className={chip(draft.activeLicense === 'open-source')} aria-pressed={draft.activeLicense === 'open-source'} onClick={() => setDraft(d => ({ ...d, activeLicense: 'open-source' }))}>🔓 {t('openSource', language)}</button>
+                  <button type="button" className={chip(draft.activeLicense === 'proprietary')} aria-pressed={draft.activeLicense === 'proprietary'} onClick={() => setDraft(d => ({ ...d, activeLicense: 'proprietary' }))}>🔒 {t('proprietary', language)}</button>
                 </div>
               </div>
-              {/* Favorites filter removed */}
+
               <div className="filter-actions">
-                <button className="filter-btn secondary" onClick={onReset}>🔄 {t('reset', language)}</button>
-                <button className="filter-btn primary" onClick={onClose}>{t('apply', language)}</button>
+                <button type="button" className="filter-btn secondary" onClick={handleReset}>🔄 {t('reset', language)}</button>
+                <button type="button" className="filter-btn primary" onClick={handleApply}>✓ {t('apply', language)}</button>
               </div>
             </div>
           </motion.div>

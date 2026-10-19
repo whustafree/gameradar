@@ -1,17 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { MotionConfig } from 'framer-motion';
 import { Capacitor } from '@capacitor/core';
-import { StatusBar, Style } from '@capacitor/status-bar';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import App from './App';
 import './App.css';
 
-// Capacitor native platform setup
+// El StatusBar lo gestiona App.tsx según el tema activo (antes estaba fijo
+// en oscuro y desentonaba en tema claro).
 if (Capacitor.isNativePlatform()) {
-  // Configurar StatusBar
-  StatusBar.setStyle({ style: Style.Dark });
-  StatusBar.setBackgroundColor({ color: '#1a1a2e' });
-  
   // Haptic feedback on touch
   document.addEventListener('touchstart', () => {
     Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
@@ -27,6 +24,11 @@ if ('serviceWorker' in navigator) {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    {/* reducedMotion="user" hace que framer-motion respete
+        prefers-reduced-motion; el CSS ya lo hacía, pero las animaciones de
+        tarjetas, hojas y listas son de framer y se ignoraban. */}
+    <MotionConfig reducedMotion="user">
+      <App />
+    </MotionConfig>
   </React.StrictMode>
 );

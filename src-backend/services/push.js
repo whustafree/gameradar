@@ -11,6 +11,47 @@ if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
+/**
+ * Hosts de los servicios push oficiales.
+ * Cualquier endpoint fuera de esta lista se rechaza: web-push hace una
+ * petición HTTP al endpoint recibido, así que aceptar URLs arbitrarias
+ * convierte /subscribe-push y /send-push en un SSRF.
+ */
+const ALLOWED_PUSH_HOSTS = [
+  'fcm.googleapis.com',        // Chrome / Edge (FCM)
+  'push.services.mozilla.com', // Firefox
+  'notify.windows.com',        // WNS (Edge legacy)
+  'push.apple.com',            // Safari
+];
+
+function isAllowedPushEndpoint(endpoint) {
+  if (typeof endpoint !== 'string' || endpoint.length === 0 || endpoint.length > 2048) {
+    return false;
+  }
+  let url;
+  try {
+    url = new URL(endpoint);
+  } catch {
+    return false;
+  }
+  if (url.protocol !== 'https:') return false;
+  const host = url.hostname.toLowerCase();
+  return ALLOWED_PUSH_HOSTS.some(
+    allowed => host === allowed || host.endsWith(`.${allowed}`)
+  );
+}
+
+/** Una suscripción válida necesita endpoint permitido y claves p256dh/auth. */
+function isValidSubscription(subscription) {
+  return !!(
+    subscription &&
+    isAllowedPushEndpoint(subscription.endpoint) &&
+    subscription.keys &&
+    typeof subscription.keys.p256dh === 'string' &&
+    typeof subscription.keys.auth === 'string'
+  );
+}
+
 function loadSubscriptions() {
   try {
     if (!fs.existsSync(SUBSCRIPTIONS_FILE)) return [];
@@ -31,6 +72,11 @@ function saveSubscriptions(subscriptions) {
 }
 
 function addSubscription(subscription, platforms) {
+  if (!isValidSubscription(subscription)) {
+    logger.warn('Suscripción push rechazada: endpoint no permitido o claves inválidas');
+    return null;
+  }
+
   const subs = loadSubscriptions();
   const existing = subs.findIndex(s => s.endpoint === subscription.endpoint);
   const entry = {
@@ -70,6 +116,13 @@ async function sendPushToSubscription(subscription, payload) {
   const { endpoint, keys } = subscription;
   if (!endpoint || !keys) return false;
 
+  // Defensa en profundidad: nunca enviamos a un endpoint que no esté en la allowlist,
+  // aunque haya entrado en el almacén antes de aplicar la validación.
+  if (!isAllowedPushEndpoint(endpoint)) {
+    logger.warn(`Push omitido: endpoint no permitido (${String(endpoint).slice(0, 40)}...)`);
+    return false;
+  }
+
   const result = await vapidService.sendPush(subscription, payload);
 
   if (result.expired) {
@@ -101,13 +154,22 @@ async function broadcastNotification(title, body, icon, platform = null) {
     },
   };
 
-  for (const sub of subs) {
-    // Filter by platform if specified
-    if (platform && sub.platforms && !sub.platforms.includes(platform)) continue;
+  // Envío en lotes con concurrencia limitada: secuencial superaba el
+  // timeout de la función con muchas suscripciones.
+  const CONCURRENCY = 10;
+  const targets = subs.filter(
+    sub => !platform || !sub.platforms || sub.platforms.includes(platform)
+  );
 
-    const ok = await sendPushToSubscription(sub, payload);
-    if (ok) sent++;
-    else failed++;
+  for (let i = 0; i < targets.length; i += CONCURRENCY) {
+    const batch = targets.slice(i, i + CONCURRENCY);
+    const results = await Promise.allSettled(
+      batch.map(sub => sendPushToSubscription(sub, payload))
+    );
+    for (const r of results) {
+      if (r.status === 'fulfilled' && r.value) sent++;
+      else failed++;
+    }
   }
 
   logger.success(`Push broadcast: ${sent} sent, ${failed} failed (${subs.length} total subscriptions)`);
@@ -120,4 +182,6 @@ module.exports = {
   getSubscriptions,
   broadcastNotification,
   sendPushToSubscription,
+  isAllowedPushEndpoint,
+  isValidSubscription,
 };

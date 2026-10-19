@@ -4,6 +4,7 @@ import { t } from '../i18n';
 import { urlBase64ToUint8Array } from '../utils/format';
 import { showToast } from './Toast';
 import { exportAllData, importAllData, AppBackup, loadTags, saveTags, addTag, removeTag, GameTag } from '../utils/storage';
+import { useDialogA11y } from '../hooks/useDialogA11y';
 
 interface SettingsPanelProps {
   language: Language;
@@ -92,6 +93,10 @@ export default function SettingsPanel({
   onCreateCollection, onDeleteCollection, onOpenCollectionGames,
   onChangeTheme, onChangeAccent,
 }: SettingsPanelProps) {
+  // El panel se monta sólo cuando está abierto (Suspense + lazy en App),
+  // así que entra siempre visible: isOpen = true.
+  const sheetRef = useDialogA11y<HTMLDivElement>(true, onClose);
+
   const [tab, setTab] = useState<Tab>('collections');
   const [showNewCollection, setShowNewCollection] = useState(false);
   const [newColName, setNewColName] = useState('');
@@ -197,12 +202,20 @@ export default function SettingsPanel({
 
   return (
     <div className="filter-overlay open" onClick={onClose} style={{ zIndex: 400 }}>
-      <div className="filter-sheet open" onClick={e => e.stopPropagation()} style={{ maxHeight: '85vh' }}>
-        <div className="filter-handle" />            <div className="filter-head">
+      <div
+        ref={sheetRef}
+        className="filter-sheet open"
+        onClick={e => e.stopPropagation()}
+        style={{ maxHeight: '85vh' }}
+        role="dialog"
+        aria-modal="true"
+        aria-label={language === 'es' ? 'Ajustes' : 'Settings'}
+      >
+        <div className="filter-handle" aria-hidden="true" />            <div className="filter-head">
           <h3 className="filter-title">
             {tab === 'collections' ? '📁' : tab === 'activity' ? '📋' : tab === 'achievements' ? '🏆' : tab === 'tags' ? '🏷️' : '📦'} {language === 'es' ? 'Ajustes' : 'Settings'}
           </h3>
-          <button className="filter-close" onClick={onClose}>✕</button>
+          <button type="button" className="filter-close" onClick={onClose} aria-label={t('close', language)}>✕</button>
         </div>
 
         {/* Tabs */}

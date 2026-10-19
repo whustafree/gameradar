@@ -225,22 +225,21 @@ export function useGames() {
   const handleMarkClaimed = useCallback((gameId: string) => {
     const game = games.find(g => g.id === gameId);
     const worth = game ? parsePrice(game.worth) : 0;
+
     setWishlist(prev => ({ ...prev, [gameId]: 'claimed' as WishlistStatus }));
-    setUserStats(prev => {
-      const updated = { ...prev, totalClaimed: prev.totalClaimed + 1, totalSavings: prev.totalSavings + worth };
-      // Check achievements in next tick
-      setTimeout(() => {
-        setAchievements(currentAch => {
-          const { achievements: newAch, newUnlocks } = checkAchievements(updated, currentAch, favorites);
-          newUnlocks.forEach(u => logActivity('claim', gameId, u.labelKey));
-          return newAch;
-        });
-      }, 100);
-      return updated;
-    });
+
+    // Updater puro: antes había un setTimeout + setAchievements dentro del updater,
+    // que en StrictMode se ejecuta dos veces y duplicaba logros y actividad.
+    // Los logros se recalculan en el efecto que observa userStats.
+    setUserStats(prev => ({
+      ...prev,
+      totalClaimed: prev.totalClaimed + 1,
+      totalSavings: prev.totalSavings + worth,
+    }));
+
     if (game) logActivity('claim', gameId, game.title);
     if (navigator.vibrate) navigator.vibrate(30);
-  }, [games, logActivity, checkAchievements, favorites]);
+  }, [games, logActivity]);
 
   // Collections
   const createCollection = useCallback((name: string, description: string, emoji: string) => {

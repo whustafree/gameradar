@@ -35,6 +35,10 @@ class NotengoSueltoService {
       return [];
     }
 
+    // enrichWithPlayStore() corre fuera de este scope: guardamos la referencia
+    // en la instancia (antes era una variable local y provocaba ReferenceError).
+    this._gplay = gplay;
+
     const startTime = Date.now();
     logger.info('NotengoSuelto: iniciando scraper con Puppeteer...');
 
@@ -135,6 +139,12 @@ class NotengoSueltoService {
    */
   async enrichWithPlayStore(playStoreUrl) {
     try {
+      const gplay = this._gplay;
+      if (!gplay) {
+        logger.warn('NotengoSuelto: google-play-scraper no inicializado (¿fetchAll no corrió?)');
+        return null;
+      }
+
       // Extract app ID from URL
       const match = playStoreUrl.match(/[?&]id=([^&]+)/);
       if (!match) return null;
@@ -176,6 +186,7 @@ class NotengoSueltoService {
         installs: appDetails.installs || null,
       };
     } catch (e) {
+      logger.warn(`NotengoSuelto: error enriqueciendo app (${e?.message || e})`);
       return null;
     }
   }

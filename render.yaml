@@ -14,9 +14,23 @@ services:
         sync: false
       - key: TELEGRAM_CHAT_ID
         sync: false
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_EMAIL
+        sync: false
+      - key: ADMIN_TOKEN
+        sync: false
+      - key: CRON_SECRET
+        sync: false
       - key: APP_URL
         value: https://gameradar.onrender.com
       - key: UPDATE_INTERVAL_HOURS
         value: 4
+    disk:
+      name: gameradar-data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1
     healthCheckPath: /api/health
     autoDeploy: true
