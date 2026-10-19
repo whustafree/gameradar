@@ -1,5 +1,25 @@
 # Changelog - GameRadar
 
+## v2.8.0 (2026-10-19) — Aviso de actualización del APK
+
+### ✨ Aviso de nueva versión
+- La app compara su versión instalada con la **última release de GitHub**
+  (`api.github.com/repos/whustafree/gameradar/releases/latest`).
+- Si hay una más nueva, muestra un aviso al abrirla (y al volver del
+  segundo plano) con la versión actual, la nueva y un botón **Actualizar**
+  que abre la descarga del APK en el navegador del sistema.
+- Comprobación cacheada 6 h en `localStorage` para no agotar el límite de
+  la API de GitHub, y silenciosa si no hay red.
+- Sólo se activa en la app nativa (en la web la actualización la gestiona el
+  service worker).
+
+### 🔧 Técnico
+- Nuevo `useAppUpdate` + `UpdatePrompt` y plugin `@capacitor/browser`.
+- La comparación de versiones vive en `utils/version.ts` con tests
+  (`parseVersion`, `isNewer`, `formatVersion`).
+- Instalar el APK sigue requiriendo confirmación del usuario (Android no
+  permite instalaciones silenciosas fuera de Play Store).
+
 ## v2.7.0 (2026-10-19) — Menús estilo Play Store
 
 ### 🧭 Navegación y menús
