@@ -3044,3 +3044,36 @@ main {
   content-visibility: auto;
   contain-intrinsic-size: auto 110px;
 }
+
+/* === BANNER DE JUEGOS NUEVOS ===
+   Estilos que estaban inline en App.tsx (ahora en NewGamesBanner.tsx). */
+.new-games-banner {
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  padding: .55rem .75rem;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  cursor: pointer;
+  margin-bottom: .75rem;
+  box-shadow: 0 4px 16px var(--accent-glow);
+}
+.new-games-icon {
+  font-size: 1.2rem;
+  animation: pulse 1.5s infinite;
+}
+.new-games-text { flex: 1; }
+.new-games-title { font-weight: 700; font-size: var(--fs-sm); }
+.new-games-sub { font-size: var(--fs-2xs); opacity: .85; }
+.new-games-count {
+  background: rgba(255, 255, 255, .2);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-base);
+  font-weight: 700;
+}
+.new-games-banner .notification-banner-close { background: rgba(255, 255, 255, .15); }

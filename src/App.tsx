@@ -23,6 +23,11 @@ import GameDetail from './components/GameDetail';
 import Onboarding from './components/Onboarding';
 const SettingsPanel = lazy(() => import('./components/SettingsPanel'));
 import TrendingSection from './components/TrendingSection';
+import NewGamesBanner from './components/NewGamesBanner';
+import GameOfDayCard from './components/GameOfDayCard';
+import EndingSoonSection from './components/EndingSoonSection';
+import SurpriseResultCard from './components/SurpriseResultCard';
+import DesktopSidebar from './components/DesktopSidebar';
 import FilterPanel from './components/FilterPanel';
 import ActiveFiltersBar from './components/ActiveFiltersBar';
 import SplashScreen from './components/SplashScreen';
@@ -931,51 +936,13 @@ export default function App() {
             exit={{ opacity: 0, x: -10 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
           >
-            {/* 🆕 Widget de juegos nuevos - Banner mejorado */}
-            {showNewGamesBanner && newGameIds.length > 0 && (
-              <motion.div 
-                className="notification-banner" 
-                onClick={() => { setShowNewGamesBanner(false); }}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                style={{ 
-                  background: 'linear-gradient(135deg, var(--accent), var(--accent-dark))',
-                  padding: '0.55rem 0.75rem',
-                  borderRadius: 'var(--radius-lg)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  cursor: 'pointer',
-                  marginBottom: '0.75rem',
-                  boxShadow: '0 4px 16px var(--accent-glow)',
-                }}
-              >
-                <span style={{ fontSize: '1.2rem', animation: 'pulse 1.5s infinite' }}>🆕</span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, fontSize: '0.82rem' }}>
-                    {newGameIds.length} {language === 'es' ? 'nuevos juegos' : 'new games'}!
-                  </div>
-                  <div style={{ fontSize: '0.62rem', opacity: 0.85 }}>
-                    {language === 'es' ? 'Toca para verlos' : 'Tap to view them'}
-                  </div>
-                </div>
-                <div style={{
-                  background: 'rgba(255,255,255,0.2)',
-                  borderRadius: '50%',
-                  width: '32px',
-                  height: '32px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.9rem',
-                  fontWeight: 700,
-                }}>
-                  {newGameIds.length}
-                </div>
-                <button className="notification-banner-close" onClick={e => { e.stopPropagation(); setShowNewGamesBanner(false); }} style={{ background: 'rgba(255,255,255,0.15)' }}>✕</button>
-              </motion.div>
+            {/* Juegos nuevos */}
+            {showNewGamesBanner && (
+              <NewGamesBanner
+                count={newGameIds.length}
+                language={language}
+                onDismiss={() => setShowNewGamesBanner(false)}
+              />
             )}
 
             {/* Surprise Me Button */}
@@ -985,81 +952,26 @@ export default function App() {
               </button>
             )}
 
-            {/* Surprise Result */}
+            {/* Sorpresa */}
             {showSurprise && surpriseResult && (
-              <div className="surprise-result-card" onClick={() => handleOpenDetail(surpriseResult.game)}>
-                <img src={surpriseResult.game.image} alt={surpriseResult.game.title} className="surprise-result-img"
-                  onError={e => { (e.target as HTMLImageElement).src = `https://placehold.co/400x140/11111b/ef4444?text=${encodeURIComponent(surpriseResult.game.title.slice(0, 20))}`; }}
-                />
-                <div className="surprise-result-body">
-                  <h3 className="surprise-result-title">{surpriseResult.game.title}</h3>
-                  <p className="surprise-result-reason">{surpriseResult.reason}</p>
-                  <div className="surprise-result-actions">
-                    <button className="surprise-result-btn" onClick={e => { e.stopPropagation(); handleOpenDetail(surpriseResult.game); }}>
-                      👁️ {t('viewDetail', language)}
-                    </button>
-                    <button className="surprise-result-btn" onClick={e => { e.stopPropagation(); handleSurpriseMe(); }}>
-                      🎲 {t('surpriseAgain', language)}
-                    </button>
-                    <button className="surprise-result-btn" onClick={e => { e.stopPropagation(); setShowSurprise(false); }}>
-                      ✕ {t('close', language)}
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <SurpriseResultCard
+                game={surpriseResult.game}
+                reason={surpriseResult.reason}
+                language={language}
+                onOpen={handleOpenDetail}
+                onAgain={handleSurpriseMe}
+                onClose={() => setShowSurprise(false)}
+              />
             )}
 
-            {/* Game of the Day */}
+            {/* Juego del día */}
             {gameOfDay && !multiSelectActive && (
-              <div className="game-of-day" onClick={() => handleOpenDetail(gameOfDay)}>
-                <img src={gameOfDay.image} alt="" className="game-of-day-bg" loading="lazy"
-                  onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                />
-                <div className="game-of-day-content">
-                  <span className="game-of-day-label">{t('gameOfDay', language)}</span>
-                  <h2 className="game-of-day-title">{gameOfDay.title}</h2>
-                  <div className="game-of-day-meta">
-                    <span>{gameOfDay.platformIcon || '🎮'} {gameOfDay.platformName || gameOfDay.platform}</span>
-                    {gameOfDay.worth && gameOfDay.worth !== 'N/A' && (
-                      <span>💰 ${gameOfDay.worth}</span>
-                    )}
-                  </div>
-                  <button className="game-of-day-btn" onClick={e => { e.stopPropagation(); handleOpenDetail(gameOfDay); }}>
-                    {t('gameDetail', language)}
-                  </button>
-                </div>
-              </div>
+              <GameOfDayCard game={gameOfDay} language={language} onOpen={handleOpenDetail} />
             )}
 
-            {/* Ending Soon Timeline */}
-            {endingSoonGames.length > 0 && !multiSelectActive && (
-              <section className="timeline-section">
-                <div className="timeline-header">
-                  <div className="recommended-icon">⏳</div>
-                  <h2 className="timeline-title">{t('endingTimeline', language)}</h2>
-                </div>
-                <div className="timeline-scroll">
-                  {endingSoonGames.map(g => (
-                    <div key={g.id} className="timeline-item" onClick={() => handleOpenDetail(g)}>
-                      <img src={g.image} alt={g.title} className="timeline-item-img" loading="lazy"
-                        onError={e => { (e.target as HTMLImageElement).src = `https://placehold.co/200x100/11111b/ef4444?text=${encodeURIComponent(g.title.slice(0, 15))}`; }}
-                      />
-                      <div className="timeline-item-body">
-                        <div className="timeline-item-title">{g.title}</div>
-                        <div className="timeline-item-time">
-                          {g.endDate ? (() => {
-                            const diff = new Date(g.endDate).getTime() - Date.now();
-                            const days = Math.floor(diff / 86400000);
-                            const hours = Math.floor((diff % 86400000) / 3600000);
-                            return days > 0 ? `${days}d ${hours}h` : `${hours}h`;
-                          })() : ''}
-                        </div>
-                        <div className="timeline-item-bar" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
+            {/* Terminan pronto */}
+            {!multiSelectActive && (
+              <EndingSoonSection games={endingSoonGames} language={language} onOpen={handleOpenDetail} />
             )}
 
             {/* Trending Section */}
@@ -1079,106 +991,26 @@ export default function App() {
             {/* Desktop Sidebar + Main Grid */}
             <div className="desktop-layout">
               {/* Desktop sidebar filters - hidden on mobile via CSS */}
-              <div className="desktop-sidebar">
-                <div className="sidebar-title">🔍 {t('filters', language)}</div>
-
-                {/* Filter Presets */}
-                {filterPresets.length > 0 && (
-                  <div className="filter-group" style={{ marginBottom: '0.5rem' }}>
-                    <span className="filter-label">📋 {language === 'es' ? 'Presets' : 'Presets'}</span>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.2rem' }}>
-                      {filterPresets.map(p => (
-                        <div key={p.id} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
-                          <button
-                            className="filter-chip"
-                            onClick={() => handleLoadPreset(p)}
-                            style={{ fontSize: '0.55rem', padding: '0.15rem 0.4rem', paddingRight: '1.2rem' }}
-                          >
-                            {p.icon} {p.name}
-                          </button>
-                          <button
-                            onClick={() => handleDeletePreset(p.id)}
-                            style={{
-                              position: 'absolute', right: '2px', top: '50%', transform: 'translateY(-50%)',
-                              background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer',
-                              fontSize: '0.45rem', padding: '2px', lineHeight: 1,
-                            }}
-                          >✕</button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  className="filter-btn secondary"
-                  onClick={handleSavePreset}
-                  style={{ width: '100%', marginBottom: '0.3rem', fontSize: '0.62rem', padding: '0.3rem' }}
-                >
-                  💾 {language === 'es' ? 'Guardar filtros' : 'Save filters'}
-                  <span style={{ fontSize: '0.45rem', opacity: 0.5, marginLeft: '0.2rem' }}>Alt+1</span>
-                </button>
-                <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.5rem' }}>
-                  <button
-                    className={`filter-btn ${compactMode ? 'primary' : 'secondary'}`}
-                    onClick={handleToggleCompact}
-                    style={{ flex: 1, fontSize: '0.55rem', padding: '0.2rem' }}
-                  >
-                    📦 {language === 'es' ? 'Compacto' : 'Compact'}
-                  </button>
-                  <button
-                    className={`filter-btn ${autoTheme ? 'primary' : 'secondary'}`}
-                    onClick={handleToggleAutoTheme}
-                    style={{ flex: 1, fontSize: '0.55rem', padding: '0.2rem' }}
-                  >
-                    🌗 Auto
-                  </button>
-                </div>
-                <div className="filter-group">
-                  <span className="filter-label">{t('sortBy', language)}</span>
-                  <div className="filter-chips">
-                    {[['default', '📅', 'sortRecent'], ['recent', '🆕', 'sortNewest'], ['price-desc', '💰', 'sortPrice'], ['ending-soon', '⏰', 'sortEnding'], ['title', '🔤', 'sortAZ'], ['popular', '🔥', 'sortPopular']].map(([v, icon, k]) => (
-                      <button key={v} className={`filter-chip ${sortMode === v ? 'active' : ''}`} onClick={() => setSortMode(v as SortMode)}>
-                        {icon} {t(k as any, language)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="filter-group">
-                  <span className="filter-label">{t('genre', language)}</span>
-                  <div className="filter-chips">
-                    {[['all', '🎮'], ['action', '⚔️'], ['rpg', '🗡️'], ['shooter', '🔫'], ['strategy', '🧠'], ['puzzle', '🧩'], ['racing', '🏎️'], ['sports', '⚽'], ['indie', '🎨']].map(([v, icon]) => (
-                      <button key={v} className={`filter-chip ${activeGenre === v ? 'active' : ''}`} onClick={() => setActiveGenre(v as Genre)}>
-                        {icon} {v === 'all' ? t('all', language) : v.charAt(0).toUpperCase() + v.slice(1)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="filter-group">
-                  <span className="filter-label">{t('type', language)}</span>
-                  <div className="filter-chips">
-                    {[['all', '📋', 'all'], ['game', '🎮', 'games'], ['app', '📱', 'apps']].map(([v, icon, k]) => (
-                      <button key={v} className={`filter-chip ${activeType === v ? 'active' : ''}`} onClick={() => setActiveType(v as TypeFilter)}>
-                        {icon} {t(k as any, language)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="filter-group">
-                  <span className="filter-label">{t('licenseFilter', language)}</span>
-                  <div className="filter-chips">
-                    {[['all', '📋', 'all'], ['open-source', '🔓', 'openSource'], ['proprietary', '🔒', 'proprietary']].map(([v, icon, k]) => (
-                      <button key={v} className={`filter-chip ${activeLicense === v ? 'active' : ''}`} onClick={() => setActiveLicense(v as LicenseFilter)}>
-                        {icon} {t(k as any, language)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {/* Favorites filter removed */}
-                <button className="filter-btn secondary" onClick={handleResetFilters} style={{ width: '100%', marginTop: '0.35rem' }}>
-                  🔄 {t('reset', language)}
-                </button>
-              </div>
+              <DesktopSidebar
+                language={language}
+                sortMode={sortMode}
+                onSortChange={setSortMode}
+                activeGenre={activeGenre}
+                onGenreChange={setActiveGenre}
+                activeType={activeType}
+                onTypeChange={setActiveType}
+                activeLicense={activeLicense}
+                onLicenseChange={setActiveLicense}
+                filterPresets={filterPresets}
+                onLoadPreset={handleLoadPreset}
+                onDeletePreset={handleDeletePreset}
+                onSavePreset={handleSavePreset}
+                compactMode={compactMode}
+                onToggleCompact={handleToggleCompact}
+                autoTheme={autoTheme}
+                onToggleAutoTheme={handleToggleAutoTheme}
+                onReset={handleResetFilters}
+              />
               {/* Main Grid column */}
               <div>
                 <GameGrid

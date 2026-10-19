@@ -1,6 +1,6 @@
 # Changelog - GameRadar
 
-## Sin publicar
+## v2.3.0 (2026-10-19)
 
 ### 🔒 Seguridad
 - **Endpoints administrativos protegidos**: nuevo middleware `requireAdmin`
